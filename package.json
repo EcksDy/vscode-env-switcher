@@ -39,6 +39,9 @@
     "typescript": "^3.3.1",
     "vscode-test": "^1.0.2"
   },
+  "peerDependencies": {
+    "glob": "*"
+  },
   "dependencies": {
     "glob-promise": "^3.4.0"
   }
