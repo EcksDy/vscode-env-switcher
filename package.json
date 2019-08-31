@@ -1,7 +1,7 @@
 {
   "name": "env-switcher",
   "displayName": ".ENV Switcher",
-  "description": "Switch env file contents using presets, straight from the status bar",
+  "description": "Switch .env file content using presets, straight from the status bar",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.37.0"
@@ -16,7 +16,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "extension.envSwitch",
+        "command": "extension.selectEnv",
         "title": ".ENV Switcher: Select .env file"
       }
     ]
