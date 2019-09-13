@@ -1,14 +1,16 @@
 import * as vscode from "vscode";
-import { writeFileSync, readFileSync, createReadStream } from "fs";
+import { writeFileSync, readFileSync, createReadStream, ReadStream } from "fs";
 import * as readline from "readline";
 import * as glob from "glob-promise";
 import * as globTypes from "glob";
 import { Readable } from "stream";
+import { BACKUP_FILE_NAME } from "./consts";
 
 export class FileSystemHandler {
   public readonly workspaceFolder: vscode.WorkspaceFolder;
   public readonly root: string;
   public readonly rootEnvFile: vscode.Uri;
+  public readonly rootBackupEnvFile: vscode.Uri;
 
   private globOptions: globTypes.IOptions;
 
@@ -16,12 +18,20 @@ export class FileSystemHandler {
     this.workspaceFolder = workspaceFolders[0];
     this.root = this.workspaceFolder.uri.fsPath;
     this.rootEnvFile = vscode.Uri.parse(`${this.root}\\.env`);
+    this.rootBackupEnvFile = vscode.Uri.parse(`${this.root}\\${BACKUP_FILE_NAME}.env`);
 
     this.globOptions = {
       cwd: this.root,
       root: this.root,
       nodir: true,
     };
+  }
+
+  /**
+   * findFile
+   */
+  public findFiles(pattern: string) {
+    return glob(pattern, this.globOptions);
   }
 
   /**
@@ -35,7 +45,7 @@ export class FileSystemHandler {
    * findCurrentEnvFile
    */
   public findCurrentEnvFile() {
-    return glob(".env", this.globOptions);
+    return glob("/.env", this.globOptions);
   }
 
   /**
@@ -55,8 +65,8 @@ export class FileSystemHandler {
   /**
    * writeFile
    */
-  public writeFile(fileContent: Buffer) {
-    writeFileSync(this.rootEnvFile.fsPath, fileContent);
+  public writeFile(fileUri: vscode.Uri, fileContent: Buffer) {
+    writeFileSync(fileUri.fsPath, fileContent);
   }
 
   /**
@@ -70,8 +80,10 @@ export class FileSystemHandler {
     const linePromise: Promise<string> = new Promise((resolve, reject) => {
       let result: string;
       lineReader.on("line", function(line) {
-        result = line; // TODO: Promisify/envelope in a promise
-        lineReader.close();
+        if (line.trim() !== "") {
+          result = line; // TODO: Promisify/envelope in a promise
+          lineReader.close();
+        }
       });
       lineReader.on("error", function(error) {
         reject(error);
@@ -82,5 +94,17 @@ export class FileSystemHandler {
     });
 
     return linePromise;
+  }
+
+  /**
+   * backupEnvCurrentFile
+   */
+  public async backupEnvCurrentFile() {
+    const backupEnvExists = (await this.findFiles(`/${BACKUP_FILE_NAME}.env`)).length !== 0;
+    const envExists = (await this.findCurrentEnvFile()).length !== 0;
+
+    if (!backupEnvExists && envExists) {
+      this.writeFile(this.rootBackupEnvFile, this.readFile(this.rootEnvFile));
+    }
   }
 }
