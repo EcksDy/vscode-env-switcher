@@ -1,9 +1,11 @@
 import * as vscode from "vscode";
 import {
-  labelPrefix,
-  selectEnvCommandId,
-  fileHeaderStartToken,
-  fileHeaderEndToken,
+  LABEL_PREFIX,
+  SELECT_ENV_COMMAND_ID,
+  FILE_HEADER_START_TOKEN,
+  FILE_HEADER_END_TOKEN,
+  EXTENSION_NAME,
+  BUTTON_DEFAULT,
 } from "./consts";
 import { FileSystemHandler } from "./fsHandler";
 import { QuickPickItemExtended } from "./command";
@@ -12,11 +14,17 @@ export async function createStatusBar(fsHandler: FileSystemHandler) {
   const envStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
 
   const currentEnv = await fsHandler.findCurrentEnvFile();
-  const stream = fsHandler.streamFile(vscode.Uri.parse(`${fsHandler.root}\\${currentEnv}`));
+  const stream = fsHandler.streamFile(vscode.Uri.parse(currentEnv[0]));
+
   const firstLine = await fsHandler.readHeaderAsync(stream);
 
-  envStatusBar.command = selectEnvCommandId;
-  envStatusBar.text = templateLabel(cleanHeaderLine(firstLine));
+  envStatusBar.command = SELECT_ENV_COMMAND_ID;
+  try {
+    envStatusBar.text = templateLabel(cleanHeaderLine(firstLine));
+  } catch (error) {
+    envStatusBar.text = templateLabel(BUTTON_DEFAULT);
+    vscode.window.showWarningMessage(`Warning: ${error.message}`);
+  }
   envStatusBar.show();
 
   return envStatusBar;
@@ -30,10 +38,17 @@ export function updateStatusBar(
 }
 
 function cleanHeaderLine(headerLine: string) {
-  return headerLine.split(fileHeaderStartToken)[1].split(fileHeaderEndToken)[0];
+  if (
+    [FILE_HEADER_START_TOKEN, FILE_HEADER_END_TOKEN].every(
+      (token) => headerLine.indexOf(token) !== -1,
+    )
+  ) {
+    return headerLine.split(FILE_HEADER_START_TOKEN)[1].split(FILE_HEADER_END_TOKEN)[0];
+  }
+  throw new Error("No descriptive headers found in .env");
 }
 
 function templateLabel(env: string) {
   const isProd = env.toLowerCase().indexOf("prod") !== -1;
-  return `${labelPrefix}${isProd ? `$(issue-opened) ${env.toUpperCase()} $(issue-opened)` : env}`;
+  return `${LABEL_PREFIX}${isProd ? `$(issue-opened) ${env.toUpperCase()} $(issue-opened)` : env}`;
 }
