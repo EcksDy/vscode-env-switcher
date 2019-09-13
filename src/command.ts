@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { FileSystemHandler } from "./fsHandler";
-import { selectEnvCommandId, fileHeaderStartToken, fileHeaderEndToken } from "./consts";
+import { SELECT_ENV_COMMAND_ID, FILE_HEADER_START_TOKEN, FILE_HEADER_END_TOKEN } from "./consts";
 import { updateStatusBar } from "./statusBar";
 
 export interface QuickPickItemExtended extends vscode.QuickPickItem {
@@ -11,7 +11,7 @@ export function createSelectEnvCommand(
   statusBar: vscode.StatusBarItem,
   fsHandler: FileSystemHandler,
 ) {
-  const selectEnvCommand = vscode.commands.registerCommand(selectEnvCommandId, async () => {
+  const selectEnvCommand = vscode.commands.registerCommand(SELECT_ENV_COMMAND_ID, async () => {
     const envFileQuickPickList: vscode.QuickPickItem[] = [];
     const envFiles = await fsHandler.findAllEnvFiles();
 
@@ -19,6 +19,7 @@ export function createSelectEnvCommand(
       const fileName = file.split(".")[0];
       const fileLabel = fileName.charAt(0).toUpperCase() + fileName.slice(1);
       const envFileQuickPick: QuickPickItemExtended = {
+        description: `/${file}`,
         label: fileLabel,
         filePath: vscode.Uri.parse(`${fsHandler.root}\\${file}`),
       };
@@ -34,13 +35,11 @@ export function createSelectEnvCommand(
       return;
     }
 
-    const setCurrentEnvHeader = `${fileHeaderStartToken}${
-      selectedEnv.label
-    }${fileHeaderEndToken}\n`;
-    const headerBuffer = new Buffer(setCurrentEnvHeader);
+    const setCurrentEnvHeader = `${FILE_HEADER_START_TOKEN}${selectedEnv.label}${FILE_HEADER_END_TOKEN}\n`;
+    const headerBuffer = Buffer.from(setCurrentEnvHeader);
     const selectedFileContent = fsHandler.readFile(selectedEnv.filePath);
 
-    fsHandler.writeFile(Buffer.concat([headerBuffer, selectedFileContent]));
+    fsHandler.writeFile(fsHandler.rootEnvFile, Buffer.concat([headerBuffer, selectedFileContent]));
 
     updateStatusBar(selectedEnv, statusBar);
   });
