@@ -8,6 +8,9 @@ export async function activate({ subscriptions }: vscode.ExtensionContext) {
     return;
   }
   const fsHandler = new FileSystemHandler(vscode.workspace.workspaceFolders);
+  if ((await fsHandler.findCurrentEnvFile()).length === 0) {
+    return;
+  }
   fsHandler.backupEnvCurrentFile();
 
   const statusBar = await createStatusBar(fsHandler);
