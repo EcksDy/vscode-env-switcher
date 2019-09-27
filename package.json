@@ -2,7 +2,7 @@
   "name": "env-switcher",
   "displayName": ".ENV Switcher",
   "description": "Switch .env file content using presets, straight from the status bar",
-  "icon": "./images/env-switcher.png",
+  "icon": "images/env-switcher.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/EcksDy/vscode-env-switcher.git"
