@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { FileSystemHandler } from "./fsHandler";
 import { SELECT_ENV_COMMAND_ID, FILE_HEADER_START_TOKEN, FILE_HEADER_END_TOKEN } from "./consts";
 import { updateStatusBar } from "./statusBar";
+import * as path from "path";
 
 export interface QuickPickItemExtended extends vscode.QuickPickItem {
   filePath: vscode.Uri;
@@ -19,9 +20,9 @@ export function createSelectEnvCommand(
       const fileName = file.split(".")[0];
       const fileLabel = fileName.charAt(0).toUpperCase() + fileName.slice(1);
       const envFileQuickPick: QuickPickItemExtended = {
-        description: `/${file}`,
+        description: `${path.sep}${file}`,
         label: fileLabel,
-        filePath: vscode.Uri.parse(`${fsHandler.root}\\${file}`),
+        filePath: vscode.Uri.parse(`${fsHandler.root}${path.sep}${file}`),
       };
 
       envFileQuickPickList.push(envFileQuickPick);

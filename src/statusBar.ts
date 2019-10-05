@@ -4,7 +4,6 @@ import {
   SELECT_ENV_COMMAND_ID,
   FILE_HEADER_START_TOKEN,
   FILE_HEADER_END_TOKEN,
-  EXTENSION_NAME,
   BUTTON_DEFAULT,
 } from "./consts";
 import { FileSystemHandler } from "./fsHandler";
@@ -23,7 +22,7 @@ export async function createStatusBar(fsHandler: FileSystemHandler) {
     envStatusBar.text = templateLabel(cleanHeaderLine(firstLine));
   } catch (error) {
     envStatusBar.text = templateLabel(BUTTON_DEFAULT);
-    vscode.window.showWarningMessage(`Warning: ${error.message}`);
+    console.warn(`Warning: ${error.message}`);
   }
   envStatusBar.show();
 

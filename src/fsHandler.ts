@@ -5,6 +5,7 @@ import * as glob from "glob-promise";
 import * as globTypes from "glob";
 import { Readable } from "stream";
 import { BACKUP_FILE_NAME } from "./consts";
+import * as path from "path";
 
 export class FileSystemHandler {
   public readonly workspaceFolder: vscode.WorkspaceFolder;
@@ -17,8 +18,8 @@ export class FileSystemHandler {
   constructor(workspaceFolders: vscode.WorkspaceFolder[]) {
     this.workspaceFolder = workspaceFolders[0];
     this.root = this.workspaceFolder.uri.fsPath;
-    this.rootEnvFile = vscode.Uri.parse(`${this.root}\\.env`);
-    this.rootBackupEnvFile = vscode.Uri.parse(`${this.root}\\${BACKUP_FILE_NAME}.env`);
+    this.rootEnvFile = vscode.Uri.parse(`${this.root}${path.sep}.env`);
+    this.rootBackupEnvFile = vscode.Uri.parse(`${this.root}${path.sep}${BACKUP_FILE_NAME}.env`);
 
     this.globOptions = {
       cwd: this.root,
@@ -45,7 +46,7 @@ export class FileSystemHandler {
    * findCurrentEnvFile
    */
   public findCurrentEnvFile() {
-    return glob("/.env", this.globOptions);
+    return glob(`${path.sep}.env`, this.globOptions);
   }
 
   /**
@@ -100,7 +101,7 @@ export class FileSystemHandler {
    * backupEnvCurrentFile
    */
   public async backupEnvCurrentFile() {
-    const backupEnvExists = (await this.findFiles(`/${BACKUP_FILE_NAME}.env`)).length !== 0;
+    const backupEnvExists = (await this.findFiles(`${path.sep}${BACKUP_FILE_NAME}.env`)).length !== 0;
     const envExists = (await this.findCurrentEnvFile()).length !== 0;
 
     if (!backupEnvExists && envExists) {
