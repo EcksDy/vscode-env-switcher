@@ -8,7 +8,7 @@
     "url": "https://github.com/EcksDy/vscode-env-switcher.git"
   },
   "publisher": "EcksDy",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.37.0"
   },
