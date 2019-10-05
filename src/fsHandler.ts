@@ -101,7 +101,8 @@ export class FileSystemHandler {
    * backupEnvCurrentFile
    */
   public async backupEnvCurrentFile() {
-    const backupEnvExists = (await this.findFiles(`${path.sep}${BACKUP_FILE_NAME}.env`)).length !== 0;
+    const backupEnvExists =
+      (await this.findFiles(`${path.sep}${BACKUP_FILE_NAME}.env`)).length !== 0;
     const envExists = (await this.findCurrentEnvFile()).length !== 0;
 
     if (!backupEnvExists && envExists) {

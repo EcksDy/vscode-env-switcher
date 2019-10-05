@@ -18,7 +18,8 @@ Clicking the status bar button will bring up a prompt to switch the contents of 
 
 ## Requirements
 
-A set of preset files must exist in the root of the project. `.env` file must be
+For the status bar button to show, an `.env` file must be found at the root of the project.
+A set of preset files must exist in the root of the project.
 Preset file name should be matching the `*.env` glob pattern, i.e.:
 
 - `dev.env`
