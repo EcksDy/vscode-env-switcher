@@ -1,25 +1,28 @@
-import * as vscode from "vscode";
-import { writeFileSync, readFileSync, createReadStream, ReadStream } from "fs";
-import * as readline from "readline";
-import * as glob from "glob-promise";
-import * as globTypes from "glob";
-import { Readable } from "stream";
-import { BACKUP_FILE_NAME } from "./consts";
-import * as path from "path";
+import { Uri, WorkspaceFolder } from 'vscode';
+import { writeFileSync, readFileSync, createReadStream } from 'fs';
+import * as readline from 'readline';
+import * as glob from 'glob-promise';
+import * as globTypes from 'glob';
+import { Readable } from 'stream';
+import { BACKUP_FILE_NAME } from './consts';
 
-export class FileSystemHandler {
-  public readonly workspaceFolder: vscode.WorkspaceFolder;
+export default class FileSystemHandler {
+  public readonly workspaceFolder: WorkspaceFolder;
+
   public readonly root: string;
-  public readonly rootEnvFile: vscode.Uri;
-  public readonly rootBackupEnvFile: vscode.Uri;
+
+  public readonly rootEnvFile: Uri;
+
+  public readonly rootBackupEnvFile: Uri;
 
   private globOptions: globTypes.IOptions;
 
-  constructor(workspaceFolders: vscode.WorkspaceFolder[], env: vscode.Uri) {
-    this.workspaceFolder = workspaceFolders[0];
+  constructor(workspaceFolders: ReadonlyArray<WorkspaceFolder>, env: Uri) {
+    const [mainFolder] = workspaceFolders;
+    this.workspaceFolder = mainFolder;
     this.rootEnvFile = env;
     this.root = env.fsPath.replace('.env', '');
-    this.rootBackupEnvFile = vscode.Uri.parse(`${this.root}${BACKUP_FILE_NAME}.env`);
+    this.rootBackupEnvFile = Uri.parse(`${this.root}${BACKUP_FILE_NAME}.env`);
 
     this.globOptions = {
       cwd: this.root,
@@ -39,7 +42,7 @@ export class FileSystemHandler {
    * findAllEnvFiles
    */
   public findAllEnvFiles() {
-    return glob("*.env", this.globOptions);
+    return glob('*.env', this.globOptions);
   }
 
   /**
@@ -52,21 +55,21 @@ export class FileSystemHandler {
   /**
    * readFile
    */
-  public readFile(filePath: vscode.Uri) {
+  public readFile(filePath: Uri) {
     return readFileSync(filePath.fsPath);
   }
 
   /**
    * streamFile
    */
-  public streamFile(filePath: vscode.Uri) {
+  public streamFile(filePath: Uri) {
     return createReadStream(filePath.fsPath);
   }
 
   /**
    * writeFile
    */
-  public writeFile(fileUri: vscode.Uri, fileContent: Buffer) {
+  public writeFile(fileUri: Uri, fileContent: Buffer) {
     writeFileSync(fileUri.fsPath, fileContent);
   }
 
@@ -80,16 +83,16 @@ export class FileSystemHandler {
 
     const linePromise: Promise<string> = new Promise((resolve, reject) => {
       let result: string;
-      lineReader.on("line", function(line) {
-        if (line.trim() !== "") {
+      lineReader.on('line', (line) => {
+        if (line.trim() !== '') {
           result = line; // TODO: Promisify/envelope in a promise
           lineReader.close();
         }
       });
-      lineReader.on("error", function(error) {
+      lineReader.on('error', (error) => {
         reject(error);
       });
-      lineReader.on("close", function() {
+      lineReader.on('close', () => {
         resolve(result);
       });
     });
