@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createSelectEnvCommand } from './command';
+import { createSelectEnvCommand, createStatusBar } from './command';
 import FileSystemHandler from './fsHandler';
 
 export async function activate({ subscriptions }: vscode.ExtensionContext) {

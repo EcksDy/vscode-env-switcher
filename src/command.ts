@@ -1,7 +1,13 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import FileSystemHandler from './fsHandler';
-import { SELECT_ENV_COMMAND_ID, FILE_HEADER_START_TOKEN, FILE_HEADER_END_TOKEN } from './consts';
+import {
+  SELECT_ENV_COMMAND_ID,
+  FILE_HEADER_START_TOKEN,
+  FILE_HEADER_END_TOKEN,
+  BUTTON_DEFAULT,
+  LABEL_PREFIX,
+} from './consts';
 
 export interface QuickPickItemExtended extends vscode.QuickPickItem {
   filePath: vscode.Uri;

@@ -17,7 +17,7 @@ export default class FileSystemHandler {
 
   private globOptions: globTypes.IOptions;
 
-  constructor(workspaceFolders: WorkspaceFolder[], env: Uri) {
+  constructor(workspaceFolders: ReadonlyArray<WorkspaceFolder>, env: Uri) {
     const [mainFolder] = workspaceFolders;
     this.workspaceFolder = mainFolder;
     this.rootEnvFile = env;
