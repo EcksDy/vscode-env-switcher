@@ -1,13 +1,13 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import {
   LABEL_PREFIX,
   SELECT_ENV_COMMAND_ID,
   FILE_HEADER_START_TOKEN,
   FILE_HEADER_END_TOKEN,
   BUTTON_DEFAULT,
-} from "./consts";
-import { FileSystemHandler } from "./fsHandler";
-import { QuickPickItemExtended } from "./command";
+} from './consts';
+import FileSystemHandler from './fsHandler';
+import { QuickPickItemExtended } from './command';
 
 export async function createStatusBar(fsHandler: FileSystemHandler) {
   const envStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
@@ -38,16 +38,14 @@ export function updateStatusBar(
 
 function cleanHeaderLine(headerLine: string) {
   if (
-    [FILE_HEADER_START_TOKEN, FILE_HEADER_END_TOKEN].every(
-      (token) => headerLine.indexOf(token) !== -1,
-    )
+    [FILE_HEADER_START_TOKEN, FILE_HEADER_END_TOKEN].every((token) => headerLine.includes(token))
   ) {
     return headerLine.split(FILE_HEADER_START_TOKEN)[1].split(FILE_HEADER_END_TOKEN)[0];
   }
-  throw new Error("No descriptive headers found in .env");
+  throw new Error('No descriptive headers found in .env');
 }
 
 function templateLabel(env: string) {
-  const isProd = env.toLowerCase().indexOf("prod") !== -1;
+  const isProd = env.toLowerCase().includes('prod');
   return `${LABEL_PREFIX}${isProd ? `$(issue-opened) ${env.toUpperCase()} $(issue-opened)` : env}`;
 }

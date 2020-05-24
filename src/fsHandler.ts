@@ -1,16 +1,19 @@
-import * as vscode from "vscode";
-import { writeFileSync, readFileSync, createReadStream, ReadStream } from "fs";
-import * as readline from "readline";
-import * as glob from "glob-promise";
-import * as globTypes from "glob";
-import { Readable } from "stream";
-import { BACKUP_FILE_NAME } from "./consts";
-import * as path from "path";
+import * as vscode from 'vscode';
+import { writeFileSync, readFileSync, createReadStream, ReadStream } from 'fs';
+import * as readline from 'readline';
+import * as glob from 'glob-promise';
+import * as globTypes from 'glob';
+import { Readable } from 'stream';
+import * as path from 'path';
+import { BACKUP_FILE_NAME } from './consts';
 
-export class FileSystemHandler {
+export default class FileSystemHandler {
   public readonly workspaceFolder: vscode.WorkspaceFolder;
+
   public readonly root: string;
+
   public readonly rootEnvFile: vscode.Uri;
+
   public readonly rootBackupEnvFile: vscode.Uri;
 
   private globOptions: globTypes.IOptions;
@@ -39,7 +42,7 @@ export class FileSystemHandler {
    * findAllEnvFiles
    */
   public findAllEnvFiles() {
-    return glob("*.env", this.globOptions);
+    return glob('*.env', this.globOptions);
   }
 
   /**
@@ -80,16 +83,16 @@ export class FileSystemHandler {
 
     const linePromise: Promise<string> = new Promise((resolve, reject) => {
       let result: string;
-      lineReader.on("line", function(line) {
-        if (line.trim() !== "") {
+      lineReader.on('line', function (line) {
+        if (line.trim() !== '') {
           result = line; // TODO: Promisify/envelope in a promise
           lineReader.close();
         }
       });
-      lineReader.on("error", function(error) {
+      lineReader.on('error', function (error) {
         reject(error);
       });
-      lineReader.on("close", function() {
+      lineReader.on('close', function () {
         resolve(result);
       });
     });
