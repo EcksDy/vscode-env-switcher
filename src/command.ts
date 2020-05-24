@@ -2,10 +2,23 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import FileSystemHandler from './fsHandler';
 import { SELECT_ENV_COMMAND_ID, FILE_HEADER_START_TOKEN, FILE_HEADER_END_TOKEN } from './consts';
-import { updateStatusBar } from './statusBar';
 
 export interface QuickPickItemExtended extends vscode.QuickPickItem {
   filePath: vscode.Uri;
+}
+
+function cleanHeaderLine(headerLine: string) {
+  if (
+    [FILE_HEADER_START_TOKEN, FILE_HEADER_END_TOKEN].every((token) => headerLine.includes(token))
+  ) {
+    return headerLine.split(FILE_HEADER_START_TOKEN)[1].split(FILE_HEADER_END_TOKEN)[0];
+  }
+  throw new Error('No descriptive headers found in .env');
+}
+
+function templateLabel(env: string) {
+  const isProd = env.toLowerCase().includes('prod');
+  return `${LABEL_PREFIX}${isProd ? `$(issue-opened) ${env.toUpperCase()} $(issue-opened)` : env}`;
 }
 
 export function createSelectEnvCommand(
@@ -42,8 +55,29 @@ export function createSelectEnvCommand(
 
     fsHandler.writeFile(fsHandler.rootEnvFile, Buffer.concat([headerBuffer, selectedFileContent]));
 
-    updateStatusBar(selectedEnv, statusBar);
+    // eslint-disable-next-line no-param-reassign
+    statusBar.text = templateLabel(selectedEnv.label);
   });
 
   return selectEnvCommand;
+}
+
+export async function createStatusBar(fsHandler: FileSystemHandler) {
+  const envStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+
+  const currentEnv = await fsHandler.findCurrentEnvFile();
+  const stream = fsHandler.streamFile(vscode.Uri.parse(currentEnv[0]));
+
+  const firstLine = await fsHandler.readHeaderAsync(stream);
+
+  envStatusBar.command = SELECT_ENV_COMMAND_ID;
+  try {
+    envStatusBar.text = templateLabel(cleanHeaderLine(firstLine));
+  } catch (error) {
+    envStatusBar.text = templateLabel(BUTTON_DEFAULT);
+    console.warn(`Warning: ${error.message}`);
+  }
+  envStatusBar.show();
+
+  return envStatusBar;
 }
