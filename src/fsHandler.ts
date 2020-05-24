@@ -15,11 +15,11 @@ export class FileSystemHandler {
 
   private globOptions: globTypes.IOptions;
 
-  constructor(workspaceFolders: vscode.WorkspaceFolder[]) {
+  constructor(workspaceFolders: vscode.WorkspaceFolder[], env: vscode.Uri) {
     this.workspaceFolder = workspaceFolders[0];
-    this.root = this.workspaceFolder.uri.fsPath;
-    this.rootEnvFile = vscode.Uri.parse(`${this.root}${path.sep}.env`);
-    this.rootBackupEnvFile = vscode.Uri.parse(`${this.root}${path.sep}${BACKUP_FILE_NAME}.env`);
+    this.rootEnvFile = env;
+    this.root = env.fsPath.replace('.env', '');
+    this.rootBackupEnvFile = vscode.Uri.parse(`${this.root}${BACKUP_FILE_NAME}.env`);
 
     this.globOptions = {
       cwd: this.root,
@@ -46,7 +46,7 @@ export class FileSystemHandler {
    * findCurrentEnvFile
    */
   public findCurrentEnvFile() {
-    return glob(`${path.sep}.env`, this.globOptions);
+    return glob(`${this.root}.env`, this.globOptions);
   }
 
   /**
@@ -102,7 +102,7 @@ export class FileSystemHandler {
    */
   public async backupEnvCurrentFile() {
     const backupEnvExists =
-      (await this.findFiles(`${path.sep}${BACKUP_FILE_NAME}.env`)).length !== 0;
+      (await this.findFiles(`${this.root}${BACKUP_FILE_NAME}.env`)).length !== 0;
     const envExists = (await this.findCurrentEnvFile()).length !== 0;
 
     if (!backupEnvExists && envExists) {
