@@ -1,15 +1,18 @@
 import * as vscode from 'vscode';
+import path from 'path';
 import { createSelectEnvCommand, createStatusBar } from './command';
 import FileSystemHandler from './fsHandler';
 
 export async function activate({ subscriptions }: vscode.ExtensionContext) {
-  const fsHandler = await vscode.workspace.findFiles('**/.env', undefined, 1).then((results) => {
-    const envFile = results[0];
+  const fsHandler = await vscode.workspace
+    .findFiles(`**${path.sep}.env`, undefined, 1)
+    .then((results) => {
+      const envFile = results[0];
 
-    // Extension activation event will trigger only on a workspace with ".env" file in it,
-    // so we can assert that workspace folders are not undefined
-    return new FileSystemHandler(vscode.workspace.workspaceFolders!, envFile);
-  });
+      // Extension activation event will trigger only on a workspace with ".env" file in it,
+      // so we can assert that workspace folders are not undefined
+      return new FileSystemHandler(vscode.workspace.workspaceFolders!, envFile);
+    });
 
   fsHandler.backupEnvCurrentFile();
 
