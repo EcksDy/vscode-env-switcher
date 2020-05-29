@@ -1,16 +1,36 @@
 on:
-  push:
-    tags:
-    - 'v*'
+  pull_request:
+    types:
+      - opened
+    branches:
+      - master
 name: Publish Extension
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - name: Check valid pull request command
+      - if: github.event.title == 'patch' || github.event.title == 'minor' || github.event.title == 'major'
+      - name: Install
       - uses: actions/checkout@v2
       - run: npm install
+      - name: Publish
       - uses: lannonbr/vsce-action@master
         with:
-          args: "publish -p $VSCE_TOKEN"
+          args: publish ${{ github.event.title }} -p $VSCE_TOKEN
         env:
           VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+  merge_pull_request:
+    runs-on: ubuntu-latest
+    needs:
+      - publish
+    steps:
+    - name: Auto merge published pull request
+    - uses: pascalgn/automerge-action@7ab42e888a333bf77ce865bc84fedc6a365a3548
+    - name: Get new version
+    - run: echo "::set-env name=PACKAGE_VERSION::$(node -p -e "require('./package.json').version")"
+      shell: bash
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MERGE_METHOD: squash
+      MERGE_COMMIT_MESSAGE: ${{ PACKAGE_VERSION }}
