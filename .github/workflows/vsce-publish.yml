@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check valid pull request command
-        if: github.event.title == 'patch' || github.event.title == 'minor' || github.event.title == 'major'
+        if: github.event.pull_request.title == 'patch' || github.event.pull_request.title == 'minor' || github.event.pull_request.title == 'major'
         uses: actions/checkout@v2
       - name: Install
         run: npm install
       - name: Publish
         uses: lannonbr/vsce-action@master
         with:
-          args: publish ${{ github.event.title }} -p $VSCE_TOKEN
+          args: publish ${{ github.event.pull_request.title }} -p $VSCE_TOKEN
         env:
           VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
   merge_pull_request:
