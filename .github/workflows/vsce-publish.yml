@@ -9,9 +9,9 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Check valid pull request command
         if: github.event.title == 'patch' || github.event.title == 'minor' || github.event.title == 'major'
+        uses: actions/checkout@v2
       - name: Install
         run: npm install
       - name: Publish
