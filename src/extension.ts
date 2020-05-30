@@ -1,26 +1,19 @@
-import * as vscode from 'vscode';
-import path from 'path';
-import { createSelectEnvCommand, createStatusBar } from './command';
-import FileSystemHandler from './fsHandler';
+import { ExtensionContext } from 'vscode';
+import { createSelectEnvCommand } from './handlers/commands';
+import { initFileSystemHandler } from './handlers/fsHandler';
+import { initStatusBarHandler } from './handlers/statusBarHandler';
+import { selectedEnvPresetEventEmitter } from './utilities/events';
 
-export async function activate({ subscriptions }: vscode.ExtensionContext) {
-  const fsHandler = await vscode.workspace
-    .findFiles(`**${path.sep}.env`, undefined, 1)
-    .then((results) => {
-      const envFile = results[0];
+export async function activate({ subscriptions }: ExtensionContext) {
+  const fsHandler = await initFileSystemHandler();
 
-      // Extension activation event will trigger only on a workspace with ".env" file in it,
-      // so we can assert that workspace folders are not undefined
-      return new FileSystemHandler(vscode.workspace.workspaceFolders!, envFile);
-    });
+  const statusBar = await initStatusBarHandler(fsHandler);
+  const selectEnvCommand = createSelectEnvCommand(fsHandler);
 
-  fsHandler.backupEnvCurrentFile();
-
-  const statusBar = await createStatusBar(fsHandler);
-  const command = createSelectEnvCommand(statusBar, fsHandler);
-
-  subscriptions.push(statusBar);
-  subscriptions.push(command);
+  subscriptions.push(statusBar.getStatusBarItem());
+  subscriptions.push(selectEnvCommand);
 }
 
-export function deactivate() {}
+export function deactivate() {
+  selectedEnvPresetEventEmitter.dispose();
+}

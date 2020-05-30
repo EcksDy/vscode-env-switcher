@@ -17,6 +17,7 @@ module.exports = {
   rules: {
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/no-non-null-assertion': 0,
+    'no-return-await': 0,
     'class-methods-use-this': 0,
     'no-console': 0,
     'import/no-unresolved': 0,
