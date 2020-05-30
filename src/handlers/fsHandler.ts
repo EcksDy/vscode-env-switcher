@@ -1,5 +1,5 @@
 import { Uri, workspace } from 'vscode';
-import { writeFileSync, readFileSync, createReadStream } from 'fs';
+import { writeFileSync, readFileSync, createReadStream, existsSync } from 'fs';
 import readline from 'readline';
 import glob from 'glob-promise';
 import globTypes from 'glob';
@@ -8,81 +8,81 @@ import path from 'path';
 import { BACKUP_FILE_NAME } from '../utilities/consts';
 
 export default class FileSystemHandler {
-  public readonly root: Uri;
+  public readonly rootDir: Uri;
 
-  public readonly rootEnvFile: Uri;
+  public readonly envDir: Uri;
 
-  public readonly rootBackupEnvFile: Uri;
+  public readonly envFile: Uri;
+
+  public readonly envBackupFile: Uri;
 
   private globOptions: globTypes.IOptions;
 
-  constructor(env: Uri) {
-    this.rootEnvFile = env;
-    this.root = Uri.parse(env.path.replace('.env', ''));
-    this.rootBackupEnvFile = Uri.parse(`${this.root.path}${BACKUP_FILE_NAME}.env`);
+  constructor(rootFolder: Uri, mainEnv: Uri) {
+    this.rootDir = rootFolder;
+    this.envDir = Uri.file(path.dirname(mainEnv.fsPath));
+    this.envFile = mainEnv;
+    this.envBackupFile = Uri.file(`${this.envDir.fsPath}${path.sep}${BACKUP_FILE_NAME}.env`);
 
-    // TODO: Figure out the cwd/root purpose and format
     this.globOptions = {
-      cwd: this.root.toString(),
-      root: this.root.toString(),
+      matchBase: true,
+      root: this.envDir.fsPath,
       nodir: true,
     };
 
     this.backupEnvCurrentFile();
   }
 
+  public static async build() {
+    if (workspace.workspaceFolders === undefined) throw new Error('No workspace opened.');
+
+    const [firstEnvFile] = await workspace.findFiles(`**/.env`, undefined, 1);
+    const [rootFolder] = workspace.workspaceFolders;
+
+    return new FileSystemHandler(rootFolder.uri, firstEnvFile);
+  }
+
   /**
-   * findFile
+   * findFiles
    */
-  public findFiles = (pattern: string) => {
-    return glob(pattern, this.globOptions);
-  };
+  public async findFiles(pattern: string) {
+    const filePaths = await glob(pattern, this.globOptions);
+    return filePaths.map(Uri.file.bind(this));
+  }
 
   /**
    * findAllEnvFiles
    */
-  public findAllEnvFiles = () => {
-    return glob('*.env', this.globOptions);
-  };
-
-  /**
-   * findCurrentEnvFile
-   */
-  public findCurrentEnvFile = async () => {
-    // TODO: Research glob patterns
-    const [firstEnv] = await glob(`.env`, this.globOptions);
-    if (firstEnv !== undefined) {
-      return Uri.parse(firstEnv);
-    }
-
-    return undefined;
-  };
+  public async getEnvFilesInEnvDir() {
+    const filePaths = await glob('/*.env', this.globOptions);
+    return filePaths.map(Uri.file.bind(this));
+  }
 
   /**
    * readFile
    */
-  public readFile = (filePath: Uri) => {
+  public readFile(filePath: Uri) {
     return readFileSync(filePath.fsPath);
-  };
+  }
 
   /**
    * streamFile
    */
-  public streamFile = (filePath: Uri) => {
+  public streamFile(filePath: Uri) {
     return createReadStream(filePath.fsPath);
-  };
+  }
 
   /**
    * writeFile
    */
-  public writeFile = (fileUri: Uri, fileContent: Buffer) => {
+  public writeFile(fileUri: Uri, fileContent: Buffer) {
     writeFileSync(fileUri.fsPath, fileContent);
-  };
+  }
 
   /**
    * readHeader
    */
-  public readHeaderAsync = (stream: Readable): Promise<string> => {
+  public readHeaderAsync(stream: Readable): Promise<string> {
     const lineReader = readline.createInterface({
       input: stream,
     });
@@ -104,32 +104,21 @@ export default class FileSystemHandler {
     });
 
     return linePromise;
-  };
+  }
 
   /**
    * backupEnvCurrentFile
    */
-  private backupEnvCurrentFile = async () => {
-    const backupEnvExists = await this.isBackupExists();
-    const envExists = await this.findCurrentEnvFile();
-
-    if (!backupEnvExists && envExists) {
-      this.writeFile(this.rootBackupEnvFile, this.readFile(this.rootEnvFile));
+  private backupEnvCurrentFile() {
+    if (!this.isBackupExists()) {
+      this.writeFile(this.envBackupFile, this.readFile(this.envFile));
     }
-  };
+  }
 
   /**
    * Return true if backup env file exists
    */
-  private isBackupExists = async () =>
-    (await this.findFiles(`${this.root.fsPath}${path.sep}${BACKUP_FILE_NAME}.env`)).length !== 0;
+  private isBackupExists() {
+    return existsSync(this.envBackupFile.fsPath);
+  }
 }
-
-// TODO: Consider builder pattern for this
-const initFileSystemHandler = async () => {
-  const [firstEnvFile] = await workspace.findFiles(`**${path.sep}.env`, undefined, 1);
-
-  return new FileSystemHandler(firstEnvFile);
-};
-
-export { initFileSystemHandler };

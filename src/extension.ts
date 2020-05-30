@@ -1,17 +1,16 @@
 import { ExtensionContext } from 'vscode';
-import { createSelectEnvCommand } from './handlers/commands';
-import { initFileSystemHandler } from './handlers/fsHandler';
-import { initStatusBarHandler } from './handlers/statusBarHandler';
+import CommandsHandler from './handlers/commandsHandler';
+import FileSystemHandler from './handlers/fsHandler';
+import StatusBarHandler from './handlers/statusBarHandler';
 import { selectedEnvPresetEventEmitter } from './utilities/events';
 
 export async function activate({ subscriptions }: ExtensionContext) {
-  const fsHandler = await initFileSystemHandler();
+  const fsHandler = await FileSystemHandler.build();
+  const statusBarHandler = await StatusBarHandler.build(fsHandler);
+  const cmdHandler = new CommandsHandler(fsHandler);
 
-  const statusBar = await initStatusBarHandler(fsHandler);
-  const selectEnvCommand = createSelectEnvCommand(fsHandler);
-
-  subscriptions.push(statusBar.getStatusBarItem());
-  subscriptions.push(selectEnvCommand);
+  subscriptions.push(statusBarHandler.getStatusBarItem());
+  subscriptions.push(...cmdHandler.getRegisteredCommands());
 }
 
 export function deactivate() {
