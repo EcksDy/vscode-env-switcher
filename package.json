@@ -22,7 +22,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "extension.selectEnv",
+        "command": "extension.selectEnvPreset",
         "title": ".ENV Switcher: Select .env file"
       }
     ]
