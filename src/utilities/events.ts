@@ -1,7 +1,9 @@
-import { EventEmitter } from 'vscode';
+import { EventEmitter, Uri } from 'vscode';
 
 interface SelectedEnvPresetEventData {
-  text: string;
+  fileName: string;
+  fileNameFull: string;
+  filePath: Uri;
 }
 
 const selectedEnvPresetEventEmitter = new EventEmitter<SelectedEnvPresetEventData>();
