@@ -1,8 +1,8 @@
 import { Uri, WorkspaceFolder } from 'vscode';
 import { writeFileSync, readFileSync, createReadStream } from 'fs';
-import * as readline from 'readline';
-import * as glob from 'glob-promise';
-import * as globTypes from 'glob';
+import readline from 'readline';
+import glob from 'glob-promise';
+import globTypes from 'glob';
 import { Readable } from 'stream';
 import { BACKUP_FILE_NAME } from './consts';
 
