@@ -1,22 +1,34 @@
-import { QuickPickItem, commands, window, Disposable } from 'vscode';
 import path from 'path';
+import { commands, Disposable, QuickPickItem, Uri, window, workspace } from 'vscode';
+import {
+  BACKUP_PREFIX_ORIGINAL,
+  BACKUP_PREFIX_SESSION,
+  EXTENSION_PREFIX,
+  SELECT_ENV_COMMAND_ID,
+  SHOW_ORIGINAL_BACKUP_COMMAND_ID,
+  SHOW_SESSION_BACKUP_COMMAND_ID,
+} from '../utilities/consts';
+import { SelectedEnvPresetEventData, selectedEnvPresetEventEmitter } from '../utilities/events';
+import { makeHeaderLine, capitalize } from '../utilities/stringManipulations';
+import BackupHandler from './backupHandler';
 import FileSystemHandler from './fsHandler';
-import { SELECT_ENV_COMMAND_ID } from '../utilities/consts';
-import { makeHeaderLine } from '../utilities/stringManipulations';
-import { selectedEnvPresetEventEmitter, SelectedEnvPresetEventData } from '../utilities/events';
 
 export interface EnvPresetQuickPickItem extends SelectedEnvPresetEventData, QuickPickItem {}
 
 export default class CommandsHandler {
   private fsHandler: FileSystemHandler;
 
-  private registeredCommands: Disposable[];
+  private backupHandler: BackupHandler;
 
-  constructor(fsHandler: FileSystemHandler) {
+  private registeredCommands: Disposable[] = [];
+
+  constructor(fsHandler: FileSystemHandler, backupHandler: BackupHandler) {
     this.fsHandler = fsHandler;
-    this.registeredCommands = [];
+    this.backupHandler = backupHandler;
 
     this.registerCommand(SELECT_ENV_COMMAND_ID, this.selectEnvPreset);
+    this.registerCommand(SHOW_ORIGINAL_BACKUP_COMMAND_ID, this.showOriginalEnvBackup);
+    this.registerCommand(SHOW_SESSION_BACKUP_COMMAND_ID, this.showSessionEnvBackup);
   }
 
   public getRegisteredCommands = () => this.registeredCommands;
@@ -27,8 +39,8 @@ export default class CommandsHandler {
     const envFileQuickPickList = envFiles.map((filePath) => {
       const fileName = path.basename(filePath.fsPath, path.extname(filePath.fsPath));
       const fileNameFull = path.basename(filePath.fsPath);
-      const label = `${fileName.charAt(0).toUpperCase()}${fileName.slice(1)}`;
-      const description = `${path.relative(this.fsHandler.rootDir.fsPath, filePath.fsPath)}`;
+      const label = capitalize(fileName);
+      const description = path.relative(this.fsHandler.rootDir.fsPath, filePath.fsPath);
 
       const envFileQuickPick: EnvPresetQuickPickItem = {
         description,
@@ -49,7 +61,8 @@ export default class CommandsHandler {
 
     const setCurrentEnvHeader = makeHeaderLine(selectedEnv.fileNameFull);
     const headerBuffer = Buffer.from(setCurrentEnvHeader);
-    const selectedFileContent = this.fsHandler.readFile(selectedEnv.filePath);
+    // We can assert because didn't provide encoding
+    const selectedFileContent = this.fsHandler.readFile(selectedEnv.filePath) as Buffer;
 
     this.fsHandler.writeFile(
       this.fsHandler.envFile,
@@ -57,6 +70,18 @@ export default class CommandsHandler {
     );
 
     selectedEnvPresetEventEmitter.fire(selectedEnv);
+  };
+
+  private showOriginalEnvBackup = async () => {
+    const uri = Uri.parse(`${EXTENSION_PREFIX}:${BACKUP_PREFIX_ORIGINAL}.env`);
+    const doc = await workspace.openTextDocument(uri);
+    await window.showTextDocument(doc, { preview: true });
+  };
+
+  private showSessionEnvBackup = async () => {
+    const uri = Uri.parse(`${EXTENSION_PREFIX}:${BACKUP_PREFIX_SESSION}.env`);
+    const doc = await workspace.openTextDocument(uri);
+    await window.showTextDocument(doc, { preview: true });
   };
 
   private registerCommand(commandId: string, commandCallback: (...args: unknown[]) => unknown) {

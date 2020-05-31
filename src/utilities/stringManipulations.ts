@@ -18,4 +18,6 @@ const templateLabel = (env: string) => {
   return `${isProd ? `$(issue-opened) ${upperEnv}` : env}`;
 };
 
-export { makeHeaderLine, extractHeaderLine, templateLabel };
+const capitalize = (str: string) => `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+
+export { makeHeaderLine, extractHeaderLine, templateLabel, capitalize };

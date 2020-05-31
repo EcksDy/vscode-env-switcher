@@ -1,11 +1,10 @@
-import { Uri, workspace } from 'vscode';
-import { writeFileSync, readFileSync, createReadStream, existsSync } from 'fs';
-import readline from 'readline';
-import glob from 'glob-promise';
+import { createReadStream, readFileSync, writeFileSync } from 'fs';
 import globTypes from 'glob';
-import { Readable } from 'stream';
+import glob from 'glob-promise';
 import path from 'path';
-import { BACKUP_FILE_NAME } from '../utilities/consts';
+import readline from 'readline';
+import { Readable } from 'stream';
+import { Uri, workspace } from 'vscode';
 
 export default class FileSystemHandler {
   public readonly rootDir: Uri;
@@ -14,23 +13,18 @@ export default class FileSystemHandler {
 
   public readonly envFile: Uri;
 
-  public readonly envBackupFile: Uri;
-
   private globOptions: globTypes.IOptions;
 
   constructor(rootFolder: Uri, mainEnv: Uri) {
     this.rootDir = rootFolder;
     this.envDir = Uri.file(path.dirname(mainEnv.fsPath));
     this.envFile = mainEnv;
-    this.envBackupFile = Uri.file(`${this.envDir.fsPath}${path.sep}${BACKUP_FILE_NAME}.env`);
 
     this.globOptions = {
       matchBase: true,
       root: this.envDir.fsPath,
       nodir: true,
     };
-
-    this.backupEnvCurrentFile();
   }
 
   public static async build() {
@@ -61,8 +55,8 @@ export default class FileSystemHandler {
   /**
    * readFile
    */
-  public readFile(filePath: Uri) {
-    return readFileSync(filePath.fsPath);
+  public readFile(filePath: Uri, encoding?: BufferEncoding) {
+    return readFileSync(filePath.fsPath, encoding);
   }
 
   /**
@@ -104,21 +98,5 @@ export default class FileSystemHandler {
     });
 
     return linePromise;
-  }
-
-  /**
-   * backupEnvCurrentFile
-   */
-  private backupEnvCurrentFile() {
-    if (!this.isBackupExists()) {
-      this.writeFile(this.envBackupFile, this.readFile(this.envFile));
-    }
-  }
-
-  /**
-   * Return true if backup env file exists
-   */
-  private isBackupExists() {
-    return existsSync(this.envBackupFile.fsPath);
   }
 }

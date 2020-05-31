@@ -1,10 +1,13 @@
 import { window, StatusBarAlignment, StatusBarItem } from 'vscode';
-import FileSystemHandler from './fsHandler';
+import FileSystemHandler from '../handlers/fsHandler';
 import { SELECT_ENV_COMMAND_ID, BUTTON_DEFAULT } from '../utilities/consts';
 import { templateLabel, extractHeaderLine } from '../utilities/stringManipulations';
 import { selectedEnvPresetEventEmitter, SelectedEnvPresetEventData } from '../utilities/events';
 
-export default class StatusBarHandler {
+/**
+ * Decorator class for the StatusBarItem. Will expose the necessary members to the rest of the app.
+ */
+export default class EnvStatusBarItem {
   private envStatusBar: StatusBarItem;
 
   constructor(envHeader: string) {
@@ -27,20 +30,16 @@ export default class StatusBarHandler {
 
   public static async build(fsHandler: FileSystemHandler) {
     const currentEnv = fsHandler.envFile;
-    if (currentEnv === undefined) {
-      throw new Error('No .env file found');
-    }
-
     const stream = fsHandler.streamFile(currentEnv);
     const envHeader = await fsHandler.readHeaderAsync(stream);
 
-    return new StatusBarHandler(envHeader);
+    return new EnvStatusBarItem(envHeader);
   }
 
   /**
-   * getStatusBarItem
+   * Exposing the original dispose, so EnvStatusBarItem can be registered in extension subscriptions.
    */
-  public getStatusBarItem() {
-    return this.envStatusBar;
+  public dispose() {
+    this.envStatusBar.dispose();
   }
 }
