@@ -14,7 +14,7 @@ const extractHeaderLine = (headerLine: string) => {
 
 const templateLabel = (env: string) => {
   const upperEnv = env.toUpperCase();
-  const isProd = env.includes('PROD');
+  const isProd = upperEnv.includes('PROD');
   return `${isProd ? `$(issue-opened) ${upperEnv}` : env}`;
 };
 
