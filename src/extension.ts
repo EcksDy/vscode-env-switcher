@@ -14,8 +14,7 @@ export async function activate({ subscriptions, workspaceState }: ExtensionConte
   subscriptions.push(await EnvStatusBarItem.build(fsHandler));
   subscriptions.push(...cmdHandler.getRegisteredCommands());
   subscriptions.push(BackupViewerContentProvider.register(backupHandler));
+  subscriptions.push(selectedEnvPresetEventEmitter);
 }
 
-export function deactivate() {
-  selectedEnvPresetEventEmitter.dispose();
-}
+export function deactivate() {}
