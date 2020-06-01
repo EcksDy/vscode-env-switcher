@@ -8,7 +8,7 @@
     "url": "https://github.com/EcksDy/vscode-env-switcher.git"
   },
   "publisher": "EcksDy",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "engines": {
     "vscode": "^1.37.0"
   },
@@ -22,8 +22,16 @@
   "contributes": {
     "commands": [
       {
-        "command": "extension.selectEnv",
+        "command": "envSwitcher.selectEnvPreset",
         "title": ".ENV Switcher: Select .env file"
+      },
+      {
+        "command": "envSwitcher.showOriginalEnvBackup",
+        "title": ".ENV Switcher: Show original .env file backup"
+      },
+      {
+        "command": "envSwitcher.showSessionEnvBackup",
+        "title": ".ENV Switcher: Show session .env file backup"
       }
     ]
   },
