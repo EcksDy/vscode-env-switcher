@@ -24,7 +24,7 @@ Changes to **.ENV Switcher** can be found in this file.
 ## - 0.1.1
 
 - Broken URI's are fixed for linux.
-- No longer showing pop-up warning message for missing headers, instead writting to log.
+- No longer showing pop-up warning message for missing headers, instead writing to log.
 
 ## - 0.1.0
 
