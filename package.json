@@ -32,6 +32,14 @@
       {
         "command": "envSwitcher.showSessionEnvBackup",
         "title": ".ENV Switcher: Show session .env file backup"
+      },
+      {
+        "command": "envSwitcher.clearAllEnvBackups",
+        "title": ".ENV Switcher: Clear ALL .env file backups made by the extension"
+      },
+      {
+        "command": "envSwitcher.clearWorkspaceEnvBackups",
+        "title": ".ENV Switcher: Clear current workspace .env file backups"
       }
     ]
   },
