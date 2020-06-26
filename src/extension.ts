@@ -6,9 +6,16 @@ import FileSystemHandler from './handlers/fsHandler';
 import EnvStatusBarItem from './status_bar_items/envStatusBarItem';
 import { selectedEnvPresetEventEmitter } from './utilities/events';
 
-export async function activate({ subscriptions, workspaceState }: ExtensionContext) {
+export async function activate({
+  subscriptions,
+  globalStoragePath,
+  storagePath,
+}: ExtensionContext) {
+  // Making sure a workspace is opened so we can assert workspace related objects later
+  if (storagePath === undefined) throw new Error('No workspace opened.');
+
   const fsHandler = await FileSystemHandler.build();
-  const backupHandler = new BackupHandler(workspaceState, fsHandler);
+  const backupHandler = new BackupHandler(fsHandler, globalStoragePath, storagePath);
   const cmdHandler = new CommandsHandler(fsHandler, backupHandler);
 
   subscriptions.push(await EnvStatusBarItem.build(fsHandler));
