@@ -22,12 +22,12 @@ export default class BackupViewerContentProvider implements TextDocumentContentP
     );
   }
 
-  public provideTextDocumentContent(uri: Uri): string {
+  public async provideTextDocumentContent(uri: Uri) {
     switch (uri.path) {
       case `${BACKUP_PREFIX_ORIGINAL}.env`:
-        return this.backupHandler.getOriginalBackupContent() || '';
+        return (await this.backupHandler.getOriginalBackupContent()) || '';
       case `${BACKUP_PREFIX_SESSION}.env`:
-        return this.backupHandler.getSessionBackupContent() || '';
+        return (await this.backupHandler.getSessionBackupContent()) || '';
       default:
         return '';
     }
