@@ -1,8 +1,10 @@
 import { window, StatusBarAlignment, StatusBarItem } from 'vscode';
 import FileSystemHandler from '../handlers/fsHandler';
-import { SELECT_ENV_COMMAND_ID, BUTTON_DEFAULT } from '../utilities/consts';
+import { SELECT_ENV_COMMAND_ID } from '../utilities/consts';
 import { templateLabel, extractHeaderLine } from '../utilities/stringManipulations';
 import { selectedEnvPresetEventEmitter, SelectedEnvPresetEventData } from '../utilities/events';
+
+const BUTTON_DEFAULT = 'Select .env';
 
 /**
  * Decorator class for the StatusBarItem. Will expose the necessary members to the rest of the app.

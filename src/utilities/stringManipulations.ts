@@ -1,4 +1,5 @@
-import { FILE_HEADER_START_TOKEN, FILE_HEADER_END_TOKEN } from './consts';
+const FILE_HEADER_START_TOKEN = '#_';
+const FILE_HEADER_END_TOKEN = '_#';
 
 const makeHeaderLine = (headerStr: string) =>
   `${FILE_HEADER_START_TOKEN}${headerStr}${FILE_HEADER_END_TOKEN}\n`;
