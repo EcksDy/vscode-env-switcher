@@ -1,11 +1,13 @@
 import { Uri } from 'vscode';
 import path from 'path';
-import { EXTENSION_FS_FOLDER } from '../utilities/consts';
+import {
+  EXTENSION_FS_FOLDER,
+  BACKUP_PREFIX_ORIGINAL,
+  BACKUP_PREFIX_SESSION,
+} from '../utilities/consts';
 import FileSystemHandler from './fsHandler';
 
 const BACKUP_PREFIX = 'env_switcher_backup';
-const BACKUP_PREFIX_ORIGINAL = 'env_switcher_backup_original';
-const BACKUP_PREFIX_SESSION = 'env_switcher_backup_session';
 
 export default class BackupHandler {
   private fsHandler: FileSystemHandler;

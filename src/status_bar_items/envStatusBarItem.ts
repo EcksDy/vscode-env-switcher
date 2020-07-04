@@ -1,10 +1,48 @@
-import { window, StatusBarAlignment, StatusBarItem } from 'vscode';
+import { window, StatusBarAlignment, StatusBarItem, workspace } from 'vscode';
 import FileSystemHandler from '../handlers/fsHandler';
-import { SELECT_ENV_COMMAND_ID } from '../utilities/consts';
+import { SELECT_ENV_COMMAND_ID, EXTENSION_PREFIX } from '../utilities/consts';
 import { templateLabel, extractHeaderLine } from '../utilities/stringManipulations';
 import { selectedEnvPresetEventEmitter, SelectedEnvPresetEventData } from '../utilities/events';
 
 const BUTTON_DEFAULT = 'Select .env';
+
+interface StatusBarItemPosition {
+  alignment: StatusBarAlignment;
+  priority: number;
+}
+
+type PositionConfigs = 'outerLeft' | 'innerLeft' | 'outerRight' | 'innerRight';
+
+type PositionConfigsData = {
+  [key in PositionConfigs]: StatusBarItemPosition;
+};
+
+const getPositionConfig = () => {
+  const config = workspace
+    .getConfiguration(`${EXTENSION_PREFIX}`)
+    .get('statusBarPosition') as PositionConfigs;
+
+  const configData: PositionConfigsData = {
+    outerLeft: {
+      alignment: StatusBarAlignment.Left,
+      priority: 100,
+    },
+    innerLeft: {
+      alignment: StatusBarAlignment.Left,
+      priority: 0,
+    },
+    outerRight: {
+      alignment: StatusBarAlignment.Right,
+      priority: 0,
+    },
+    innerRight: {
+      alignment: StatusBarAlignment.Right,
+      priority: 100,
+    },
+  };
+
+  return configData[config];
+};
 
 /**
  * Decorator class for the StatusBarItem. Will expose the necessary members to the rest of the app.
@@ -12,30 +50,31 @@ const BUTTON_DEFAULT = 'Select .env';
 export default class EnvStatusBarItem {
   private envStatusBar: StatusBarItem;
 
-  constructor(envHeader: string) {
-    this.envStatusBar = window.createStatusBarItem(StatusBarAlignment.Left, 100);
+  constructor(text: string, { alignment, priority }: StatusBarItemPosition) {
+    this.envStatusBar = window.createStatusBarItem(alignment, priority);
     this.envStatusBar.command = SELECT_ENV_COMMAND_ID;
+    this.envStatusBar.text = text;
+    this.envStatusBar.show();
 
     selectedEnvPresetEventEmitter.event((data: SelectedEnvPresetEventData) => {
       this.envStatusBar.text = templateLabel(data.fileNameFull);
     });
-
-    try {
-      this.envStatusBar.text = templateLabel(extractHeaderLine(envHeader));
-    } catch (error) {
-      this.envStatusBar.text = templateLabel(BUTTON_DEFAULT);
-      console.warn(`Warning: ${error.message}`);
-    }
-
-    this.envStatusBar.show();
   }
 
   public static async build(fsHandler: FileSystemHandler) {
-    const currentEnv = fsHandler.envFile;
-    const stream = fsHandler.streamFile(currentEnv);
-    const envHeader = await fsHandler.readHeaderAsync(stream);
+    let text;
+    try {
+      const stream = fsHandler.streamFile(fsHandler.envFile);
+      const envHeader = await fsHandler.readHeaderAsync(stream);
+      text = templateLabel(extractHeaderLine(envHeader));
+    } catch (error) {
+      text = templateLabel(BUTTON_DEFAULT);
+      console.warn(`Warning: ${error.message}`);
+    }
 
-    return new EnvStatusBarItem(envHeader);
+    const position: StatusBarItemPosition = getPositionConfig();
+
+    return new EnvStatusBarItem(text, position);
   }
 
   /**

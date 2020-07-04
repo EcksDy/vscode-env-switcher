@@ -41,6 +41,30 @@
         "command": "envSwitcher.clearWorkspaceEnvBackups",
         "title": ".ENV Switcher: Clear current workspace .env file backups"
       }
+    ],
+    "configuration": [
+      {
+        "title": ".ENV Switcher",
+        "properties": {
+          "envSwitcher.statusBarPosition": {
+            "description": "Status bar button position. Requires window reload to take effect.",
+            "type": "string",
+            "default": "outerLeft",
+            "enum": [
+              "outerLeft",
+              "innerLeft",
+              "outerRight",
+              "innerRight"
+            ],
+            "enumDescriptions": [
+              "Will try to position itself first, from the left corner",
+              "Will try to position itself last, from the left corner",
+              "Will try to position itself first, from the right corner",
+              "Will try to position itself last, from the right corner"
+            ]
+          }
+        }
+      }
     ]
   },
   "scripts": {
