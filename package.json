@@ -67,6 +67,24 @@
               "Will try to position itself first, from the right corner",
               "Will try to position itself last, from the right corner"
             ]
+          },
+          "envSwitcher.warning.regex": {
+            "description": "Regex pattern(with case insensitive flag) to test for presets that should appear with a warning on the status bar button. By default warnings will appear for presets with 'prod'/'PROD' in them. Changing the setting to an empty string will disable warning appearance.",
+            "type": "string",
+            "default": "prod"
+          },
+          "envSwitcher.warning.color": {
+            "description": "Status bar button warnings will appear with this color.",
+            "type": "string",
+            "default": "default",
+            "enum": [
+              "default",
+              "white",
+              "black",
+              "red",
+              "magenta",
+              "yellow"
+            ]
           }
         }
       }

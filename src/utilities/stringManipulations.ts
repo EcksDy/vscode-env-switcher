@@ -13,12 +13,6 @@ const extractHeaderLine = (headerLine: string) => {
   throw new Error('No descriptive headers found in .env');
 };
 
-const templateLabel = (env: string) => {
-  const upperEnv = env.toUpperCase();
-  const isProd = upperEnv.includes('PROD');
-  return `${isProd ? `$(issue-opened) ${upperEnv}` : env}`;
-};
-
 const capitalize = (str: string) => `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 
-export { makeHeaderLine, extractHeaderLine, templateLabel, capitalize };
+export { makeHeaderLine, extractHeaderLine, capitalize };
