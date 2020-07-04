@@ -46,8 +46,13 @@
       {
         "title": ".ENV Switcher",
         "properties": {
+          "envSwitcher.enabled": {
+            "markdownDescription": "Enable/Disable the extension globally, or per workspace. _Requires window reload to take effect._",
+            "type": "boolean",
+            "default": true
+          },
           "envSwitcher.statusBarPosition": {
-            "description": "Status bar button position. Requires window reload to take effect.",
+            "markdownDescription": "Status bar button position. _Requires window reload to take effect._",
             "type": "string",
             "default": "outerLeft",
             "enum": [
