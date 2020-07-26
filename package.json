@@ -47,12 +47,17 @@
         "title": ".ENV Switcher",
         "properties": {
           "envSwitcher.enabled": {
-            "markdownDescription": "Enable/Disable the extension globally, or per workspace. _Requires window reload to take effect._",
+            "markdownDescription": "Enable/Disable the extension globally, or per workspace.   \r\n _*Requires window reload to take effect.*_",
             "type": "boolean",
             "default": true
           },
+          "envSwitcher.backups.enabled": {
+            "markdownDescription": "Enable/Disable the backup of the original and current .env files.  \r\n _*It's advised to delete existing backups through the '.ENV Switcher: Clear...' commands.*_",
+            "default": true,
+            "type": "boolean"
+          },
           "envSwitcher.statusBarPosition": {
-            "markdownDescription": "Status bar button position. _Requires window reload to take effect._",
+            "markdownDescription": "Status bar button position.  \r\n _*Requires window reload to take effect.*_",
             "type": "string",
             "default": "outerLeft",
             "enum": [
@@ -98,7 +103,7 @@
   "devDependencies": {
     "@types/glob": "^7.1.1",
     "@types/node": "^14.0.5",
-    "@types/vscode": "1.37.0",
+    "@types/vscode": "1.42.0",
     "@typescript-eslint/eslint-plugin": "^2.24.0",
     "@typescript-eslint/parser": "^2.34.0",
     "eslint": "^7.0.0",

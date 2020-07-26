@@ -1,13 +1,17 @@
-import { Uri } from 'vscode';
+import { Uri, workspace } from 'vscode';
 import path from 'path';
 import {
   EXTENSION_FS_FOLDER,
   BACKUP_PREFIX_ORIGINAL,
   BACKUP_PREFIX_SESSION,
+  EXTENSION_PREFIX,
 } from '../utilities/consts';
 import FileSystemHandler from './fsHandler';
 
 const BACKUP_PREFIX = 'env_switcher_backup';
+
+const backupEnabled = () =>
+  workspace.getConfiguration(`${EXTENSION_PREFIX}.backup`).get('enabled') as boolean;
 
 export default class BackupHandler {
   private fsHandler: FileSystemHandler;
@@ -29,7 +33,9 @@ export default class BackupHandler {
     const codeStoragePath = globalStoragePath.split('globalStorage')[0];
     this.vscodeStorageRootPath = Uri.parse(`${codeStoragePath}workspaceStorage`);
 
-    this.backupCurrentEnvFile();
+    if (backupEnabled()) {
+      this.backupCurrentEnvFile();
+    }
   }
 
   /**
