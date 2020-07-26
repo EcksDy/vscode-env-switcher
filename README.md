@@ -1,24 +1,31 @@
+<img src="images/env-switcher.png" alt="Switch a .env preset from the status bar" height="120" align="right" />
+
 # .ENV Switcher
 
-Status bar extension that enables management of `.env` file with a set of presets by swapping (**overwriting**) the main `.env` file content.
+Status bar extension that swaps(**overwrites**) the `.env` file from provided presets.
 
 ## Features
 
-<img src="https://i.gyazo.com/ff461d74ae6c359bc5e293aa7680b5df.gif" alt="Switch a .env preset from the status bar" width="600" />
-
 - Displaying the currently selected `.env` preset in status bar.
 - Ability to switch to another preset from the status bar.
-- Warning if a preset that contants the word "prod" is selected.
+- Warning in the status bar if the selected preset is matching a configurable regex pattern is selected. Matching "prod" by default.
+- View of the original `.env` content that existed in the workspace when it was first opened with the extension active.
+- View of the `.env` content that existed in the workspace when it was opened in the current session.
 
-<img src="https://i.gyazo.com/96e43361a2febf063c4cc02a059cde85.gif" alt="Restore original .env" width="600" />
+<p align="center">
+  <img src="images/preview.gif" alt="Switch a .env preset from the status bar" />
+</p>
 
-- View of the original `.env` content that existed in the workspace when it was first opened with the extension active. Useful in case of undesired `.env` overwrite.  
-  _VSCode AppData local storage(vscode.workspaceState) is used to save the original .env content._
+## Backups
 
-<img src="https://i.gyazo.com/ad27c5e39c2ea085f909d34bc5103135.gif" alt="Restore session .env" width="600" />
+By default the extension will backup the content of the current `.env` file in case of unwanted overwrite.
 
-- View of the `.env` content that existed in the workspace when it was opened in the current session. Useful in case of undesired `.env` overwrite.  
-  _VSCode AppData local storage(vscode.workspaceState) is used to save the session .env content._
+The `.env` backups are saved per workspace on the filesystem in VSCode's dedicated workspaces data directory.
+
+It's possible to view the backups by running the `.ENV Switcher: Show...` command.  
+It's possible to delete the backups by running a `.ENV Switcher: Clear...` command.
+
+_After getting familiar with the extension it's advised to set the `envSwitcher.backups.enabled` option to false in the configuration._
 
 ## Requirements
 
