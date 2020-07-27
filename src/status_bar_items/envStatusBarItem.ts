@@ -96,7 +96,7 @@ const getButtonTextStyle = (text: string, regex: RegExp, warningColor: string | 
 };
 
 /**
- * Decorator class for the StatusBarItem. Will expose the necessary members to the rest of the app.
+ * Decorator class for the StatusBarItem. Will expose the necessary members to the rest of the extension.
  */
 export default class EnvStatusBarItem {
   private originalText: string;

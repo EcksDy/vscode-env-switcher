@@ -4,10 +4,14 @@ import glob from 'glob-promise';
 import path from 'path';
 import readline from 'readline';
 import { Readable } from 'stream';
-import { Uri, workspace, WorkspaceFolder } from 'vscode';
+import { Uri, workspace, WorkspaceFolder, ConfigurationChangeEvent, GlobPattern } from 'vscode';
 import { TextEncoder, TextDecoder } from 'util';
 import { makeHeaderLine } from '../utilities/stringManipulations';
 import concatFilesContent from '../utilities/bufferManipulations';
+import { EXTENSION_PREFIX } from '../utilities/consts';
+
+const getPresetsGlob = () =>
+  workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('presetsGlob') as string;
 
 export default class FileSystemHandler {
   public readonly rootDir: Uri;
@@ -18,16 +22,27 @@ export default class FileSystemHandler {
 
   private globOptions: globTypes.IOptions;
 
+  private presetsGlob: GlobPattern;
+
   constructor(rootFolder: Uri, mainEnvUri: Uri) {
     this.rootDir = rootFolder;
     this.envDir = Uri.file(path.dirname(mainEnvUri.fsPath));
     this.envFile = mainEnvUri;
+    this.presetsGlob = getPresetsGlob();
 
     this.globOptions = {
       matchBase: true,
       root: this.envDir.fsPath,
       nodir: true,
     };
+
+    workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
+      const shouldUpdatePresetsGlob = event.affectsConfiguration(`${EXTENSION_PREFIX}.presetsGlob`);
+
+      if (!shouldUpdatePresetsGlob) return;
+
+      this.presetsGlob = getPresetsGlob();
+    });
   }
 
   /**
@@ -45,15 +60,17 @@ export default class FileSystemHandler {
    */
   public async findFiles(pattern: string, globOptions?: globTypes.IOptions) {
     const filePaths = await glob(pattern, globOptions || this.globOptions);
-    return filePaths.map(Uri.file.bind(this));
+    return filePaths.map((file) => Uri.file(file));
   }
 
   /**
-   * findAllEnvFiles
+   * Returns a Uri[] of `.env` files, using the configured preset glob.
    */
-  public async getEnvFilesInEnvDir() {
-    const filePaths = await glob('/*.env', this.globOptions);
-    return filePaths.map(Uri.file.bind(this));
+  public async getEnvPresetUris() {
+    const envPresetUris = await workspace.findFiles(this.presetsGlob);
+    return envPresetUris.filter(
+      (uri) => path.basename(uri.fsPath) !== '.env' && path.extname(uri.fsPath) === '.env',
+    );
   }
 
   /**
