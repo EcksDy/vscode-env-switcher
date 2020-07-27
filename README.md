@@ -30,9 +30,21 @@ _After getting familiar with the extension it's advised to set the `envSwitcher.
 ## Requirements
 
 - For the status bar button to show, an `.env` file must be found in the workspace.
-- Preset files must be in the same directory as the original `.env` file for them to be detected by the extension.
-- Preset file name should be matching the `*.env` glob pattern, i.e.:
-  - `dev.env`
-  - `Staging.env`
-  - `PRODUCTION.env`
-  - `sIlLy_EXAmple123.env`
+- Preset files must be in the root directory.
+
+It's possible to configure a glob pattern to detect the presets by setting `envSwitcher.presetsGlob` configuration. The default configuration will match any of the following examples, if they're found in the root folder:
+
+```list
+/dev.env
+/Staging.env
+/PRODUCTION.env
+/sIlLy_EXAmple123.env
+```
+
+If you'd like to place the presets in a sub directory, the following configuration will work:
+
+```glob
+*/*
+```
+
+_Don't forget to check that your `.gitignore` is still valid for these `.envs`_
