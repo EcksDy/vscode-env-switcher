@@ -7,9 +7,9 @@ import { capitalize } from '../utilities/stringManipulations';
 export interface EnvPresetQuickPickItem extends SelectedEnvPresetEventData, QuickPickItem {}
 
 const selectEnvPreset = async (fsHandler: FileSystemHandler) => {
-  const envFiles = await fsHandler.getEnvFilesInEnvDir();
+  const envPresetUris = await fsHandler.getEnvPresetUris();
 
-  const envFileQuickPickList = envFiles.map((fileUri) => {
+  const envFileQuickPickList = envPresetUris.map((fileUri) => {
     const fileName = path.basename(fileUri.fsPath, path.extname(fileUri.fsPath));
     const fileNameFull = path.basename(fileUri.fsPath);
     const label = capitalize(fileName);
