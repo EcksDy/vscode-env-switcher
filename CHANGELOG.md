@@ -2,6 +2,15 @@
 
 Changes to **.ENV Switcher** can be found in this file.
 
+## - 0.3.0
+
+- Added configuration to disable the backup function.
+- Added commands to clear `.env` backups.
+- Added status bar button position configuration.
+- Added regex matching and display color configurations for warnings.
+- Added glob configuration to locate presets.
+- Updated README.md.
+
 ## - 0.2.0
 
 - Fixed URI's for linux once again.
@@ -24,7 +33,7 @@ Changes to **.ENV Switcher** can be found in this file.
 ## - 0.1.1
 
 - Broken URI's are fixed for linux.
-- No longer showing pop-up warning message for missing headers, instead writting to log.
+- No longer showing pop-up warning message for missing headers, instead writing to log.
 
 ## - 0.1.0
 
