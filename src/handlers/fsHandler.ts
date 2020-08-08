@@ -1,4 +1,4 @@
-import { createReadStream, promises } from 'fs';
+import { createReadStream, promises as fsPromises } from 'fs';
 import globTypes from 'glob';
 import glob from 'glob-promise';
 import path from 'path';
@@ -114,8 +114,10 @@ export default class FileSystemHandler {
    * @param content Content to be written
    */
   public async writeFile(uri: Uri, content: Uint8Array) {
-    const pathString = uri.fsPath;
-    await promises.mkdir(pathString.substr(0, pathString.lastIndexOf('\\')), { recursive: true });
+    const dirString = path.dirname(uri.fsPath);
+    await fsPromises.mkdir(dirString, {
+      recursive: true,
+    });
 
     await workspace.fs.writeFile(uri, content);
   }
