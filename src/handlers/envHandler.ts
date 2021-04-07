@@ -5,8 +5,19 @@ import path from 'path';
 import { TextEncoder } from 'util';
 import { EXTENSION_PREFIX } from '../utilities/consts';
 import concatFilesContent from '../utilities/bufferManipulations';
-import { FileSystemHandler } from './fsHandler';
 import { makeTag, extractTag } from '../utilities/stringManipulations';
+import {
+  IUint8Reader,
+  IFileFinder,
+  IStreamFirstLineReader,
+  IStreamReader,
+  IUint8Writer,
+  IEnvPresetFinder,
+  IEnvFinder,
+  IEnvContentWithTagWriter,
+  IEnvTagReader,
+  IEnvLocator,
+} from '../interfaces';
 
 const NODE_MODULES_GLOB = '**/node_modules/**';
 
@@ -17,14 +28,22 @@ function getPresetsGlob() {
   return workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('presetsGlob') as string;
 }
 
+interface IFileSystemHandler
+  extends IFileFinder,
+    IUint8Reader,
+    IStreamReader,
+    IStreamFirstLineReader,
+    IUint8Writer {}
+
 interface EnvHandlerDeps {
-  fsHandler: FileSystemHandler;
+  fsHandler: IFileSystemHandler;
 }
 
-export class EnvHandler {
+export class EnvHandler
+  implements IEnvLocator, IEnvPresetFinder, IEnvFinder, IEnvContentWithTagWriter, IEnvTagReader {
   private presetsGlob: GlobPattern;
 
-  private fsHandler: FileSystemHandler;
+  private fsHandler: IFileSystemHandler;
 
   private globOptions: globTypes.IOptions;
 
@@ -32,7 +51,7 @@ export class EnvHandler {
 
   public readonly envFile: Uri;
 
-  constructor(fsHandler: FileSystemHandler, envFile: Uri) {
+  constructor(fsHandler: IFileSystemHandler, envFile: Uri) {
     this.fsHandler = fsHandler;
     this.envDir = Uri.file(path.dirname(envFile.fsPath));
     this.envFile = envFile;
@@ -75,13 +94,13 @@ export class EnvHandler {
   }
 
   /**
-   * Sets the content of the main `.env` file with a tag of the selected preset.
+   * Sets the content of the main `.env` file, to the content of the provided file, with a tag.
    */
-  public async setEnvContentWithTag(presetFileUri: Uri, presetName: string) {
-    const presetEnvTag: Uint8Array = new TextEncoder().encode(makeTag(presetName));
-    const presetFileContent: Uint8Array = await this.fsHandler.readFileToUint8Array(presetFileUri);
+  public async setEnvContentWithTag(sourceFileUri: Uri, tagText: string) {
+    const tag: Uint8Array = new TextEncoder().encode(makeTag(tagText));
+    const sourceFileContent: Uint8Array = await this.fsHandler.readFileToUint8Array(sourceFileUri);
 
-    const targetFileContent = concatFilesContent([presetEnvTag, presetFileContent]);
+    const targetFileContent = concatFilesContent([tag, sourceFileContent]);
     this.fsHandler.writeFile(this.envFile, targetFileContent);
   }
 

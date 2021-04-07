@@ -6,9 +6,9 @@ import {
   ThemeColor,
   ConfigurationChangeEvent,
 } from 'vscode';
-import { EnvHandler } from '../handlers';
 import { SELECT_ENV_COMMAND_ID, EXTENSION_PREFIX } from '../utilities/consts';
 import { selectedEnvPresetEventEmitter, SelectedEnvPresetEventData } from '../utilities/events';
+import { IEnvTagReader, IEnvLocator } from '../interfaces';
 
 const BUTTON_TEXT_DEFAULT = 'Select .env';
 const BUTTON_COLOR_DEFAULT = new ThemeColor('statusBar.foreground');
@@ -100,8 +100,10 @@ function setButtonText(this: EnvStatusBarItem, text: string) {
   this.envStatusBar.color = style.color;
 }
 
+interface IEnvHandler extends IEnvLocator, IEnvTagReader {}
+
 interface EnvStatusBarItemDeps {
-  envHandler: EnvHandler;
+  envHandler: IEnvHandler;
 }
 
 /**
