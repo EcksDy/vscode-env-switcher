@@ -13,13 +13,13 @@ interface InitializationDeps {
 export async function initialize({ subscriptions }: InitializationDeps) {
   const fsHandler = new FileSystemHandler();
   const envHandler = await EnvHandler.build({ fsHandler });
-  const selectEndCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
+  const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
     selectEnvPreset({
       envHandler,
       rootDir: fsHandler.rootDir,
     }),
   );
-  subscriptions.push(selectEndCmd);
+  subscriptions.push(selectEnvPresetCmd);
 
   subscriptions.push(await EnvStatusBarItem.build({ envHandler }));
   subscriptions.push(selectedEnvPresetEventEmitter);

@@ -2,11 +2,11 @@ import path from 'path';
 import { QuickPickItem, window, workspace, Uri } from 'vscode';
 import { SelectedEnvPresetEventData, selectedEnvPresetEventEmitter } from '../utilities/events';
 import { capitalize } from '../utilities/stringManipulations';
-import { IEnvLocator, IEnvPresetFinder, IEnvContentWithTagWriter } from '../interfaces';
+import { IEnvPresetFinder, IEnvContentWithTagWriter } from '../interfaces';
 
 export interface EnvPresetQuickPickItem extends SelectedEnvPresetEventData, QuickPickItem {}
 
-interface IEnvHandler extends IEnvLocator, IEnvPresetFinder, IEnvContentWithTagWriter {}
+interface IEnvHandler extends IEnvPresetFinder, IEnvContentWithTagWriter {}
 
 interface SelectEnvPresetCmdDeps {
   rootDir: Uri;
@@ -33,24 +33,9 @@ const selectEnvPreset = async ({ rootDir, envHandler }: SelectEnvPresetCmdDeps) 
     return envFileQuickPick;
   });
 
-  envFileQuickPickList.unshift({
-    alwaysShow: true,
-    label: 'Show current .env file',
-    fileName: '.env',
-    fileNameFull: '.env',
-    fileUri: envHandler.envFile,
-  });
-
   const selectedEnv = await window.showQuickPick(envFileQuickPickList);
 
   if (selectedEnv === undefined) return;
-
-  const showCurrent = selectedEnv.fileName === '.env';
-  if (showCurrent) {
-    const doc = await workspace.openTextDocument(selectedEnv.fileUri);
-    await window.showTextDocument(doc);
-    return;
-  }
 
   envHandler.setEnvContentWithTag(selectedEnv.fileUri, selectedEnv.fileNameFull);
 

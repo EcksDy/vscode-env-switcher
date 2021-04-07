@@ -5,6 +5,7 @@ Changes to **.ENV Switcher** can be found in this file.
 ## - 1.0.0
 
 - Removed backup functionality.
+- Removed "Show current .env file" from `selectEnvPreset` command options.
 
 ## - 0.3.2
 
