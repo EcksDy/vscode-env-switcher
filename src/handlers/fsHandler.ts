@@ -1,87 +1,24 @@
 import { createReadStream, promises as fsPromises } from 'fs';
-import globTypes from 'glob';
-import glob from 'glob-promise';
 import path from 'path';
 import readline from 'readline';
 import { Readable } from 'stream';
-import { Uri, workspace, WorkspaceFolder, ConfigurationChangeEvent, GlobPattern } from 'vscode';
-import { TextEncoder, TextDecoder } from 'util';
-import { makeHeaderLine } from '../utilities/stringManipulations';
-import concatFilesContent from '../utilities/bufferManipulations';
-import { EXTENSION_PREFIX } from '../utilities/consts';
+import { Uri, workspace, WorkspaceFolder, GlobPattern, CancellationToken } from 'vscode';
+import {
+  IUint8Reader,
+  IStreamReader,
+  IUint8Writer,
+  IStreamFirstLineReader,
+  IFileFinder,
+} from '../interfaces';
 
-const getPresetsGlob = () =>
-  workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('presetsGlob') as string;
-
-export default class FileSystemHandler {
+export class FileSystemHandler
+  implements IUint8Reader, IStreamReader, IUint8Writer, IStreamFirstLineReader, IFileFinder {
   public readonly rootDir: Uri;
 
-  public readonly envDir: Uri;
-
-  public readonly envFile: Uri;
-
-  private globOptions: globTypes.IOptions;
-
-  private presetsGlob: GlobPattern;
-
-  constructor(rootFolder: Uri, mainEnvUri: Uri) {
-    this.rootDir = rootFolder;
-    this.envDir = Uri.file(path.dirname(mainEnvUri.fsPath));
-    this.envFile = mainEnvUri;
-    this.presetsGlob = getPresetsGlob();
-
-    this.globOptions = {
-      matchBase: true,
-      root: this.envDir.fsPath,
-      nodir: true,
-    };
-
-    workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
-      const shouldUpdatePresetsGlob = event.affectsConfiguration(`${EXTENSION_PREFIX}.presetsGlob`);
-
-      if (!shouldUpdatePresetsGlob) return;
-
-      this.presetsGlob = getPresetsGlob();
-    });
-  }
-
-  /**
-   * Performs necessary actions to instantiate a FileSystemHandler.
-   */
-  public static async build() {
-    const [firstEnvFile] = await workspace.findFiles('**/.env', undefined, 1);
+  constructor() {
     const [rootFolder] = workspace.workspaceFolders as WorkspaceFolder[];
 
-    return new FileSystemHandler(rootFolder.uri, firstEnvFile);
-  }
-
-  /**
-   * findFiles
-   */
-  public async findFiles(pattern: string, globOptions?: globTypes.IOptions) {
-    const filePaths = await glob(pattern, globOptions || this.globOptions);
-    return filePaths.map((file) => Uri.file(file));
-  }
-
-  /**
-   * Returns a Uri[] of `.env` files, using the configured preset glob.
-   */
-  public async getEnvPresetUris() {
-    const envPresetUris = await workspace.findFiles(this.presetsGlob);
-    return envPresetUris.filter(
-      (uri) => path.basename(uri.fsPath) !== '.env' && path.extname(uri.fsPath) === '.env',
-    );
-  }
-
-  /**
-   * setEnvContentWithHeaders
-   */
-  public async setEnvContentWithHeaders(presetFileUri: Uri, presetName: string) {
-    const presetEnvHeader: Uint8Array = new TextEncoder().encode(makeHeaderLine(presetName));
-    const presetFileContent: Uint8Array = await this.readFileToUint8Array(presetFileUri);
-
-    const targetFileContent = concatFilesContent([presetEnvHeader, presetFileContent]);
-    this.writeFile(this.envFile, targetFileContent);
+    this.rootDir = rootFolder.uri;
   }
 
   /**
@@ -90,14 +27,6 @@ export default class FileSystemHandler {
    */
   public async readFileToUint8Array(uri: Uri) {
     return await workspace.fs.readFile(uri);
-  }
-
-  /**
-   * Returns contents of the uri file as string.
-   * @param uri File Uri
-   */
-  public async readFileToString(uri: Uri) {
-    return new TextDecoder('utf-8').decode(await workspace.fs.readFile(uri));
   }
 
   /**
@@ -123,33 +52,10 @@ export default class FileSystemHandler {
   }
 
   /**
-   * Returns true if a file is found at the provided uri.
-   * @param uri File Uri
-   */
-  public async fileExists(uri: Uri) {
-    try {
-      const file = await workspace.fs.stat(uri);
-      return file.size !== 0;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Will delete files at the provided uri's.
-   * @param uris Array of file Uri's
-   */
-  public deleteFiles(uris: Uri[]) {
-    for (const uri of uris) {
-      workspace.fs.delete(uri, { useTrash: false });
-    }
-  }
-
-  /**
    * Will return the first line(until breakline) of the provided stream.
    * @param stream Readable Stream
    */
-  public readHeaderAsync(stream: Readable): Promise<string> {
+  public readFirstLine(stream: Readable): Promise<string> {
     const lineReader = readline.createInterface({
       input: stream,
     });
@@ -171,5 +77,28 @@ export default class FileSystemHandler {
     });
 
     return linePromise;
+  }
+
+  /**
+   * Find files across all [workspace folders](#workspace.workspaceFolders) in the workspace.
+   *
+   * @param include A [glob pattern](#GlobPattern) that defines the files to search for. The glob pattern
+   * will be matched against the file paths of resulting matches relative to their workspace. Use a [relative pattern](#RelativePattern)
+   * to restrict the search results to a [workspace folder](#WorkspaceFolder).
+   * @param exclude  A [glob pattern](#GlobPattern) that defines files and folders to exclude. The glob pattern
+   * will be matched against the file paths of resulting matches relative to their workspace. When `undefined` only default excludes will
+   * apply, when `null` no excludes will apply.
+   * @param maxResults An upper-bound for the result.
+   * @param token A token that can be used to signal cancellation to the underlying search engine.
+   * @return A thenable that resolves to an array of resource identifiers. Will return no results if no
+   * [workspace folders](#workspace.workspaceFolders) are opened.
+   */
+  public findFiles(
+    include: GlobPattern,
+    exclude?: GlobPattern | null,
+    maxResults?: number,
+    token?: CancellationToken,
+  ) {
+    return workspace.findFiles(include, exclude, maxResults, token) as Promise<Uri[]>;
   }
 }

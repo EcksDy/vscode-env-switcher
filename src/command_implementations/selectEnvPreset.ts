@@ -1,19 +1,24 @@
 import path from 'path';
-import { QuickPickItem, window, workspace } from 'vscode';
-import FileSystemHandler from '../handlers/fsHandler';
+import { QuickPickItem, window, workspace, Uri } from 'vscode';
 import { SelectedEnvPresetEventData, selectedEnvPresetEventEmitter } from '../utilities/events';
 import { capitalize } from '../utilities/stringManipulations';
+import { EnvHandler } from '../handlers';
 
 export interface EnvPresetQuickPickItem extends SelectedEnvPresetEventData, QuickPickItem {}
 
-const selectEnvPreset = async (fsHandler: FileSystemHandler) => {
-  const envPresetUris = await fsHandler.getEnvPresetUris();
+interface SelectEnvPresetCmdDeps {
+  rootDir: Uri;
+  envHandler: EnvHandler;
+}
+
+const selectEnvPreset = async ({ rootDir, envHandler }: SelectEnvPresetCmdDeps) => {
+  const envPresetUris = await envHandler.getEnvPresetUris();
 
   const envFileQuickPickList = envPresetUris.map((fileUri) => {
     const fileName = path.basename(fileUri.fsPath, path.extname(fileUri.fsPath));
     const fileNameFull = path.basename(fileUri.fsPath);
     const label = capitalize(fileName);
-    const description = path.relative(fsHandler.rootDir.fsPath, fileUri.fsPath);
+    const description = path.relative(rootDir.fsPath, fileUri.fsPath);
 
     const envFileQuickPick: EnvPresetQuickPickItem = {
       description,
@@ -31,7 +36,7 @@ const selectEnvPreset = async (fsHandler: FileSystemHandler) => {
     label: 'Show current .env file',
     fileName: '.env',
     fileNameFull: '.env',
-    fileUri: fsHandler.envFile,
+    fileUri: envHandler.envFile,
   });
 
   const selectedEnv = await window.showQuickPick(envFileQuickPickList);
@@ -45,7 +50,7 @@ const selectEnvPreset = async (fsHandler: FileSystemHandler) => {
     return;
   }
 
-  fsHandler.setEnvContentWithHeaders(selectedEnv.fileUri, selectedEnv.fileNameFull);
+  envHandler.setEnvContentWithTag(selectedEnv.fileUri, selectedEnv.fileNameFull);
 
   selectedEnvPresetEventEmitter.fire(selectedEnv);
 };

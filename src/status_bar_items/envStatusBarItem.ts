@@ -6,9 +6,8 @@ import {
   ThemeColor,
   ConfigurationChangeEvent,
 } from 'vscode';
-import FileSystemHandler from '../handlers/fsHandler';
+import { EnvHandler } from '../handlers';
 import { SELECT_ENV_COMMAND_ID, EXTENSION_PREFIX } from '../utilities/consts';
-import { extractHeaderLine } from '../utilities/stringManipulations';
 import { selectedEnvPresetEventEmitter, SelectedEnvPresetEventData } from '../utilities/events';
 
 const BUTTON_TEXT_DEFAULT = 'Select .env';
@@ -95,21 +94,27 @@ const getButtonTextStyle = (text: string, regex: RegExp, warningColor: string | 
   };
 };
 
+function setButtonText(this: EnvStatusBarItem, text: string) {
+  const style = getButtonTextStyle(text, getWarningRegexConfig(), getWarningColorConfig());
+  this.envStatusBar.text = style.text;
+  this.envStatusBar.color = style.color;
+}
+
+interface EnvStatusBarItemDeps {
+  envHandler: EnvHandler;
+}
+
 /**
  * Decorator class for the StatusBarItem. Will expose the necessary members to the rest of the extension.
  */
 export default class EnvStatusBarItem {
-  private originalText: string;
-
-  private envStatusBar: StatusBarItem;
+  protected envStatusBar: StatusBarItem;
 
   constructor(
-    originalText: string,
     styledText: string,
     color: string | ThemeColor,
     { alignment, priority }: StatusBarItemPosition,
   ) {
-    this.originalText = originalText;
     this.envStatusBar = window.createStatusBarItem(alignment, priority);
     this.envStatusBar.command = SELECT_ENV_COMMAND_ID;
     this.envStatusBar.text = styledText;
@@ -117,13 +122,7 @@ export default class EnvStatusBarItem {
     this.envStatusBar.show();
 
     selectedEnvPresetEventEmitter.event((data: SelectedEnvPresetEventData) => {
-      const style = getButtonTextStyle(
-        data.fileNameFull,
-        getWarningRegexConfig(),
-        getWarningColorConfig(),
-      );
-      this.envStatusBar.text = style.text;
-      this.envStatusBar.color = style.color;
+      setButtonText.call(this, data.fileNameFull);
     });
 
     workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
@@ -132,32 +131,22 @@ export default class EnvStatusBarItem {
         event.affectsConfiguration(`${EXTENSION_PREFIX}.warning.color`);
 
       if (!shouldUpdateStyling) return;
-
-      const style = getButtonTextStyle(
-        this.originalText,
-        getWarningRegexConfig(),
-        getWarningColorConfig(),
-      );
-      this.envStatusBar.text = style.text;
-      this.envStatusBar.color = style.color;
+      setButtonText.call(this, this.envStatusBar.text);
     });
   }
 
-  public static async build(fsHandler: FileSystemHandler) {
-    let text;
+  public static async build({ envHandler }: EnvStatusBarItemDeps) {
+    let text = BUTTON_TEXT_DEFAULT;
     try {
-      const stream = fsHandler.streamFile(fsHandler.envFile);
-      const envHeader = await fsHandler.readHeaderAsync(stream);
-      text = extractHeaderLine(envHeader);
+      text = await envHandler.getCurrentEnvFileTag();
     } catch (error) {
-      text = BUTTON_TEXT_DEFAULT;
       console.warn(`Warning: ${error.message}`);
     }
 
     const position: StatusBarItemPosition = getPositionConfig();
     const style = getButtonTextStyle(text, getWarningRegexConfig(), getWarningColorConfig());
 
-    return new EnvStatusBarItem(text, style.text, style.color, position);
+    return new EnvStatusBarItem(style.text, style.color, position);
   }
 
   /**

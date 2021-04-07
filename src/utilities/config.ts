@@ -1,9 +1,26 @@
-import { workspace } from 'vscode';
-import { EXTENSION_PREFIX } from './consts';
+import { Disposable, commands } from 'vscode';
+import { SELECT_ENV_COMMAND_ID } from './consts';
+import selectEnvPreset from '../command_implementations/selectEnvPreset';
+import { FileSystemHandler } from '../handlers';
+import { selectedEnvPresetEventEmitter } from './events';
+import EnvStatusBarItem from '../status_bar_items/envStatusBarItem';
+import { EnvHandler } from '../handlers/envHandler';
 
-/**
- * Will get the extension `enabled` config from workspace settings, with global settings fallback.
- */
-export const extensionEnabled = workspace
-  .getConfiguration(`${EXTENSION_PREFIX}`)
-  .get('enabled') as boolean;
+interface InitializationDeps {
+  subscriptions: Disposable[];
+}
+
+export async function initialize({ subscriptions }: InitializationDeps) {
+  const fsHandler = new FileSystemHandler();
+  const envHandler = await EnvHandler.build({ fsHandler });
+  const selectEndCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
+    selectEnvPreset({
+      envHandler,
+      rootDir: fsHandler.rootDir,
+    }),
+  );
+  subscriptions.push(selectEndCmd);
+
+  subscriptions.push(await EnvStatusBarItem.build({ envHandler }));
+  subscriptions.push(selectedEnvPresetEventEmitter);
+}
