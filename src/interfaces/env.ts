@@ -1,5 +1,4 @@
 import { Uri } from 'vscode';
-import globTypes from 'glob';
 
 export interface IEnvLocator {
   readonly envDir: Uri;
@@ -8,10 +7,6 @@ export interface IEnvLocator {
 
 export interface IEnvPresetFinder {
   getEnvPresetUris: () => Promise<Uri[]>;
-}
-
-export interface IEnvFinder {
-  findEnvFiles: (pattern: string, globOptions?: globTypes.IOptions) => Promise<Uri[]>;
 }
 
 export interface IEnvContentWithTagWriter {

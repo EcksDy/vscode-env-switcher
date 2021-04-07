@@ -1,6 +1,4 @@
 import { workspace, GlobPattern, ConfigurationChangeEvent, Uri } from 'vscode';
-import globTypes from 'glob';
-import glob from 'glob-promise';
 import path from 'path';
 import { TextEncoder } from 'util';
 import { EXTENSION_PREFIX } from '../utilities/consts';
@@ -13,7 +11,6 @@ import {
   IStreamReader,
   IUint8Writer,
   IEnvPresetFinder,
-  IEnvFinder,
   IEnvContentWithTagWriter,
   IEnvTagReader,
   IEnvLocator,
@@ -40,12 +37,10 @@ interface EnvHandlerDeps {
 }
 
 export class EnvHandler
-  implements IEnvLocator, IEnvPresetFinder, IEnvFinder, IEnvContentWithTagWriter, IEnvTagReader {
+  implements IEnvLocator, IEnvPresetFinder, IEnvContentWithTagWriter, IEnvTagReader {
   private presetsGlob: GlobPattern;
 
   private fsHandler: IFileSystemHandler;
-
-  private globOptions: globTypes.IOptions;
 
   public readonly envDir: Uri;
 
@@ -56,13 +51,6 @@ export class EnvHandler
     this.envDir = Uri.file(path.dirname(envFile.fsPath));
     this.envFile = envFile;
     this.presetsGlob = getPresetsGlob();
-
-    this.globOptions = {
-      matchBase: true,
-      root: this.envDir.fsPath,
-      nodir: true,
-      ignore: NODE_MODULES_GLOB,
-    };
 
     workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
       const shouldUpdatePresetsGlob = event.affectsConfiguration(`${EXTENSION_PREFIX}.presetsGlob`);
@@ -86,7 +74,7 @@ export class EnvHandler
    * Returns a Uri[] of `.env` files, using the configured preset glob.
    */
   public async getEnvPresetUris() {
-    const envPresetUris = await workspace.findFiles(this.presetsGlob);
+    const envPresetUris = await this.fsHandler.findFiles(this.presetsGlob, NODE_MODULES_GLOB);
 
     return envPresetUris.filter(
       (uri) => path.basename(uri.fsPath) !== '.env' && path.extname(uri.fsPath) === '.env',
@@ -102,15 +90,6 @@ export class EnvHandler
 
     const targetFileContent = concatFilesContent([tag, sourceFileContent]);
     this.fsHandler.writeFile(this.envFile, targetFileContent);
-  }
-
-  /**
-   * Returns an array of `.env` files.
-   */
-  public async findEnvFiles(pattern: string, globOptions?: globTypes.IOptions) {
-    const filePaths = await glob(pattern, globOptions || this.globOptions);
-
-    return filePaths.map((file) => Uri.file(file));
   }
 
   /**

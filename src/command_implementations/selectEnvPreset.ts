@@ -1,5 +1,5 @@
 import path from 'path';
-import { QuickPickItem, window, workspace, Uri } from 'vscode';
+import { QuickPickItem, window, Uri } from 'vscode';
 import { SelectedEnvPresetEventData, selectedEnvPresetEventEmitter } from '../utilities/events';
 import { capitalize } from '../utilities/stringManipulations';
 import { IEnvPresetFinder, IEnvContentWithTagWriter } from '../interfaces';
