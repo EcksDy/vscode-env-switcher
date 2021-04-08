@@ -107,7 +107,8 @@ interface EnvStatusBarItemDeps {
 }
 
 /**
- * Decorator class for the StatusBarItem. Will expose the necessary members to the rest of the extension.
+ * Decorator class for the StatusBarItem.
+ * Will expose the necessary members to the rest of the extension.
  */
 export default class EnvStatusBarItem {
   protected envStatusBar: StatusBarItem;

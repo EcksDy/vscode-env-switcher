@@ -13,7 +13,7 @@ interface SelectEnvPresetCmdDeps {
   envHandler: IEnvHandler;
 }
 
-const selectEnvPreset = async ({ rootDir, envHandler }: SelectEnvPresetCmdDeps) => {
+export const selectEnvPreset = async ({ rootDir, envHandler }: SelectEnvPresetCmdDeps) => {
   const envPresetUris = await envHandler.getEnvPresetUris();
 
   const envFileQuickPickList = envPresetUris.map((fileUri) => {
@@ -41,5 +41,3 @@ const selectEnvPreset = async ({ rootDir, envHandler }: SelectEnvPresetCmdDeps) 
 
   selectedEnvPresetEventEmitter.fire(selectedEnv);
 };
-
-export default selectEnvPreset;

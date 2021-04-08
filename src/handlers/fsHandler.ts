@@ -9,16 +9,23 @@ import {
   IUint8Writer,
   IStreamFirstLineReader,
   IFileFinder,
+  IRootDirLocator,
 } from '../interfaces';
 
 export class FileSystemHandler
-  implements IUint8Reader, IStreamReader, IUint8Writer, IStreamFirstLineReader, IFileFinder {
-  public readonly rootDir: Uri;
+  implements
+    IRootDirLocator,
+    IUint8Reader,
+    IStreamReader,
+    IUint8Writer,
+    IStreamFirstLineReader,
+    IFileFinder {
+  public readonly rootDir: WorkspaceFolder;
 
   constructor() {
     const [rootFolder] = workspace.workspaceFolders as WorkspaceFolder[];
 
-    this.rootDir = rootFolder.uri;
+    this.rootDir = rootFolder;
   }
 
   /**

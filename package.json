@@ -31,12 +31,12 @@
         "title": ".ENV Switcher",
         "properties": {
           "envSwitcher.enabled": {
-            "markdownDescription": "Enable/Disable the extension globally, or per workspace.   \r\n _*Requires window reload to take effect.*_",
+            "markdownDescription": "Enable/Disable the extension.  \r\n _*Can be set per workspace.*_  \r\n _*Requires window reload to take effect.*_",
             "type": "boolean",
             "default": true
           },
           "envSwitcher.presetsGlob": {
-            "markdownDescription": "Glob pattern to find preset `.env` files. Will always look for `.env` extension only.  \r\n _*Can be set per workspace.*_",
+            "markdownDescription": "Glob pattern to find preset `.env` files. Will always look for `.env` extension only. Will ignore `**/node_modules/**`.  \r\n _*Can be set per workspace.*_",
             "type": "string",
             "default": "*"
           },

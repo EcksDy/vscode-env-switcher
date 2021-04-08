@@ -1,8 +1,8 @@
 import { Uri } from 'vscode';
 
 export interface IEnvLocator {
-  readonly envDir: Uri;
-  readonly envFile: Uri;
+  readonly targetEnvDir: Uri;
+  readonly targetEnvFile: Uri;
 }
 
 export interface IEnvPresetFinder {

@@ -14,9 +14,11 @@ import {
   IEnvContentWithTagWriter,
   IEnvTagReader,
   IEnvLocator,
+  IRootDirLocator,
 } from '../interfaces';
 
 const NODE_MODULES_GLOB = '**/node_modules/**';
+const DEFAULT_TARGET_ENV_GLOB = '**/.env';
 
 /**
  * Will get the extension `presetsGlob` config from workspace settings, with global settings fallback.
@@ -26,7 +28,8 @@ function getPresetsGlob() {
 }
 
 interface IFileSystemHandler
-  extends IFileFinder,
+  extends IRootDirLocator,
+    IFileFinder,
     IUint8Reader,
     IStreamReader,
     IStreamFirstLineReader,
@@ -42,14 +45,14 @@ export class EnvHandler
 
   private fsHandler: IFileSystemHandler;
 
-  public readonly envDir: Uri;
+  public readonly targetEnvDir: Uri;
 
-  public readonly envFile: Uri;
+  public readonly targetEnvFile: Uri;
 
   constructor(fsHandler: IFileSystemHandler, envFile: Uri) {
     this.fsHandler = fsHandler;
-    this.envDir = Uri.file(path.dirname(envFile.fsPath));
-    this.envFile = envFile;
+    this.targetEnvDir = Uri.file(path.dirname(envFile.fsPath));
+    this.targetEnvFile = envFile;
     this.presetsGlob = getPresetsGlob();
 
     workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
@@ -65,7 +68,7 @@ export class EnvHandler
    * Performs necessary actions to instantiate a FileSystemHandler.
    */
   public static async build({ fsHandler }: EnvHandlerDeps) {
-    const [firstEnvFile] = await fsHandler.findFiles('**/.env', NODE_MODULES_GLOB, 1);
+    const [firstEnvFile] = await fsHandler.findFiles(DEFAULT_TARGET_ENV_GLOB, NODE_MODULES_GLOB, 1);
 
     return new EnvHandler(fsHandler, firstEnvFile);
   }
@@ -89,7 +92,7 @@ export class EnvHandler
     const sourceFileContent: Uint8Array = await this.fsHandler.readFileToUint8Array(sourceFileUri);
 
     const targetFileContent = concatFilesContent([tag, sourceFileContent]);
-    this.fsHandler.writeFile(this.envFile, targetFileContent);
+    this.fsHandler.writeFile(this.targetEnvFile, targetFileContent);
   }
 
   /**
@@ -97,7 +100,7 @@ export class EnvHandler
    * @throws `No tag found in .env` if file doesn't contain a tag.
    */
   public async getCurrentEnvFileTag() {
-    const stream = this.fsHandler.streamFile(this.envFile);
+    const stream = this.fsHandler.streamFile(this.targetEnvFile);
     const envTag = await this.fsHandler.readFirstLine(stream);
 
     return extractTag(envTag);

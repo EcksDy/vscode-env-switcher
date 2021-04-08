@@ -1,5 +1,5 @@
 import { ExtensionContext, workspace } from 'vscode';
-import { initialize } from './utilities/config';
+import { initialize } from './config';
 import { EXTENSION_PREFIX } from './utilities/consts';
 
 /**

@@ -1,6 +1,10 @@
-import { Uri, GlobPattern, CancellationToken } from 'vscode';
+import { Uri, GlobPattern, CancellationToken, WorkspaceFolder } from 'vscode';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
+
+export interface IRootDirLocator {
+  readonly rootDir: WorkspaceFolder;
+}
 
 export interface IUint8Reader {
   readFileToUint8Array: (uri: Uri) => Promise<Uint8Array>;

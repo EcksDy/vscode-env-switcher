@@ -6,6 +6,7 @@ Changes to **.ENV Switcher** can be found in this file.
 
 - Removed backup functionality.
 - Removed "Show current .env file" from `selectEnvPreset` command options.
+- Changing a selected preset will now update the `.env` file.
 - ✨ Refactored the repository to follow the SOLID principles(except Liskov substitution).
 
 ## - 0.3.2
