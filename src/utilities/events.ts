@@ -8,4 +8,16 @@ interface SelectedEnvPresetEventData {
 
 const selectedEnvPresetEventEmitter = new EventEmitter<SelectedEnvPresetEventData>();
 
-export { SelectedEnvPresetEventData, selectedEnvPresetEventEmitter };
+interface EnvTargetChangedData {
+  tagInTarget: string | null;
+  targetUri: Uri;
+}
+
+const envTargetChangedEventEmitter = new EventEmitter<EnvTargetChangedData>();
+
+export {
+  EnvTargetChangedData,
+  envTargetChangedEventEmitter,
+  SelectedEnvPresetEventData,
+  selectedEnvPresetEventEmitter,
+};

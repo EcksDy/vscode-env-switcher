@@ -2,7 +2,7 @@ import { createReadStream, promises as fsPromises } from 'fs';
 import path from 'path';
 import readline from 'readline';
 import { Readable } from 'stream';
-import { Uri, workspace, WorkspaceFolder, GlobPattern, CancellationToken } from 'vscode';
+import { Uri, workspace, WorkspaceFolder } from 'vscode';
 import {
   IUint8Reader,
   IStreamReader,
@@ -87,25 +87,14 @@ export class FileSystemHandler
   }
 
   /**
-   * Find files across all [workspace folders](#workspace.workspaceFolders) in the workspace.
+   * Find files across all directories in the defined rootDir.
    *
-   * @param include A [glob pattern](#GlobPattern) that defines the files to search for. The glob pattern
-   * will be matched against the file paths of resulting matches relative to their workspace. Use a [relative pattern](#RelativePattern)
-   * to restrict the search results to a [workspace folder](#WorkspaceFolder).
-   * @param exclude  A [glob pattern](#GlobPattern) that defines files and folders to exclude. The glob pattern
-   * will be matched against the file paths of resulting matches relative to their workspace. When `undefined` only default excludes will
-   * apply, when `null` no excludes will apply.
+   * @param include A glob pattern that defines the files to search for.
+   * @param exclude A glob pattern that defines files and folders to exclude.
    * @param maxResults An upper-bound for the result.
-   * @param token A token that can be used to signal cancellation to the underlying search engine.
-   * @return A thenable that resolves to an array of resource identifiers. Will return no results if no
-   * [workspace folders](#workspace.workspaceFolders) are opened.
+   * @return A promise that resolves to an array of resource identifiers.
    */
-  public findFiles(
-    include: GlobPattern,
-    exclude?: GlobPattern | null,
-    maxResults?: number,
-    token?: CancellationToken,
-  ) {
-    return workspace.findFiles(include, exclude, maxResults, token) as Promise<Uri[]>;
+  public findFiles(include: string, exclude?: string | null, maxResults?: number) {
+    return workspace.findFiles(include, exclude, maxResults) as Promise<Uri[]>;
   }
 }

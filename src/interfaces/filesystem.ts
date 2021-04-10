@@ -1,4 +1,4 @@
-import { Uri, GlobPattern, CancellationToken, WorkspaceFolder } from 'vscode';
+import { Uri, CancellationToken, WorkspaceFolder } from 'vscode';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
 
@@ -24,8 +24,8 @@ export interface IStreamFirstLineReader {
 
 export interface IFileFinder {
   findFiles: (
-    include: GlobPattern,
-    exclude?: GlobPattern | null,
+    include: string,
+    exclude?: string | null,
     maxResults?: number,
     token?: CancellationToken,
   ) => Promise<Uri[]>;
