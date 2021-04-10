@@ -1,4 +1,4 @@
-import { workspace, GlobPattern, ConfigurationChangeEvent, Uri } from 'vscode';
+import { workspace, Uri, ConfigurationChangeEvent } from 'vscode';
 import path from 'path';
 import { TextEncoder } from 'util';
 import { EXTENSION_PREFIX } from '../utilities/consts';
@@ -16,15 +16,34 @@ import {
   IEnvLocator,
   IRootDirLocator,
 } from '../interfaces';
+import { envTargetChangedEventEmitter, EnvTargetChangedData } from '../utilities/events';
 
 const NODE_MODULES_GLOB = '**/node_modules/**';
-const DEFAULT_TARGET_ENV_GLOB = '**/.env';
+const TARGET_ENV_GLOB_DEFAULT = '**/.env';
 
 /**
- * Will get the extension `presetsGlob` config from workspace settings, with global settings fallback.
+ * Will get the extension `glob.presets` config from workspace settings, with global settings fallback.
  */
-function getPresetsGlob() {
-  return workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('presetsGlob') as string;
+function getPresetsGlobConfig() {
+  return workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('glob.presets') as string;
+}
+
+/**
+ * Will get the extension `glob.targetEnv` config from workspace settings, with global settings fallback.
+ * If none defined - will use `TARGET_ENV_GLOB_DEFAULT`
+ */
+function getTargetEnvGlobConfig() {
+  const config = workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('glob.targetEnv') as string;
+  return config !== '' ? config : TARGET_ENV_GLOB_DEFAULT;
+}
+
+function getOnlyEnvGlob(glob: string) {
+  if (glob.length < 4) return TARGET_ENV_GLOB_DEFAULT;
+  const includesOnlyEnvFile = glob.slice(glob.length - 4).toLowerCase() === '.env';
+  if (!includesOnlyEnvFile) {
+    return `${glob}.env`;
+  }
+  return glob;
 }
 
 interface IFileSystemHandler
@@ -41,43 +60,84 @@ interface EnvHandlerDeps {
 
 export class EnvHandler
   implements IEnvLocator, IEnvPresetFinder, IEnvContentWithTagWriter, IEnvTagReader {
-  private presetsGlob: GlobPattern;
-
   private fsHandler: IFileSystemHandler;
 
-  public readonly targetEnvDir: Uri;
+  private _targetEnvDir: Uri;
 
-  public readonly targetEnvFile: Uri;
+  public get targetEnvDir(): Uri {
+    return this._targetEnvDir;
+  }
 
-  constructor(fsHandler: IFileSystemHandler, envFile: Uri) {
+  private _targetEnvFile: Uri;
+
+  public get targetEnvFile(): Uri {
+    return this._targetEnvFile;
+  }
+
+  constructor(fsHandler: IFileSystemHandler, targetEnvFile: Uri) {
     this.fsHandler = fsHandler;
-    this.targetEnvDir = Uri.file(path.dirname(envFile.fsPath));
-    this.targetEnvFile = envFile;
-    this.presetsGlob = getPresetsGlob();
+    this._targetEnvDir = Uri.file(path.dirname(targetEnvFile.fsPath));
+    this._targetEnvFile = targetEnvFile;
 
-    workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
-      const shouldUpdatePresetsGlob = event.affectsConfiguration(`${EXTENSION_PREFIX}.presetsGlob`);
+    workspace.onDidChangeConfiguration(async (event: ConfigurationChangeEvent) => {
+      const shouldUpdateTargetEnv = event.affectsConfiguration(
+        `${EXTENSION_PREFIX}.glob.targetEnv`,
+      );
 
-      if (!shouldUpdatePresetsGlob) return;
+      if (!shouldUpdateTargetEnv) return;
+      const [newTargetEnvFile] = await fsHandler.findFiles(
+        getOnlyEnvGlob(getTargetEnvGlobConfig()),
+        NODE_MODULES_GLOB,
+        1,
+      );
 
-      this.presetsGlob = getPresetsGlob();
+      if (newTargetEnvFile === undefined) {
+        return;
+      }
+
+      this._targetEnvDir = Uri.file(path.dirname(newTargetEnvFile.fsPath));
+      this._targetEnvFile = newTargetEnvFile;
+
+      const tagInTarget = await this.getCurrentEnvFileTag().catch(() => null);
+      const envTargetData: EnvTargetChangedData = {
+        tagInTarget,
+        targetUri: this._targetEnvFile,
+      };
+      envTargetChangedEventEmitter.fire(envTargetData);
     });
   }
 
   /**
    * Performs necessary actions to instantiate a FileSystemHandler.
+   * @throws If no target `.env` found.
    */
   public static async build({ fsHandler }: EnvHandlerDeps) {
-    const [firstEnvFile] = await fsHandler.findFiles(DEFAULT_TARGET_ENV_GLOB, NODE_MODULES_GLOB, 1);
+    const [targetEnvFile] = await fsHandler.findFiles(
+      getOnlyEnvGlob(getTargetEnvGlobConfig()),
+      NODE_MODULES_GLOB,
+      1,
+    );
 
-    return new EnvHandler(fsHandler, firstEnvFile);
+    if (targetEnvFile === undefined) {
+      throw new Error(
+        [
+          'No target .env file found',
+          'check the filesystem and "Env Switcher › Glob: Target Env" configuration',
+        ].join(', '),
+      );
+    }
+
+    return new EnvHandler(fsHandler, targetEnvFile);
   }
 
   /**
    * Returns a Uri[] of `.env` files, using the configured preset glob.
    */
   public async getEnvPresetUris() {
-    const envPresetUris = await this.fsHandler.findFiles(this.presetsGlob, NODE_MODULES_GLOB);
+    const envPresetUris = await this.fsHandler.findFiles(
+      getOnlyEnvGlob(getPresetsGlobConfig()),
+      NODE_MODULES_GLOB,
+    );
 
     return envPresetUris.filter(
       (uri) => path.basename(uri.fsPath) !== '.env' && path.extname(uri.fsPath) === '.env',
@@ -97,7 +157,7 @@ export class EnvHandler
 
   /**
    * Returns the tag of the current `.env` file.
-   * @throws `No tag found in .env` if file doesn't contain a tag.
+   * @throws If file doesn't contain a tag.
    */
   public async getCurrentEnvFileTag() {
     const stream = this.fsHandler.streamFile(this.targetEnvFile);

@@ -7,20 +7,9 @@ import {
   Uri,
 } from 'vscode';
 import path from 'path';
-import { EXTENSION_PREFIX } from '../utilities/consts';
 import { IEnvTagReader, IEnvContentWithTagWriter } from '../interfaces';
 
 const ENV_GLOB = '**.env';
-
-/**
- * Will get the extension `targetEnvGlob` config from workspace settings, with global settings fallback.
- */
-function getTargetEnvGlob() {
-  const targetEnvGlob = workspace
-    .getConfiguration(`${EXTENSION_PREFIX}`)
-    .get('targetEnvGlob') as string;
-  return targetEnvGlob !== '' ? targetEnvGlob : ENV_GLOB;
-}
 
 async function onPresetChange(
   this: {
@@ -28,7 +17,12 @@ async function onPresetChange(
   },
   changedPresetUri: Uri,
 ) {
-  const currentEnvTag = await this.envHandler.getCurrentEnvFileTag();
+  let currentEnvTag;
+  try {
+    currentEnvTag = await this.envHandler.getCurrentEnvFileTag();
+  } catch (error) {
+    return;
+  }
   const changedPresetTag = path.basename(changedPresetUri.fsPath);
   if (currentEnvTag !== changedPresetTag) return;
 
@@ -51,7 +45,7 @@ export class PresetChangeWatcher implements Disposable {
 
   constructor({ rootDir, envHandler }: PresetChangeWatcherDeps) {
     this.watcher = workspace.createFileSystemWatcher(
-      new RelativePattern(rootDir, getTargetEnvGlob()),
+      new RelativePattern(rootDir, ENV_GLOB),
       true,
       false,
       true,
