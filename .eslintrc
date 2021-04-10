@@ -27,6 +27,12 @@
     "no-console": 0,
     "import/no-unresolved": 0,
     "import/prefer-default-export": 0,
+    "no-underscore-dangle": [
+      1,
+      {
+        "allowAfterThis": true
+      }
+    ],
     "no-restricted-syntax": [
       0,
       {

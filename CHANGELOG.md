@@ -6,8 +6,10 @@ Changes to **.ENV Switcher** can be found in this file.
 
 - Removed backup functionality.
 - Removed "Show current .env file" from `selectEnvPreset` command options.
-- Changing a selected preset will now update the `.env` file.
-- ✨ Refactored the repository to follow the SOLID principles(except Liskov substitution).
+- Changing a preset that was already selected, will now update the `.env` file.
+- Added settings to define a glob pattern for target `.env` file. By default uses the first found `.env` in the workspace.
+- Changing the target `.env` glob updates the status bar button.
+- ✨ Refactored the repository to follow the SOLID principles.
 
 ## - 0.3.2
 

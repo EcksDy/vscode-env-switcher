@@ -35,10 +35,15 @@
             "type": "boolean",
             "default": true
           },
-          "envSwitcher.presetsGlob": {
-            "markdownDescription": "Glob pattern to find preset `.env` files. Will always look for `.env` extension only. Will ignore `**/node_modules/**`.  \r\n _*Can be set per workspace.*_",
+          "envSwitcher.glob.presets": {
+            "markdownDescription": "Glob pattern to find preset `.env` files.  \r\n\r\n _*Will always look for `.env` extension only. Will ignore `**/node_modules/**`. Can be set per workspace.*_",
             "type": "string",
-            "default": "*"
+            "default": "**/*.env"
+          },
+          "envSwitcher.glob.targetEnv": {
+            "markdownDescription": "Glob pattern to find the target `.env` file. Default setting will recursively search a `.env` file in the workspace. `.env` files are usually found in the workspace root directory.  \r\n\r\n _*Will always look for `.env` extension only. Will ignore `**/node_modules/**`. Can be set per workspace.*_",
+            "type": "string",
+            "default": "**/.env"
           },
           "envSwitcher.statusBarPosition": {
             "markdownDescription": "Status bar button position.  \r\n _*Requires window reload to take effect.*_",

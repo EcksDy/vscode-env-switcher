@@ -3,7 +3,7 @@ import { SELECT_ENV_COMMAND_ID } from './utilities/consts';
 import { selectEnvPreset } from './command_implementations/selectEnvPreset';
 import { FileSystemHandler } from './handlers';
 import { selectedEnvPresetEventEmitter } from './utilities/events';
-import EnvStatusBarItem from './status_bar_items/envStatusBarItem';
+import EnvStatusBarButton from './status_bar_items/envStatusBarItem';
 import { EnvHandler } from './handlers/envHandler';
 import { PresetChangeWatcher } from './watchers/presetChangeWatcher';
 
@@ -21,7 +21,7 @@ export async function initialize({ subscriptions }: InitializationDeps) {
       rootDir: fsHandler.rootDir.uri,
     }),
   );
-  const statusBarItem = await EnvStatusBarItem.build({ envHandler });
+  const statusBarButton = await EnvStatusBarButton.build({ envHandler });
   const presetChangeWatcher = new PresetChangeWatcher({
     rootDir: fsHandler.rootDir,
     envHandler,
@@ -29,6 +29,6 @@ export async function initialize({ subscriptions }: InitializationDeps) {
 
   subscriptions.push(selectedEnvPresetEventEmitter);
   subscriptions.push(selectEnvPresetCmd);
-  subscriptions.push(statusBarItem);
+  subscriptions.push(statusBarButton);
   subscriptions.push(presetChangeWatcher);
 }
