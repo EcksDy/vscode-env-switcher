@@ -1,8 +1,9 @@
 import path from 'path';
 import { QuickPickItem, window, Uri } from 'vscode';
-import { SelectedEnvPresetEventData, selectedEnvPresetEventEmitter } from '../utilities/events';
 import { capitalize } from '../utilities/stringManipulations';
 import { IEnvPresetFinder, IEnvContentWithTagWriter } from '../interfaces';
+import { SelectedEnvPreset } from '../handlers/events';
+import { SelectedEnvPresetEventData } from '../handlers/events/selectedEnvPresetEventHandler';
 
 export interface EnvPresetQuickPickItem extends SelectedEnvPresetEventData, QuickPickItem {}
 
@@ -39,5 +40,5 @@ export const selectEnvPreset = async ({ rootDir, envHandler }: SelectEnvPresetCm
 
   envHandler.setEnvContentWithTag(selectedEnv.fileUri, selectedEnv.fileNameFull);
 
-  selectedEnvPresetEventEmitter.fire(selectedEnv);
+  SelectedEnvPreset.default.fire(selectedEnv);
 };

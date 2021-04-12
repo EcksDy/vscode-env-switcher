@@ -31,7 +31,7 @@ async function onPresetChange(
 
 interface IEnvHandler extends IEnvTagReader, IEnvContentWithTagWriter {}
 
-interface PresetChangeWatcherDeps {
+interface PresetWatcherDeps {
   rootDir: WorkspaceFolder;
   envHandler: IEnvHandler;
 }
@@ -40,10 +40,10 @@ interface PresetChangeWatcherDeps {
  * Decorator class for the FileSystemWatcher.
  * Will expose the necessary members to the rest of the extension.
  */
-export class PresetChangeWatcher implements Disposable {
+export class PresetWatcher implements Disposable {
   private watcher: FileSystemWatcher;
 
-  constructor({ rootDir, envHandler }: PresetChangeWatcherDeps) {
+  constructor({ rootDir, envHandler }: PresetWatcherDeps) {
     this.watcher = workspace.createFileSystemWatcher(
       new RelativePattern(rootDir, ENV_GLOB),
       true,

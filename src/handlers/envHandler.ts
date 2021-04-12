@@ -1,4 +1,4 @@
-import { workspace, Uri, ConfigurationChangeEvent } from 'vscode';
+import { workspace, Uri } from 'vscode';
 import path from 'path';
 import { TextEncoder } from 'util';
 import { EXTENSION_PREFIX } from '../utilities/consts';
@@ -16,7 +16,9 @@ import {
   IEnvLocator,
   IRootDirLocator,
 } from '../interfaces';
-import { envTargetChangedEventEmitter, EnvTargetChangedData } from '../utilities/events';
+import { registerTargetEnvConfigWatcher } from '../watchers';
+import { TargetEnvChanged } from './events';
+import { TargetEnvChangedData } from './events/targetEnvChangedEventHandler';
 
 const NODE_MODULES_GLOB = '**/node_modules/**';
 const TARGET_ENV_GLOB_DEFAULT = '**/.env';
@@ -46,6 +48,28 @@ function getOnlyEnvGlob(glob: string) {
   return glob;
 }
 
+async function onTargetEnvConfigChange(this: EnvHandler) {
+  const [newTargetEnvFile] = await this.fsHandler.findFiles(
+    getOnlyEnvGlob(getTargetEnvGlobConfig()),
+    NODE_MODULES_GLOB,
+    1,
+  );
+
+  if (newTargetEnvFile === undefined) {
+    return;
+  }
+
+  this.setTargetEnvDir(Uri.file(path.dirname(newTargetEnvFile.fsPath)));
+  this.setTargetEnvFile(newTargetEnvFile);
+
+  const tagInTarget = await this.getCurrentEnvFileTag().catch(() => null);
+  const targetEnvData: TargetEnvChangedData = {
+    tagInTarget,
+    targetUri: this.targetEnvFile,
+  };
+  TargetEnvChanged.default.fire(targetEnvData);
+}
+
 interface IFileSystemHandler
   extends IRootDirLocator,
     IFileFinder,
@@ -60,12 +84,16 @@ interface EnvHandlerDeps {
 
 export class EnvHandler
   implements IEnvLocator, IEnvPresetFinder, IEnvContentWithTagWriter, IEnvTagReader {
-  private fsHandler: IFileSystemHandler;
+  protected fsHandler: IFileSystemHandler;
 
   private _targetEnvDir: Uri;
 
   public get targetEnvDir(): Uri {
     return this._targetEnvDir;
+  }
+
+  protected setTargetEnvDir(v: Uri) {
+    this._targetEnvDir = v;
   }
 
   private _targetEnvFile: Uri;
@@ -74,37 +102,16 @@ export class EnvHandler
     return this._targetEnvFile;
   }
 
+  protected setTargetEnvFile(v: Uri) {
+    this._targetEnvFile = v;
+  }
+
   constructor(fsHandler: IFileSystemHandler, targetEnvFile: Uri) {
     this.fsHandler = fsHandler;
     this._targetEnvDir = Uri.file(path.dirname(targetEnvFile.fsPath));
     this._targetEnvFile = targetEnvFile;
 
-    workspace.onDidChangeConfiguration(async (event: ConfigurationChangeEvent) => {
-      const shouldUpdateTargetEnv = event.affectsConfiguration(
-        `${EXTENSION_PREFIX}.glob.targetEnv`,
-      );
-
-      if (!shouldUpdateTargetEnv) return;
-      const [newTargetEnvFile] = await fsHandler.findFiles(
-        getOnlyEnvGlob(getTargetEnvGlobConfig()),
-        NODE_MODULES_GLOB,
-        1,
-      );
-
-      if (newTargetEnvFile === undefined) {
-        return;
-      }
-
-      this._targetEnvDir = Uri.file(path.dirname(newTargetEnvFile.fsPath));
-      this._targetEnvFile = newTargetEnvFile;
-
-      const tagInTarget = await this.getCurrentEnvFileTag().catch(() => null);
-      const envTargetData: EnvTargetChangedData = {
-        tagInTarget,
-        targetUri: this._targetEnvFile,
-      };
-      envTargetChangedEventEmitter.fire(envTargetData);
-    });
+    registerTargetEnvConfigWatcher({ onChange: onTargetEnvConfigChange.bind(this) });
   }
 
   /**

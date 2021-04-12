@@ -1,19 +1,7 @@
-import {
-  window,
-  StatusBarAlignment,
-  StatusBarItem,
-  workspace,
-  ThemeColor,
-  ConfigurationChangeEvent,
-} from 'vscode';
+import { window, StatusBarAlignment, StatusBarItem, workspace, ThemeColor } from 'vscode';
 import { SELECT_ENV_COMMAND_ID, EXTENSION_PREFIX } from '../utilities/consts';
-import {
-  selectedEnvPresetEventEmitter,
-  SelectedEnvPresetEventData,
-  envTargetChangedEventEmitter,
-  EnvTargetChangedData,
-} from '../utilities/events';
-import { IEnvTagReader, IEnvLocator } from '../interfaces';
+import { IEnvTagReader, IEnvLocator, ITextSetter } from '../interfaces';
+import { registerWarningConfigWatcher } from '../watchers';
 
 const BUTTON_TEXT_DEFAULT = 'Select .env';
 const BUTTON_COLOR_DEFAULT = new ThemeColor('statusBar.foreground');
@@ -97,6 +85,10 @@ const getButtonTextStyle = (text: string, regex: RegExp, warningColor: string | 
   };
 };
 
+function onWarningConfigChange(this: EnvStatusBarButton) {
+  this.setText(this.button.text);
+}
+
 interface IEnvHandler extends IEnvLocator, IEnvTagReader {}
 
 interface EnvStatusBarButtonDeps {
@@ -107,7 +99,7 @@ interface EnvStatusBarButtonDeps {
  * Decorator class for the StatusBarItem.
  * Will expose the necessary members to the rest of the extension.
  */
-export default class EnvStatusBarButton {
+export default class EnvStatusBarButton implements ITextSetter {
   protected button: StatusBarItem;
 
   constructor(
@@ -121,22 +113,7 @@ export default class EnvStatusBarButton {
     this.button.color = color;
     this.button.show();
 
-    selectedEnvPresetEventEmitter.event((data: SelectedEnvPresetEventData) => {
-      this.setText(data.fileNameFull ?? BUTTON_TEXT_DEFAULT);
-    });
-
-    envTargetChangedEventEmitter.event((data: EnvTargetChangedData) => {
-      this.setText(data.tagInTarget ?? BUTTON_TEXT_DEFAULT);
-    });
-
-    workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
-      const shouldUpdateStyling =
-        event.affectsConfiguration(`${EXTENSION_PREFIX}.warning.regex`) ||
-        event.affectsConfiguration(`${EXTENSION_PREFIX}.warning.color`);
-
-      if (!shouldUpdateStyling) return;
-      this.setText(this.button.text);
-    });
+    registerWarningConfigWatcher({ onChange: onWarningConfigChange.bind(this) });
   }
 
   public static async build({ envHandler }: EnvStatusBarButtonDeps) {
@@ -156,7 +133,7 @@ export default class EnvStatusBarButton {
   /**
    * Set status bar button text.
    */
-  public setText(text: string) {
+  public setText(text: string = BUTTON_TEXT_DEFAULT) {
     const style = getButtonTextStyle(text, getWarningRegexConfig(), getWarningColorConfig());
     this.button.text = style.text;
     this.button.color = style.color;
