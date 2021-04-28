@@ -1,9 +1,9 @@
 import { workspace, Uri } from 'vscode';
 import path from 'path';
 import { TextEncoder } from 'util';
-import { EXTENSION_PREFIX } from '../utilities/consts';
-import concatFilesContent from '../utilities/bufferManipulations';
-import { makeTag, extractTag } from '../utilities/stringManipulations';
+import { EXTENSION_PREFIX } from '../user_interfaces/vs_code/utilities/consts';
+import concatFilesContent from '../dal/fs_storage/utilities/bufferManipulations';
+import { makeTag, extractTag } from '../dal/fs_storage/utilities/stringManipulations';
 import {
   IUint8Reader,
   IFileFinder,
@@ -15,29 +15,14 @@ import {
   IEnvTagReader,
   IEnvLocator,
   IRootDirLocator,
+  ILocation,
 } from '../interfaces';
-import { registerTargetEnvConfigWatcher } from '../watchers';
+import { registerTargetEnvConfigWatcher } from '../user_interfaces/vs_code/watchers';
 import { TargetEnvChanged } from './events';
-import { TargetEnvChangedData } from './events/targetEnvChangedEventHandler';
+import { TargetEnvChangedData, TargetEnvChangedData } from './events/targetEnvChangedEventHandler';
 
 const NODE_MODULES_GLOB = '**/node_modules/**';
 const TARGET_ENV_GLOB_DEFAULT = '**/.env';
-
-/**
- * Will get the extension `glob.presets` config from workspace settings, with global settings fallback.
- */
-function getPresetsGlobConfig() {
-  return workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('glob.presets') as string;
-}
-
-/**
- * Will get the extension `glob.targetEnv` config from workspace settings, with global settings fallback.
- * If none defined - will use `TARGET_ENV_GLOB_DEFAULT`
- */
-function getTargetEnvGlobConfig() {
-  const config = workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('glob.targetEnv') as string;
-  return config !== '' ? config : TARGET_ENV_GLOB_DEFAULT;
-}
 
 function getOnlyEnvGlob(glob: string) {
   if (glob.length < 4) return TARGET_ENV_GLOB_DEFAULT;
@@ -46,6 +31,10 @@ function getOnlyEnvGlob(glob: string) {
     return `${glob}.env`;
   }
   return glob;
+}
+
+function getTargetEnvGlobConfig() {
+  return config !== '' ? config : TARGET_ENV_GLOB_DEFAULT;
 }
 
 async function onTargetEnvConfigChange(this: EnvHandler) {
@@ -86,30 +75,20 @@ export class EnvHandler
   implements IEnvLocator, IEnvPresetFinder, IEnvContentWithTagWriter, IEnvTagReader {
   protected fsHandler: IFileSystemHandler;
 
-  private _targetEnvDir: Uri;
+  public _targetEnvFile: ILocation;
 
-  public get targetEnvDir(): Uri {
-    return this._targetEnvDir;
-  }
-
-  protected setTargetEnvDir(v: Uri) {
-    this._targetEnvDir = v;
-  }
-
-  private _targetEnvFile: Uri;
-
-  public get targetEnvFile(): Uri {
+  public get targetEnvFile(): ILocation {
     return this._targetEnvFile;
   }
 
-  protected setTargetEnvFile(v: Uri) {
+  public set targetEnvFile(v: ILocation) {
     this._targetEnvFile = v;
   }
 
   constructor(fsHandler: IFileSystemHandler, targetEnvFile: Uri) {
     this.fsHandler = fsHandler;
-    this._targetEnvDir = Uri.file(path.dirname(targetEnvFile.fsPath));
-    this._targetEnvFile = targetEnvFile;
+    this.targetEnvFile = Uri.file(path.dirname(targetEnvFile.fsPath));
+    this.targetEnvFile = targetEnvFile;
 
     registerTargetEnvConfigWatcher({ onChange: onTargetEnvConfigChange.bind(this) });
   }
