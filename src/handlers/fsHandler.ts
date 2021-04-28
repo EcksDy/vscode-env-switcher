@@ -1,4 +1,4 @@
-import { createReadStream, promises as fsPromises } from 'fs';
+import { createReadStream, promises as fsPromises, createWriteStream } from 'fs';
 import path from 'path';
 import readline from 'readline';
 import { Readable } from 'stream';
@@ -39,8 +39,15 @@ export class FileSystemHandler
   /**
    * streamFile
    */
-  public streamFile(uri: Uri) {
+  public streamReadFile(uri: Uri) {
     return createReadStream(uri.fsPath);
+  }
+
+  /**
+   * streamFile
+   */
+  public streamWriteFile(uri: Uri) {
+    return createWriteStream(uri.fsPath);
   }
 
   /**

@@ -7,7 +7,7 @@ import {
   Uri,
 } from 'vscode';
 import path from 'path';
-import { IEnvTagReader, IEnvContentWithTagWriter } from '../interfaces';
+import { IEnvTagReader, IEnvContentWithTagWriter } from '../../../interfaces';
 
 const ENV_GLOB = '**.env';
 

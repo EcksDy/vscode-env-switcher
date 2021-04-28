@@ -1,6 +1,6 @@
 import { window, StatusBarAlignment, StatusBarItem, workspace, ThemeColor } from 'vscode';
-import { SELECT_ENV_COMMAND_ID, EXTENSION_PREFIX } from '../utilities/consts';
-import { IEnvTagReader, IEnvLocator, ITextSetter } from '../interfaces';
+import { SELECT_ENV_COMMAND_ID } from '../utilities/consts';
+import { IEnvTagReader, IEnvLocator, ITextSetter } from '../../../interfaces';
 import { registerWarningConfigWatcher } from '../watchers';
 
 const BUTTON_TEXT_DEFAULT = 'Select .env';

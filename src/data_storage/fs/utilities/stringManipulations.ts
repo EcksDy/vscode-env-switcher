@@ -19,8 +19,4 @@ function extractTag(str: string) {
   throw new Error('No tag found in .env file');
 }
 
-function capitalize(str: string) {
-  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
-}
-
-export { makeTag, extractTag, capitalize };
+export { makeTag, extractTag };

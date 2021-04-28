@@ -1,9 +1,8 @@
 import path from 'path';
 import { QuickPickItem, window, Uri } from 'vscode';
-import { capitalize } from '../utilities/stringManipulations';
-import { IEnvPresetFinder, IEnvContentWithTagWriter } from '../interfaces';
-import { SelectedEnvPreset } from '../handlers/events';
-import { SelectedEnvPresetEventData } from '../handlers/events/selectedEnvPresetEventHandler';
+import { IEnvPresetFinder, IEnvContentWithTagWriter } from '../../../interfaces';
+import { SelectedEnvPreset } from '../../../handlers/events';
+import { SelectedEnvPresetEventData } from '../../../handlers/events/selectedEnvPresetEventHandler';
 
 export interface EnvPresetQuickPickItem extends SelectedEnvPresetEventData, QuickPickItem {}
 
@@ -42,3 +41,7 @@ export const selectEnvPreset = async ({ rootDir, envHandler }: SelectEnvPresetCm
 
   SelectedEnvPreset.default.fire(selectedEnv);
 };
+
+function capitalize(str: string) {
+  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+}

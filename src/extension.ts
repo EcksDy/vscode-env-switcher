@@ -1,23 +1,21 @@
 import { ExtensionContext, workspace, commands } from 'vscode';
-import { SELECT_ENV_COMMAND_ID, EXTENSION_PREFIX } from './utilities/consts';
-import { selectEnvPreset } from './command_implementations/selectEnvPreset';
+import {
+  SELECT_ENV_COMMAND_ID,
+  EXTENSION_PREFIX,
+} from './user_interfaces/vs_code/utilities/consts';
+import { selectEnvPreset } from './user_interfaces/vs_code/commands/selectEnvPreset';
 import { FileSystemHandler, EnvHandler, EventHandlers } from './handlers';
-import EnvStatusBarButton from './ui_components/envStatusBarButton';
-import { PresetWatcher } from './watchers';
-
-/**
- * Will get the extension `enabled` config from workspace settings, with global settings fallback.
- */
-const extensionEnabled = workspace
-  .getConfiguration(`${EXTENSION_PREFIX}`)
-  .get('enabled') as boolean;
+import EnvStatusBarButton from './user_interfaces/vs_code/ui_components/envStatusBarButton';
+import { PresetWatcher } from './user_interfaces/vs_code/watchers';
+import vsCodeUiConfig from './user_interfaces/vs_code/config';
+import { Switcher } from './switcher';
 
 export async function activate({ subscriptions }: ExtensionContext) {
-  if (!extensionEnabled) return;
+  if (!vsCodeUiConfig.enabled()) return;
 
   /* HANDLERS */
   const fsHandler = new FileSystemHandler();
-  const envHandler = await EnvHandler.build({ fsHandler });
+  const switcher = new Switcher({});
 
   /* COMMANDS */
   const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>

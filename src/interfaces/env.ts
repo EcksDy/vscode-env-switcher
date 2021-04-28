@@ -1,16 +1,15 @@
-import { Uri } from 'vscode';
+import { ILocation } from './filesystem';
 
 export interface IEnvLocator {
-  readonly targetEnvDir: Uri;
-  readonly targetEnvFile: Uri;
+  targetEnvFile: ILocation;
 }
 
 export interface IEnvPresetFinder {
-  getEnvPresetUris: () => Promise<Uri[]>;
+  getEnvPresetUris: () => Promise<ILocation[]>;
 }
 
 export interface IEnvContentWithTagWriter {
-  setEnvContentWithTag: (sourceFileUri: Uri, tagText: string) => Promise<void>;
+  setEnvContentWithTag: (sourceFile: ILocation, tagText: string) => Promise<void>;
 }
 
 export interface IEnvTagReader {
