@@ -1,4 +1,4 @@
-import { ExtensionContext, workspace, commands } from 'vscode';
+import { ExtensionContext, workspace, commands, WorkspaceFolder } from 'vscode';
 import {
   SELECT_ENV_COMMAND_ID,
   EXTENSION_PREFIX,
@@ -7,15 +7,25 @@ import { selectEnvPreset } from './user_interfaces/vs_code/commands/selectEnvPre
 import { FileSystemHandler, EnvHandler, EventHandlers } from './handlers';
 import EnvStatusBarButton from './user_interfaces/vs_code/ui_components/envStatusBarButton';
 import { PresetWatcher } from './user_interfaces/vs_code/watchers';
-import vsCodeUiConfig from './user_interfaces/vs_code/config';
 import { Switcher } from './switcher';
+import { getConfig } from './config';
+import { vsCodeUiConfig } from './user_interfaces/vs_code';
+import {
+  FileSystemStorageManager,
+  fsStorageConfig,
+  targetPresetChangedEvent,
+} from './data_storage/fs';
 
 export async function activate({ subscriptions }: ExtensionContext) {
-  if (!vsCodeUiConfig.enabled()) return;
+  const config = getConfig(vsCodeUiConfig, fsStorageConfig);
 
-  /* HANDLERS */
-  const fsHandler = new FileSystemHandler();
-  const switcher = new Switcher({});
+  if (!config.ui.enabled()) return;
+
+  const [rootFolder] = workspace.workspaceFolders as WorkspaceFolder[];
+  const storageManager = new FileSystemStorageManager({
+    config: config.storage,
+    rootDir: rootFolder.uri.fsPath,
+  });
 
   /* COMMANDS */
   const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>

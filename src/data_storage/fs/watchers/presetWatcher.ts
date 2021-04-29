@@ -1,39 +1,12 @@
-import {
-  workspace,
-  RelativePattern,
-  WorkspaceFolder,
-  Disposable,
-  FileSystemWatcher,
-  Uri,
-} from 'vscode';
+import { workspace, RelativePattern, Disposable, FileSystemWatcher, Uri } from 'vscode';
 import path from 'path';
-import { IEnvTagReader, IEnvContentWithTagWriter } from '../../../interfaces';
+import * as fsHandler from '../handlers/fsHandler';
 
 const ENV_GLOB = '**.env';
 
-async function onPresetChange(
-  this: {
-    envHandler: IEnvHandler;
-  },
-  changedPresetUri: Uri,
-) {
-  let currentEnvTag;
-  try {
-    currentEnvTag = await this.envHandler.getCurrentEnvFileTag();
-  } catch (error) {
-    return;
-  }
-  const changedPresetTag = path.basename(changedPresetUri.fsPath);
-  if (currentEnvTag !== changedPresetTag) return;
-
-  await this.envHandler.setEnvContentWithTag(changedPresetUri, changedPresetTag);
-}
-
-interface IEnvHandler extends IEnvTagReader, IEnvContentWithTagWriter {}
-
 interface PresetWatcherDeps {
-  rootDir: WorkspaceFolder;
-  envHandler: IEnvHandler;
+  rootDir: string;
+  storage: IStorage;
 }
 
 /**
@@ -43,7 +16,7 @@ interface PresetWatcherDeps {
 export class PresetWatcher implements Disposable {
   private watcher: FileSystemWatcher;
 
-  constructor({ rootDir, envHandler }: PresetWatcherDeps) {
+  constructor({ rootDir, storage }: PresetWatcherDeps) {
     this.watcher = workspace.createFileSystemWatcher(
       new RelativePattern(rootDir, ENV_GLOB),
       true,
@@ -51,7 +24,18 @@ export class PresetWatcher implements Disposable {
       true,
     );
 
-    this.watcher.onDidChange(onPresetChange.bind({ envHandler }));
+    async function onPresetChange(changedPresetUri: Uri) {
+      const currentPresetId = await storage.getCurrentPresetId();
+      if (currentPresetId === null) {
+        return;
+      }
+      const changedPresetId = path.basename(changedPresetUri.fsPath);
+      if (currentPresetId !== changedPresetId) return;
+
+      await storage.setCurrentPreset(fsHandler.makePreset(rootDir, changedPresetUri.fsPath));
+    }
+
+    this.watcher.onDidChange(onPresetChange);
   }
 
   /**

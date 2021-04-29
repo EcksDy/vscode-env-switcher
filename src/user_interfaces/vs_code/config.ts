@@ -1,13 +1,14 @@
-import { workspace } from 'vscode';
+import { ConfigurationChangeEvent, Disposable, workspace } from 'vscode';
 
 type WarningColorConfigs = 'default' | 'white' | 'black' | 'red' | 'magenta' | 'yellow';
 type PositionConfigs = 'outerLeft' | 'innerLeft' | 'outerRight' | 'innerRight';
 
-interface VsCodeUiConfig {
+export interface VsCodeUiConfig {
   enabled: () => boolean;
   warning: {
     color: () => WarningColorConfigs;
     regex: () => string;
+    onChange: (onChange: () => void) => Disposable;
   };
   position: () => PositionConfigs;
 }
@@ -46,13 +47,23 @@ function warningRegex() {
   return workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('warning.regex') as string;
 }
 
-const vsCodeUiConfig: VsCodeUiConfig = {
+function onChangeWarningConfig(onChange: () => void) {
+  return workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
+    const shouldUpdateStyling =
+      event.affectsConfiguration(`${EXTENSION_PREFIX}.warning.regex`) ||
+      event.affectsConfiguration(`${EXTENSION_PREFIX}.warning.color`);
+
+    if (!shouldUpdateStyling) return;
+    onChange();
+  });
+}
+
+export const vsCodeUiConfig: VsCodeUiConfig = {
   enabled,
   warning: {
     color: warningColor,
     regex: warningRegex,
+    onChange: onChangeWarningConfig,
   },
   position,
 };
-
-export default vsCodeUiConfig;

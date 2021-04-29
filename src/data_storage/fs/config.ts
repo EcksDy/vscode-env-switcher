@@ -1,30 +1,42 @@
-import { workspace } from 'vscode';
+import { ConfigurationChangeEvent, Disposable, workspace } from 'vscode';
 import { EXTENSION_PREFIX } from './utilities/consts';
 
 type GlobPattern = string;
 
-interface FsStateConfig {
-  envPresets: () => GlobPattern;
-  targetEnv: () => GlobPattern;
+export interface FsStorageConfig {
+  presetsGlob: () => GlobPattern;
+  targetGlob: () => GlobPattern;
+  onChangeTargetGlobConfig: (onChange: () => Promise<void>) => Disposable;
 }
 
 /**
- * Will get the extension `glob.presets` config from workspace settings, with global settings fallback.
+ * Will get the `glob.presets` config from workspace settings, with global settings fallback.
  */
-function envPresets() {
+function presetsGlob() {
   return workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('glob.presets') as GlobPattern;
 }
 
 /**
- * Will get the extension `glob.targetEnv` config from workspace settings, with global settings fallback.
+ * Will get the `glob.targetEnv` config from workspace settings, with global settings fallback.
  */
-function targetEnv() {
+function targetGlob() {
   return workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('glob.targetEnv') as GlobPattern;
 }
 
-const fsStateConfig: FsStateConfig = {
-  envPresets,
-  targetEnv,
-};
+/**
+ * Registers a listener for `glob.targetEnv` config from workspace settings, with global settings fallback.
+ */
+function onChangeTargetGlobConfig(onChange: () => Promise<void>) {
+  return workspace.onDidChangeConfiguration(async (event: ConfigurationChangeEvent) => {
+    const shouldUpdateTargetEnv = event.affectsConfiguration(`${EXTENSION_PREFIX}.glob.targetEnv`);
 
-export default fsStateConfig;
+    if (!shouldUpdateTargetEnv) return;
+    await onChange();
+  });
+}
+
+export const fsStorageConfig: FsStorageConfig = {
+  presetsGlob,
+  targetGlob,
+  onChangeTargetGlobConfig,
+};
