@@ -1,14 +1,10 @@
-import { window, StatusBarAlignment, StatusBarItem, workspace, ThemeColor } from 'vscode';
+import { window, StatusBarAlignment, StatusBarItem, ThemeColor, Disposable } from 'vscode';
 import { SELECT_ENV_COMMAND_ID } from '../utilities/consts';
-import { IEnvTagReader, IEnvLocator, ITextSetter } from '../../../interfaces';
-import { registerWarningConfigWatcher } from '../watchers';
+import { VsCodeUiConfig } from '../config';
+import { TargetPresetChangedEventListener } from '../../../data_storage';
 
 const BUTTON_TEXT_DEFAULT = 'Select .env';
 const BUTTON_COLOR_DEFAULT = new ThemeColor('statusBar.foreground');
-
-type PositionConfigsData = {
-  [key in PositionConfigs]: StatusBarItemPosition;
-};
 
 type PositionConfigs = 'outerLeft' | 'innerLeft' | 'outerRight' | 'innerRight';
 
@@ -17,11 +13,11 @@ interface StatusBarItemPosition {
   priority: number;
 }
 
-const getPositionConfig = () => {
-  const config = workspace
-    .getConfiguration(`${EXTENSION_PREFIX}`)
-    .get('statusBarPosition') as PositionConfigs;
+type PositionConfigsData = {
+  [key in PositionConfigs]: StatusBarItemPosition;
+};
 
+function getPositionConfig(config: PositionConfigs) {
   const configData: PositionConfigsData = {
     outerLeft: {
       alignment: StatusBarAlignment.Left,
@@ -42,7 +38,7 @@ const getPositionConfig = () => {
   };
 
   return configData[config];
-};
+}
 
 type WarningColorConfigsData = {
   [key in WarningColorConfigs]: string | ThemeColor;
@@ -50,11 +46,7 @@ type WarningColorConfigsData = {
 
 type WarningColorConfigs = 'default' | 'white' | 'black' | 'red' | 'magenta' | 'yellow';
 
-const getWarningColorConfig = () => {
-  const config = workspace
-    .getConfiguration(`${EXTENSION_PREFIX}`)
-    .get('warning.color') as WarningColorConfigs;
-
+function getWarningColorConfig(config: WarningColorConfigs) {
   const configData: WarningColorConfigsData = {
     default: BUTTON_COLOR_DEFAULT,
     white: '#FFFFFF',
@@ -65,17 +57,16 @@ const getWarningColorConfig = () => {
   };
 
   return configData[config];
-};
+}
 
-const getWarningRegexConfig = () => {
-  const config = workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('warning.regex') as string;
+function getWarningRegexConfig(config: string) {
   const MATCH_NOTHING_REGEX = /^\b$/;
 
   if (config === '') return MATCH_NOTHING_REGEX;
   return new RegExp(config, 'i');
-};
+}
 
-const getButtonTextStyle = (text: string, regex: RegExp, warningColor: string | ThemeColor) => {
+function getButtonTextStyle(text: string, regex: RegExp, warningColor: string | ThemeColor) {
   const shouldWarn = regex.test(text);
   const styledText = shouldWarn ? `$(issue-opened) ${text.toUpperCase()}` : text;
 
@@ -83,66 +74,71 @@ const getButtonTextStyle = (text: string, regex: RegExp, warningColor: string | 
     text: styledText,
     color: shouldWarn ? warningColor : BUTTON_COLOR_DEFAULT,
   };
-};
-
-function onWarningConfigChange(this: EnvStatusBarButton) {
-  this.setText(this.button.text);
 }
-
-interface IEnvHandler extends IEnvLocator, IEnvTagReader {}
 
 interface EnvStatusBarButtonDeps {
-  envHandler: IEnvHandler;
+  config: VsCodeUiConfig;
+  onTargetPresetChangedEvent: TargetPresetChangedEventListener;
+}
+interface EnvStatusBarButtonArgs {
+  text?: string;
 }
 
-/**
- * Decorator class for the StatusBarItem.
- * Will expose the necessary members to the rest of the extension.
- */
-export default class EnvStatusBarButton implements ITextSetter {
-  protected button: StatusBarItem;
+export default class EnvStatusBarButton implements IButton {
+  private config: VsCodeUiConfig;
+
+  private button: StatusBarItem;
+
+  private garbage: Disposable[];
 
   constructor(
-    styledText: string,
-    color: string | ThemeColor,
-    { alignment, priority }: StatusBarItemPosition,
+    { config, onTargetPresetChangedEvent }: EnvStatusBarButtonDeps,
+    { text = BUTTON_TEXT_DEFAULT }: EnvStatusBarButtonArgs,
   ) {
+    this.config = config;
+    const { alignment, priority }: StatusBarItemPosition = getPositionConfig(
+      this.config.position(),
+    );
     this.button = window.createStatusBarItem(alignment, priority);
+
+    const { text: styledText, color } = getButtonTextStyle(
+      text,
+      getWarningRegexConfig(this.config.warning.regex()),
+      getWarningColorConfig(this.config.warning.color()),
+    );
     this.button.command = SELECT_ENV_COMMAND_ID;
     this.button.text = styledText;
     this.button.color = color;
     this.button.show();
 
-    registerWarningConfigWatcher({ onChange: onWarningConfigChange.bind(this) });
-  }
-
-  public static async build({ envHandler }: EnvStatusBarButtonDeps) {
-    let text = BUTTON_TEXT_DEFAULT;
-    try {
-      text = await envHandler.getCurrentEnvFileTag();
-    } catch (error) {
-      console.warn(`Warning: ${error.message}`);
-    }
-
-    const position: StatusBarItemPosition = getPositionConfig();
-    const style = getButtonTextStyle(text, getWarningRegexConfig(), getWarningColorConfig());
-
-    return new EnvStatusBarButton(style.text, style.color, position);
+    onTargetPresetChangedEvent((data: string | null) => this.setText(data ?? undefined));
+    const onWarningConfigChange = this.config.warning.onChange(() => this.setText(this.getText()));
+    this.garbage = [this.button, onWarningConfigChange];
   }
 
   /**
-   * Set status bar button text.
+   * Set button text.
    */
   public setText(text: string = BUTTON_TEXT_DEFAULT) {
-    const style = getButtonTextStyle(text, getWarningRegexConfig(), getWarningColorConfig());
+    const style = getButtonTextStyle(
+      text,
+      getWarningRegexConfig(this.config.warning.regex()),
+      getWarningColorConfig(this.config.warning.color()),
+    );
     this.button.text = style.text;
     this.button.color = style.color;
   }
 
   /**
-   * Exposing the original dispose, so EnvStatusBarItem can be registered in extension subscriptions.
+   * Get button text.
    */
+  public getText() {
+    return this.button.text;
+  }
+
   public dispose() {
-    this.button.dispose();
+    for (const disposable of this.garbage) {
+      disposable.dispose();
+    }
   }
 }

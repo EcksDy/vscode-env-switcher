@@ -1,47 +1,31 @@
-import path from 'path';
-import { QuickPickItem, window, Uri } from 'vscode';
-import { IEnvPresetFinder, IEnvContentWithTagWriter } from '../../../interfaces';
-import { SelectedEnvPreset } from '../../../handlers/events';
-import { SelectedEnvPresetEventData } from '../../../handlers/events/selectedEnvPresetEventHandler';
-
-export interface EnvPresetQuickPickItem extends SelectedEnvPresetEventData, QuickPickItem {}
-
-interface IEnvHandler extends IEnvPresetFinder, IEnvContentWithTagWriter {}
+import { QuickPickItem, window } from 'vscode';
 
 interface SelectEnvPresetCmdDeps {
-  rootDir: Uri;
-  envHandler: IEnvHandler;
+  storageManager: IStorage;
+  button: IButton;
 }
 
-export const selectEnvPreset = async ({ rootDir, envHandler }: SelectEnvPresetCmdDeps) => {
-  const envPresetUris = await envHandler.getEnvPresetUris();
+function presetToQuickPickItem({ path, title }: IPreset): QuickPickItem {
+  return {
+    label: title,
+    description: path,
+  };
+}
 
-  const envFileQuickPickList = envPresetUris.map((fileUri) => {
-    const fileName = path.basename(fileUri.fsPath, path.extname(fileUri.fsPath));
-    const fileNameFull = path.basename(fileUri.fsPath);
-    const label = capitalize(fileName);
-    const description = path.relative(rootDir.fsPath, fileUri.fsPath);
+export const selectEnvPreset = async ({ storageManager, button }: SelectEnvPresetCmdDeps) => {
+  const presets = await storageManager.getPresets();
 
-    const envFileQuickPick: EnvPresetQuickPickItem = {
-      description,
-      label,
-      fileName,
-      fileNameFull,
-      fileUri,
-    };
+  const presetQuickPickList: QuickPickItem[] = presets.map(presetToQuickPickItem);
 
-    return envFileQuickPick;
-  });
+  const selectedItem = await window.showQuickPick(presetQuickPickList);
 
-  const selectedEnv = await window.showQuickPick(envFileQuickPickList);
+  if (selectedItem === undefined) return;
 
-  if (selectedEnv === undefined) return;
+  const selectedPreset = presets.find(
+    ({ title, path }) => title === selectedItem.label && path === selectedItem.description,
+  );
+  if (selectedPreset === undefined) return;
+  storageManager.setCurrentPreset(selectedPreset);
 
-  envHandler.setEnvContentWithTag(selectedEnv.fileUri, selectedEnv.fileNameFull);
-
-  SelectedEnvPreset.default.fire(selectedEnv);
+  button.setText(selectedPreset.id);
 };
-
-function capitalize(str: string) {
-  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
-}

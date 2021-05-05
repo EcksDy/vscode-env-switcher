@@ -32,10 +32,14 @@ export function removePotentialTargetFiles(paths: string[]) {
   );
 }
 
+function capitalize(str: string) {
+  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+}
+
 export function makePreset(rootDir: string, path: string): IPreset {
   return {
     id: nodePath.basename(path),
-    title: nodePath.basename(path, ENV_EXTENSION),
+    title: capitalize(nodePath.basename(path, ENV_EXTENSION)),
     path: nodePath.relative(rootDir, path),
   };
 }

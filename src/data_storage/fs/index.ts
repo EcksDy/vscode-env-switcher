@@ -1,5 +1,9 @@
-import TargetPresetChanged from './events/targetPresetChangedEvent';
+import TargetPresetChanged, {
+  TargetPresetChangedEventListener,
+} from './events/targetPresetChangedEvent';
+
+const onTargetPresetChangedEvent = TargetPresetChanged.register;
 
 export * from './config';
 export * from './fsStorageManager';
-export const targetPresetChangedEvent = TargetPresetChanged.register;
+export { TargetPresetChangedEventListener, onTargetPresetChangedEvent };
