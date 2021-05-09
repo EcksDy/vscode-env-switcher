@@ -1,10 +1,9 @@
 import { window, StatusBarAlignment, StatusBarItem, ThemeColor, Disposable } from 'vscode';
-import { SELECT_ENV_COMMAND_ID } from '../utilities/consts';
-import { VsCodeUiConfig } from '../config';
-import { TargetPresetChangedEventListener } from '../../../data_storage';
+import { SELECT_ENV_COMMAND_ID, settings } from '../utilities';
+import { PresetInfo, IButton } from '../interfaces';
 
-const BUTTON_TEXT_DEFAULT = 'Select .env';
-const BUTTON_COLOR_DEFAULT = new ThemeColor('statusBar.foreground');
+const DEFAULT_BUTTON_TEXT = 'Select .env';
+const DEFAULT_BUTTON_COLOR = new ThemeColor('statusBar.foreground');
 
 type PositionConfigs = 'outerLeft' | 'innerLeft' | 'outerRight' | 'innerRight';
 
@@ -48,7 +47,7 @@ type WarningColorConfigs = 'default' | 'white' | 'black' | 'red' | 'magenta' | '
 
 function getWarningColorConfig(config: WarningColorConfigs) {
   const configData: WarningColorConfigsData = {
-    default: BUTTON_COLOR_DEFAULT,
+    default: DEFAULT_BUTTON_COLOR,
     white: '#FFFFFF',
     black: '#000000',
     red: '#f01432',
@@ -72,58 +71,46 @@ function getButtonTextStyle(text: string, regex: RegExp, warningColor: string | 
 
   return {
     text: styledText,
-    color: shouldWarn ? warningColor : BUTTON_COLOR_DEFAULT,
+    color: shouldWarn ? warningColor : DEFAULT_BUTTON_COLOR,
   };
 }
 
-interface EnvStatusBarButtonDeps {
-  config: VsCodeUiConfig;
-  onTargetPresetChangedEvent: TargetPresetChangedEventListener;
-}
-interface EnvStatusBarButtonArgs {
-  text?: string;
+interface Args {
+  preset?: PresetInfo;
 }
 
-export default class EnvStatusBarButton implements IButton {
-  private config: VsCodeUiConfig;
-
+export class StatusBarButton implements IButton {
   private button: StatusBarItem;
 
   private garbage: Disposable[];
 
-  constructor(
-    { config, onTargetPresetChangedEvent }: EnvStatusBarButtonDeps,
-    { text = BUTTON_TEXT_DEFAULT }: EnvStatusBarButtonArgs,
-  ) {
-    this.config = config;
-    const { alignment, priority }: StatusBarItemPosition = getPositionConfig(
-      this.config.position(),
-    );
+  constructor({ preset }: Args) {
+    const { alignment, priority }: StatusBarItemPosition = getPositionConfig(settings.position());
     this.button = window.createStatusBarItem(alignment, priority);
 
+    const text = preset?.id ?? DEFAULT_BUTTON_TEXT;
     const { text: styledText, color } = getButtonTextStyle(
       text,
-      getWarningRegexConfig(this.config.warning.regex()),
-      getWarningColorConfig(this.config.warning.color()),
+      getWarningRegexConfig(settings.warning.regex()),
+      getWarningColorConfig(settings.warning.color()),
     );
     this.button.command = SELECT_ENV_COMMAND_ID;
     this.button.text = styledText;
     this.button.color = color;
     this.button.show();
 
-    onTargetPresetChangedEvent((data: string | null) => this.setText(data ?? undefined));
-    const onWarningConfigChange = this.config.warning.onChange(() => this.setText(this.getText()));
+    const onWarningConfigChange = settings.warning.onChange(() => this.setText(this.getText()));
     this.garbage = [this.button, onWarningConfigChange];
   }
 
   /**
    * Set button text.
    */
-  public setText(text: string = BUTTON_TEXT_DEFAULT) {
+  public setText(text: string = DEFAULT_BUTTON_TEXT) {
     const style = getButtonTextStyle(
       text,
-      getWarningRegexConfig(this.config.warning.regex()),
-      getWarningColorConfig(this.config.warning.color()),
+      getWarningRegexConfig(settings.warning.regex()),
+      getWarningColorConfig(settings.warning.color()),
     );
     this.button.text = style.text;
     this.button.color = style.color;

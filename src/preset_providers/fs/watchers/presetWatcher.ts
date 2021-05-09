@@ -1,12 +1,16 @@
 import { workspace, RelativePattern, Disposable, FileSystemWatcher, Uri } from 'vscode';
 import path from 'path';
-import * as fsHandler from '../handlers/fsHandler';
+import { makePreset } from '../handlers';
+import { TargetManagerApi } from '../../../interfaces';
 
 const ENV_GLOB = '**.env';
 
-interface PresetWatcherDeps {
+interface Deps {
+  targetManager: TargetManagerApi;
+}
+
+interface Args {
   rootDir: string;
-  storage: IStorage;
 }
 
 /**
@@ -16,7 +20,7 @@ interface PresetWatcherDeps {
 export class PresetWatcher implements Disposable {
   private watcher: FileSystemWatcher;
 
-  constructor({ rootDir, storage }: PresetWatcherDeps) {
+  constructor({ targetManager }: Deps, { rootDir }: Args) {
     this.watcher = workspace.createFileSystemWatcher(
       new RelativePattern(rootDir, ENV_GLOB),
       true,
@@ -25,14 +29,14 @@ export class PresetWatcher implements Disposable {
     );
 
     async function onPresetChange(changedPresetUri: Uri) {
-      const currentPresetId = await storage.getCurrentPresetId();
-      if (currentPresetId === null) {
-        return;
-      }
-      const changedPresetId = path.basename(changedPresetUri.fsPath);
-      if (currentPresetId !== changedPresetId) return;
+      const currentPreset = await targetManager.getCurrentPreset();
+      if (currentPreset === null) return;
 
-      await storage.setCurrentPreset(fsHandler.makePreset(rootDir, changedPresetUri.fsPath));
+      const changedPresetId = path.basename(changedPresetUri.fsPath);
+      if (currentPreset.id !== changedPresetId) return;
+
+      const preset = await makePreset(rootDir, changedPresetUri.fsPath);
+      await targetManager.setCurrentPreset(preset);
     }
 
     this.watcher.onDidChange(onPresetChange);

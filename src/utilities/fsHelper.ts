@@ -1,13 +1,29 @@
-import { createReadStream, promises as fsPromises, createWriteStream, existsSync } from 'fs';
+import {
+  createReadStream,
+  promises as fsPromises,
+  createWriteStream,
+  existsSync,
+  ReadStream,
+  WriteStream,
+} from 'fs';
 import * as nodePath from 'path';
 import { Uri, workspace } from 'vscode';
-import { FileSystemHelper } from '../../interfaces';
+import { TextEncoder } from 'util';
 
+interface FileSystemHelperApi {
+  readonly rootDir: string;
+  readFile: (path: string) => Promise<Uint8Array>;
+  writeFile: (path: string, content: string | Uint8Array) => Promise<void>;
+  streamReadFile: (path: string) => ReadStream;
+  streamWriteFile: (path: string) => WriteStream;
+  findFiles: (include: string, exclude?: string | null, maxResults?: number) => Promise<string[]>;
+  exists: (path: string) => boolean;
+}
 /**
  * Returns contents of the file as Uint8Array.
  * @param path Filesystem path
  */
-async function readFileUint8(path: string) {
+async function readFile(path: string) {
   return await workspace.fs.readFile(Uri.parse(path));
 }
 
@@ -17,24 +33,29 @@ async function readFileUint8(path: string) {
  * @param path Destination filesystem path
  * @param content Content to be written
  */
-async function writeFileUint8(path: string, content: Uint8Array) {
+async function writeFile(path: string, content: string | Uint8Array) {
   const dirString = nodePath.dirname(path);
   await fsPromises.mkdir(dirString, {
     recursive: true,
   });
 
-  await workspace.fs.writeFile(Uri.parse(path), content);
+  let writable = content;
+  if (typeof content === 'string') {
+    writable = new TextEncoder().encode(content);
+  }
+
+  await workspace.fs.writeFile(Uri.parse(path), writable as Uint8Array);
 }
 
 /**
- * streamFile
+ * Creates a read stream.
  */
 function streamReadFile(path: string) {
   return createReadStream(path);
 }
 
 /**
- * streamFile
+ * Creates a write stream.
  */
 function streamWriteFile(path: string) {
   return createWriteStream(path);
@@ -57,15 +78,18 @@ async function findFiles(
   return uris.map(({ fsPath }) => fsPath);
 }
 
-function fileExists(path: string) {
+/**
+ * Checks if file/directory exists.
+ */
+function exists(path: string) {
   return existsSync(path);
 }
 
 export default {
-  readFileUint8,
-  writeFileUint8,
+  readFile,
+  writeFile,
   streamReadFile,
   streamWriteFile,
   findFiles,
-  fileExists,
-} as FileSystemHelper;
+  exists,
+} as FileSystemHelperApi;
