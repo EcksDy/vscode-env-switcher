@@ -36,7 +36,11 @@ export class PresetWatcher implements Disposable {
       if (currentPreset.id !== changedPresetId) return;
 
       const preset = await makePreset(rootDir, changedPresetUri.fsPath);
-      await targetManager.setCurrentPreset(preset);
+      try {
+        await targetManager.setCurrentPreset(preset);
+      } catch (error) {
+        console.error(error);
+      }
     }
 
     this.watcher.onDidChange(onPresetChange);

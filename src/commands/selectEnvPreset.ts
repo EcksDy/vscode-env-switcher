@@ -1,16 +1,18 @@
 import { QuickPickItem, window } from 'vscode';
 import { IButton, IPresetProvider, Preset, TargetManagerApi } from '../interfaces';
 
+const NO_ENV_FOUND = 'No .env found';
+
 interface Deps {
   presetProvider: IPresetProvider;
   targetManager: TargetManagerApi;
   button: IButton;
 }
 
-function presetToQuickPickItem({ path, title }: Preset): QuickPickItem {
+function presetToQuickPickItem({ description, title }: Preset): QuickPickItem {
   return {
     label: title,
-    description: path,
+    description,
   };
 }
 
@@ -24,10 +26,15 @@ export async function selectEnvPreset({ presetProvider, targetManager, button }:
   if (selectedItem === undefined) return;
 
   const selectedPreset = presets.find(
-    ({ title, path }) => title === selectedItem.label && path === selectedItem.description,
+    ({ title, description }) =>
+      title === selectedItem.label && description === selectedItem.description,
   );
   if (selectedPreset === undefined) return;
-  targetManager.setCurrentPreset(selectedPreset);
-
-  button.setText(selectedPreset.id);
+  try {
+    await targetManager.setCurrentPreset(selectedPreset);
+    button.setText(selectedPreset.id);
+  } catch (error) {
+    console.error(error);
+    button.setText(NO_ENV_FOUND);
+  }
 }

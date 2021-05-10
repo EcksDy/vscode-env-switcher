@@ -9,11 +9,14 @@ function capitalize(str: string) {
 }
 
 export async function makePreset(rootDir: string, path: string): Promise<Preset> {
+  const id = nodePath.basename(path);
+  const title = capitalize(nodePath.basename(path, ENV_EXTENSION));
+  const description = nodePath.relative(rootDir, path);
   const content = await fsHelper.readFile(path);
   return {
-    id: nodePath.basename(path),
-    title: capitalize(nodePath.basename(path, ENV_EXTENSION)),
-    description: nodePath.relative(rootDir, path),
+    id,
+    title,
+    description,
     path,
     content,
   };
