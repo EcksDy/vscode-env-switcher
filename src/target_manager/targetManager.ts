@@ -1,4 +1,4 @@
-import { getContent, getPath, setContent } from './helpers';
+import { getContent, getPath, setContent, hasChanged } from './helpers';
 import { TargetManagerApi, IPersistanceManager, Preset } from '../interfaces';
 
 interface Deps {
@@ -23,6 +23,21 @@ export class TargetManager implements TargetManagerApi {
     this.persistanceManager = persistanceManager;
   }
 
+  static async build(deps: Deps, args: Args) {
+    const currentPresetPath = await getPath(args.targetGlob);
+    const presetInfo = deps.persistanceManager.get();
+    const shouldResetPersistance =
+      currentPresetPath === null ||
+      presetInfo === null ||
+      (await hasChanged(currentPresetPath, presetInfo.checksum));
+
+    if (shouldResetPersistance) {
+      deps.persistanceManager.set(null);
+    }
+
+    return new TargetManager(deps, args);
+  }
+
   /**
    * Returns the currently selected preset.
    * Returns null if target file or preset tag not found.
@@ -41,6 +56,7 @@ export class TargetManager implements TargetManagerApi {
   async setCurrentPreset(preset: Preset) {
     const currentPresetPath = await getPath(this.targetGlob);
     if (currentPresetPath === null) {
+      this.persistanceManager.set(null);
       throw new Error(`No current preset file found.`);
     }
 

@@ -3,6 +3,7 @@ export interface PresetInfo {
   title: string;
   description: string;
   path: string;
+  checksum: string;
 }
 
 export interface Preset extends PresetInfo {

@@ -13,12 +13,16 @@ export async function makePreset(rootDir: string, path: string): Promise<Preset>
   const title = capitalize(nodePath.basename(path, ENV_EXTENSION));
   const description = nodePath.relative(rootDir, path);
   const content = await fsHelper.readFile(path);
+  const contentString = fsHelper.decodeArray(content);
+  const checksum = fsHelper.generateChecksum(contentString);
+
   return {
     id,
     title,
     description,
     path,
     content,
+    checksum,
   };
 }
 

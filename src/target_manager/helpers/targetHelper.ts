@@ -16,3 +16,9 @@ export async function getPath(glob: string): Promise<string | null> {
 export async function setContent(path: string, content: string | Uint8Array): Promise<void> {
   await fsHelper.writeFile(path, content);
 }
+
+export async function hasChanged(path: string, previousChecksum: string) {
+  const content = await fsHelper.decodeFile(path);
+  const checksum = fsHelper.generateChecksum(content);
+  return checksum !== previousChecksum;
+}

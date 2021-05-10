@@ -8,23 +8,44 @@ import {
 } from 'fs';
 import * as nodePath from 'path';
 import { Uri, workspace } from 'vscode';
-import { TextEncoder } from 'util';
+import { TextEncoder, TextDecoder } from 'util';
+import { createHash } from 'crypto';
 
 interface FileSystemHelperApi {
-  readonly rootDir: string;
   readFile: (path: string) => Promise<Uint8Array>;
+  decodeFile: (path: string) => Promise<string>;
+  decodeArray: (arr: Uint8Array) => string;
   writeFile: (path: string, content: string | Uint8Array) => Promise<void>;
   streamReadFile: (path: string) => ReadStream;
   streamWriteFile: (path: string) => WriteStream;
   findFiles: (include: string, exclude?: string | null, maxResults?: number) => Promise<string[]>;
   exists: (path: string) => boolean;
+  generateChecksum: (str: string) => string;
 }
+
 /**
  * Returns contents of the file as Uint8Array.
  * @param path Filesystem path
  */
 async function readFile(path: string) {
   return await workspace.fs.readFile(Uri.parse(path));
+}
+
+/**
+ * Returns contents of the file as string.
+ * @param path Filesystem path
+ */
+async function decodeFile(path: string) {
+  const content = await workspace.fs.readFile(Uri.parse(path));
+
+  return new TextDecoder().decode(content);
+}
+
+/**
+ * Returns string from Uint8Array.
+ */
+function decodeArray(arr: Uint8Array) {
+  return new TextDecoder().decode(arr);
 }
 
 /**
@@ -85,11 +106,21 @@ function exists(path: string) {
   return existsSync(path);
 }
 
+/**
+ * Generates checksum.
+ */
+function generateChecksum(str: string) {
+  return createHash('md5').update(str, 'utf8').digest('hex');
+}
+
 export default {
   readFile,
+  decodeFile,
   writeFile,
   streamReadFile,
   streamWriteFile,
   findFiles,
   exists,
+  generateChecksum,
+  decodeArray,
 } as FileSystemHelperApi;

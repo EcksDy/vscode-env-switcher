@@ -24,7 +24,7 @@ export async function activate({ subscriptions, workspaceState }: ExtensionConte
   const persistanceManager = memento({
     state: workspaceState,
   });
-  const targetManager = new TargetManager(
+  const targetManager = await TargetManager.build(
     {
       persistanceManager,
     },
