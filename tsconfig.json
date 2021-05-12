@@ -11,7 +11,8 @@
     "strict": true,
     "noImplicitReturns": true,
     "noUnusedParameters": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "skipLibCheck": true
   },
   "exclude": ["node_modules", ".vscode-test"]
 }

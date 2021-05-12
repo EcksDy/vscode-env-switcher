@@ -1,6 +1,5 @@
 import {
   createReadStream,
-  promises as fsPromises,
   createWriteStream,
   existsSync,
   ReadStream,
@@ -56,9 +55,7 @@ function decodeArray(arr: Uint8Array) {
  */
 async function writeFile(path: string, content: string | Uint8Array) {
   const dirString = nodePath.dirname(path);
-  await fsPromises.mkdir(dirString, {
-    recursive: true,
-  });
+  await workspace.fs.createDirectory(Uri.parse(dirString));
 
   let writable = content;
   if (typeof content === 'string') {
