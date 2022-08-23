@@ -8,7 +8,7 @@ function get(this: Memento): PresetInfo | null {
 }
 
 function set(this: Memento, presetInfo: PresetInfo | null) {
-  this.update(CURRENT_PRESET_KEY, presetInfo);
+  void this.update(CURRENT_PRESET_KEY, presetInfo);
 }
 
 interface Deps {

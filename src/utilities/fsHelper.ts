@@ -1,10 +1,4 @@
-import {
-  createReadStream,
-  createWriteStream,
-  existsSync,
-  ReadStream,
-  WriteStream,
-} from 'fs';
+import { createReadStream, createWriteStream, existsSync, ReadStream, WriteStream } from 'fs';
 import * as nodePath from 'path';
 import { Uri, workspace } from 'vscode';
 import { TextEncoder, TextDecoder } from 'util';
