@@ -10,7 +10,7 @@
   "publisher": "EcksDy",
   "version": "0.3.2",
   "engines": {
-    "vscode": "^1.37.0"
+    "vscode": "^1.71.0"
   },
   "categories": [
     "Other"
@@ -106,23 +106,17 @@
     "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
-    "@types/glob": "^7.1.1",
-    "@types/node": "^14.0.5",
-    "@types/vscode": "1.37.0",
-    "@typescript-eslint/eslint-plugin": "^2.24.0",
-    "@typescript-eslint/parser": "^2.34.0",
-    "eslint": "^7.0.0",
-    "eslint-config-airbnb-typescript": "^7.2.1",
-    "eslint-config-airbnb-typescript-prettier": "^2.1.1",
-    "eslint-plugin-import": "^2.20.1",
-    "prettier": "^2.0.5",
-    "typescript": "^3.9.3"
-  },
-  "peerDependencies": {
-    "glob": "*"
+    "@types/glob": "^8.1.0",
+    "@types/node": "^16.13.0",
+    "@types/vscode": "1.71.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.44.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6"
   },
   "dependencies": {
-    "glob": "^7.1.6",
-    "glob-promise": "^3.4.0"
+    "glob": "^10.3.3",
+    "glob-promise": "^6.0.3"
   }
 }

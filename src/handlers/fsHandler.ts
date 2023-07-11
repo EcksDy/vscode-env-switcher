@@ -1,5 +1,5 @@
 import { createReadStream, promises as fsPromises } from 'fs';
-import globTypes from 'glob';
+import { GlobOptions } from 'glob';
 import glob from 'glob-promise';
 import path from 'path';
 import readline from 'readline';
@@ -20,7 +20,7 @@ export default class FileSystemHandler {
 
   public readonly envFile: Uri;
 
-  private globOptions: globTypes.IOptions;
+  private globOptions: GlobOptions;
 
   private presetsGlob: GlobPattern;
 
@@ -58,7 +58,7 @@ export default class FileSystemHandler {
   /**
    * findFiles
    */
-  public async findFiles(pattern: string, globOptions?: globTypes.IOptions) {
+  public async findFiles(pattern: string, globOptions?: GlobOptions) {
     const filePaths = await glob(pattern, globOptions || this.globOptions);
     return filePaths.map((file) => Uri.file(file));
   }
