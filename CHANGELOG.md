@@ -2,6 +2,10 @@
 
 Changes to **.ENV Switcher** can be found in this file.
 
+## - 0.4.0
+
+- Removed backup functionality.
+
 ## - 0.3.2
 
 - Fixed write files paths for linux.
