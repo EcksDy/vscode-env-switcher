@@ -103,10 +103,11 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint \"src/**/*.ts\"",
+    "pretest": "npm run compile"
   },
   "devDependencies": {
-    "@types/glob": "^8.1.0",
     "@types/node": "^16.13.0",
     "@types/vscode": "1.71.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -116,7 +117,6 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "glob": "^10.3.3",
-    "glob-promise": "^6.0.3"
+    "glob": "^10.3.3"
   }
 }
