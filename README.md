@@ -2,7 +2,8 @@
 
 # .ENV Switcher
 
-Status bar extension that swaps(**overwrites**) the `.env` file from provided presets.
+Status bar extension that swaps(**overwrites**) the target file(`.env` by default) from provided presets. This means that the target file is a placeholder for presets.  
+**It's strongly advised to backup your `.env` file before using this extension.**
 
 ## Features
 
@@ -15,17 +16,6 @@ Status bar extension that swaps(**overwrites**) the `.env` file from provided pr
 <p align="center">
   <img src="images/preview.gif" alt="Switch a .env preset from the status bar" />
 </p>
-
-## Backups
-
-By default the extension will backup the content of the current `.env` file in case of unwanted overwrite.
-
-The `.env` backups are saved per workspace on the filesystem in VSCode's dedicated workspaces data directory.
-
-It's possible to view the backups by running the `.ENV Switcher: Show...` command.  
-It's possible to delete the backups by running a `.ENV Switcher: Clear...` command.
-
-_After getting familiar with the extension it's advised to set the `envSwitcher.backups.enabled` option to false in the configuration._
 
 ## Requirements
 

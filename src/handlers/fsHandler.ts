@@ -11,7 +11,7 @@ import { makeHeaderLine } from '../utilities/stringManipulations';
 import { ClassicGlobOptions } from '../utilities/types';
 
 const getPresetsGlob = () =>
-  workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('presetsGlob') as string;
+  workspace.getConfiguration(`${EXTENSION_PREFIX}`).get<string>('presetsGlob')!;
 
 export default class FileSystemHandler {
   public readonly rootDir: Uri;
@@ -157,7 +157,7 @@ export default class FileSystemHandler {
       input: stream,
     });
 
-    const linePromise: Promise<string> = new Promise((resolve, reject) => {
+    const linePromise = new Promise<string>((resolve, reject) => {
       let result: string;
       lineReader.on('line', (line) => {
         if (line.trim() !== '') {

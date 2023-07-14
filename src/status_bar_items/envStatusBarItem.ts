@@ -28,7 +28,7 @@ interface StatusBarItemPosition {
 const getPositionConfig = () => {
   const config = workspace
     .getConfiguration(`${EXTENSION_PREFIX}`)
-    .get('statusBarPosition') as PositionConfigs;
+    .get<PositionConfigs>('statusBarPosition')!;
 
   const configData: PositionConfigsData = {
     outerLeft: {
@@ -61,7 +61,7 @@ type WarningColorConfigs = 'default' | 'white' | 'black' | 'red' | 'magenta' | '
 const getWarningColorConfig = () => {
   const config = workspace
     .getConfiguration(`${EXTENSION_PREFIX}`)
-    .get('warning.color') as WarningColorConfigs;
+    .get<WarningColorConfigs>('warning.color')!;
 
   const configData: WarningColorConfigsData = {
     default: BUTTON_COLOR_DEFAULT,
@@ -78,7 +78,7 @@ const getWarningColorConfig = () => {
 const getWarningRegexConfig = () => {
   const regexConfig = workspace
     .getConfiguration(`${EXTENSION_PREFIX}`)
-    .get('warning.regex') as string;
+    .get<string>('warning.regex')!;
 
   if (regexConfig === '') return /^\b$/; // If empty config provided, will always match nothing.
 
