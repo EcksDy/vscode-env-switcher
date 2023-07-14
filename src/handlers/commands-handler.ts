@@ -1,7 +1,7 @@
 import { commands, Disposable } from 'vscode';
-import selectEnvPreset from '../command_implementations/selectEnvPreset';
+import selectEnvPreset from '../command-implementations/select-env-preset';
 import { SELECT_ENV_COMMAND_ID } from '../utilities/consts';
-import FileSystemHandler from './fsHandler';
+import FileSystemHandler from './file-system-handler';
 
 export default class CommandsHandler {
   private fsHandler: FileSystemHandler;

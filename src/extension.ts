@@ -1,7 +1,7 @@
 import { ExtensionContext, workspace } from 'vscode';
-import CommandsHandler from './handlers/commandsHandler';
-import FileSystemHandler from './handlers/fsHandler';
-import EnvStatusBarItem from './status_bar_items/envStatusBarItem';
+import CommandsHandler from './handlers/commands-handler';
+import FileSystemHandler from './handlers/file-system-handler';
+import EnvStatusBarItem from './status-bar-items/env-status-bar-item';
 import { selectedEnvPresetEventEmitter } from './utilities/events';
 import { EXTENSION_PREFIX } from './utilities/consts';
 

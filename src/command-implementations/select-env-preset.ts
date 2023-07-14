@@ -1,8 +1,8 @@
 import path from 'path';
 import { QuickPickItem, window, workspace } from 'vscode';
-import FileSystemHandler from '../handlers/fsHandler';
+import FileSystemHandler from '../handlers/file-system-handler';
 import { SelectedEnvPresetEventData, selectedEnvPresetEventEmitter } from '../utilities/events';
-import { capitalize } from '../utilities/stringManipulations';
+import { capitalize } from '../utilities/string-manipulations';
 
 export interface EnvPresetQuickPickItem extends SelectedEnvPresetEventData, QuickPickItem {}
 

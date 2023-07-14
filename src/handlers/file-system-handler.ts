@@ -5,9 +5,9 @@ import readline from 'readline';
 import { Readable } from 'stream';
 import { TextDecoder, TextEncoder } from 'util';
 import { ConfigurationChangeEvent, GlobPattern, Uri, WorkspaceFolder, workspace } from 'vscode';
-import concatFilesContent from '../utilities/bufferManipulations';
+import concatFilesContent from '../utilities/buffer-manipulations';
 import { EXTENSION_PREFIX } from '../utilities/consts';
-import { makeHeaderLine } from '../utilities/stringManipulations';
+import { makeHeaderLine } from '../utilities/string-manipulations';
 import { ClassicGlobOptions } from '../utilities/types';
 
 const getPresetsGlob = () =>
