@@ -6,9 +6,9 @@ import {
   ThemeColor,
   ConfigurationChangeEvent,
 } from 'vscode';
-import FileSystemHandler from '../handlers/fsHandler';
+import FileSystemHandler from '../handlers/file-system-handler';
 import { SELECT_ENV_COMMAND_ID, EXTENSION_PREFIX } from '../utilities/consts';
-import { extractHeaderLine } from '../utilities/stringManipulations';
+import { extractHeaderLine } from '../utilities/string-manipulations';
 import { selectedEnvPresetEventEmitter, SelectedEnvPresetEventData } from '../utilities/events';
 
 const BUTTON_TEXT_DEFAULT = 'Select .env';
