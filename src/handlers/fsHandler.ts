@@ -1,14 +1,14 @@
 import { createReadStream, promises as fsPromises } from 'fs';
-import { GlobOptions } from 'glob';
-import glob from 'glob-promise';
+import { GlobOptions, glob } from 'glob';
 import path from 'path';
 import readline from 'readline';
 import { Readable } from 'stream';
-import { Uri, workspace, WorkspaceFolder, ConfigurationChangeEvent, GlobPattern } from 'vscode';
-import { TextEncoder, TextDecoder } from 'util';
-import { makeHeaderLine } from '../utilities/stringManipulations';
+import { TextDecoder, TextEncoder } from 'util';
+import { ConfigurationChangeEvent, GlobPattern, Uri, WorkspaceFolder, workspace } from 'vscode';
 import concatFilesContent from '../utilities/bufferManipulations';
 import { EXTENSION_PREFIX } from '../utilities/consts';
+import { makeHeaderLine } from '../utilities/stringManipulations';
+import { ClassicGlobOptions } from '../utilities/types';
 
 const getPresetsGlob = () =>
   workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('presetsGlob') as string;
@@ -20,7 +20,11 @@ export default class FileSystemHandler {
 
   public readonly envFile: Uri;
 
-  private globOptions: GlobOptions;
+  private globOptions: GlobOptions = {
+    withFileTypes: false,
+    matchBase: true,
+    nodir: true,
+  };
 
   private presetsGlob: GlobPattern;
 
@@ -30,11 +34,7 @@ export default class FileSystemHandler {
     this.envFile = mainEnvUri;
     this.presetsGlob = getPresetsGlob();
 
-    this.globOptions = {
-      matchBase: true,
-      root: this.envDir.fsPath,
-      nodir: true,
-    };
+    this.globOptions.root = this.envDir.fsPath;
 
     workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
       const shouldUpdatePresetsGlob = event.affectsConfiguration(`${EXTENSION_PREFIX}.presetsGlob`);
@@ -58,8 +58,11 @@ export default class FileSystemHandler {
   /**
    * findFiles
    */
-  public async findFiles(pattern: string, globOptions?: GlobOptions) {
-    const filePaths = await glob(pattern, globOptions || this.globOptions);
+  public async findFiles(pattern: string, globOptions?: ClassicGlobOptions) {
+    const filePaths = await glob(
+      pattern,
+      { ...globOptions, withFileTypes: false } || this.globOptions,
+    );
     return filePaths.map((file) => Uri.file(file));
   }
 
