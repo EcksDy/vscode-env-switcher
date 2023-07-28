@@ -16,14 +16,14 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:**/.env"
+    "workspaceContains:*"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "envSwitcher.selectEnvPreset",
-        "title": ".ENV Switcher: Select .env file"
+        "title": ".ENV Switcher: Select preset"
       }
     ],
     "configuration": [
@@ -31,14 +31,29 @@
         "title": ".ENV Switcher",
         "properties": {
           "envSwitcher.enabled": {
-            "markdownDescription": "Enable/Disable the extension globally, or per workspace.   \r\n _*Requires window reload to take effect.*_",
+            "markdownDescription": "Enable/Disable the extension.  \r\n _*Can be set per workspace.*_  \r\n _*Requires window reload to take effect.*_",
             "type": "boolean",
             "default": true
           },
-          "envSwitcher.presetsGlob": {
-            "markdownDescription": "Glob pattern to find preset `.env` files. Will always look for `.env` extension only.  \r\n _*Can be set per workspace.*_",
+          "envSwitcher.glob.presets": {
+            "markdownDescription": "Glob pattern to find preset files (i.e.: `dev.env`, `.env.local`).  \r\n\r\n _*Can be set per workspace.*_",
             "type": "string",
-            "default": "*"
+            "default": "**/*.env"
+          },
+          "envSwitcher.glob.presetsExclude": {
+            "markdownDescription": "Glob patterns to exclude files from preset search.  \r\n\r\n _*Multiple patterns can be provided, separated by a comma(can be slow). Can be set per workspace.*_",
+            "type": "string",
+            "default": "**/node_modules/**"
+          },
+          "envSwitcher.glob.target": {
+            "markdownDescription": "Glob pattern to find the target file. Default setting will recursively search a `.env` file in the workspace. `.env` files are usually found in the workspace root directory.  \r\n\r\n _*Will always look for `.env` extension only. Will ignore `**/node_modules/**`. Can be set per workspace.*_",
+            "type": "string",
+            "default": "**/.env"
+          },
+          "envSwitcher.glob.targetExclude": {
+            "markdownDescription": "Glob patterns to exclude files.  \r\n\r\n _*Multiple patterns can be provided, separated by a comma(can be slow). Can be set per workspace.*_",
+            "type": "string",
+            "default": "**/node_modules/**"
           },
           "envSwitcher.statusBarPosition": {
             "markdownDescription": "Status bar button position.  \r\n _*Requires window reload to take effect.*_",
@@ -60,7 +75,7 @@
           "envSwitcher.warning.regex": {
             "description": "Regex pattern(with case insensitive flag) to test for presets that should appear with a warning on the status bar button. By default warnings will appear for presets with 'prod'/'PROD' in them. Changing the setting to an empty string will disable warning appearance.",
             "type": "string",
-            "default": "prod"
+            "default": ".*prod.*"
           },
           "envSwitcher.warning.color": {
             "description": "Status bar button warnings will appear with this color.",

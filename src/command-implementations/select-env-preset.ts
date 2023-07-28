@@ -1,53 +1,40 @@
-import path from 'path';
-import { QuickPickItem, window, workspace } from 'vscode';
-import FileSystemHandler from '../handlers/file-system-handler';
-import { SelectedEnvPresetEventData, selectedEnvPresetEventEmitter } from '../utilities/events';
-import { capitalize } from '../utilities/string-manipulations';
+import { QuickPickItem, window } from 'vscode';
+import { IButton, IPresetManager, Preset } from '../interfaces';
 
-export interface EnvPresetQuickPickItem extends SelectedEnvPresetEventData, QuickPickItem {}
+const NO_FILE = 'No file';
 
-const selectEnvPreset = async (fsHandler: FileSystemHandler) => {
-  const envPresetUris = await fsHandler.getEnvPresetUris();
+interface Deps {
+  presetManager: IPresetManager;
+  button: IButton;
+}
 
-  const envFileQuickPickList = envPresetUris.map((fileUri) => {
-    const fileName = path.basename(fileUri.fsPath, path.extname(fileUri.fsPath));
-    const fileNameFull = path.basename(fileUri.fsPath);
-    const label = capitalize(fileName);
-    const description = path.relative(fsHandler.rootDir.fsPath, fileUri.fsPath);
+function presetToQuickPickItem({ description, title }: Preset): QuickPickItem {
+  return {
+    label: title,
+    description,
+  };
+}
 
-    const envFileQuickPick: EnvPresetQuickPickItem = {
-      description,
-      label,
-      fileName,
-      fileNameFull,
-      fileUri,
-    };
+export async function selectEnvPreset({ presetManager, button }: Deps) {
+  const presets = await presetManager.getPresets();
 
-    return envFileQuickPick;
-  });
+  const presetQuickPickList: QuickPickItem[] = presets.map(presetToQuickPickItem);
 
-  envFileQuickPickList.unshift({
-    alwaysShow: true,
-    label: 'Show current .env file',
-    fileName: '.env',
-    fileNameFull: '.env',
-    fileUri: fsHandler.envFile,
-  });
+  const selectedItem = await window.showQuickPick(presetQuickPickList);
+  if (selectedItem === undefined) return;
 
-  const selectedEnv = await window.showQuickPick(envFileQuickPickList);
+  const selectedPreset = presets.find(
+    ({ title, description }) =>
+      title === selectedItem.label && description === selectedItem.description,
+  );
+  if (!selectedPreset) return;
 
-  if (selectedEnv === undefined) return;
-
-  const showCurrent = selectedEnv.fileName === '.env';
-  if (showCurrent) {
-    const doc = await workspace.openTextDocument(selectedEnv.fileUri);
-    await window.showTextDocument(doc);
-    return;
+  try {
+    await presetManager.setCurrentPreset(selectedPreset);
+    const text = selectedPreset.name || NO_FILE;
+    button.setText(text);
+  } catch (error) {
+    console.error(error);
+    button.setText(NO_FILE);
   }
-
-  fsHandler.setEnvContentWithHeaders(selectedEnv.fileUri, selectedEnv.fileNameFull);
-
-  selectedEnvPresetEventEmitter.fire(selectedEnv);
-};
-
-export default selectEnvPreset;
+}
