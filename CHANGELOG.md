@@ -4,7 +4,17 @@ Changes to **.ENV Switcher** can be found in this file.
 
 ## - 0.4.0
 
+- Changing a selected preset file, will now update the target file.
+- Added the following settings:
+  - Glob pattern for target file. By matches the first found `.env` in the workspace.
+  - Exclude glob pattern for target file. By default excludes anything in `node_modules`.
+  - Glob pattern for preset files. By matches anything anywhere with a `.env` extension.
+  - Exclude glob pattern for target file. By default excludes anything in `node_modules`.
+
+### BREAKING CHANGES
+
 - Removed backup functionality.
+- Removed "Show current .env file" from `selectEnvPreset` command options.
 
 ## - 0.3.2
 
