@@ -8,38 +8,22 @@
     "url": "https://github.com/EcksDy/vscode-env-switcher.git"
   },
   "publisher": "EcksDy",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "engines": {
-    "vscode": "^1.37.0"
+    "vscode": "^1.71.0"
   },
   "categories": [
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:**/.env"
+    "workspaceContains:*"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "envSwitcher.selectEnvPreset",
-        "title": ".ENV Switcher: Select .env file"
-      },
-      {
-        "command": "envSwitcher.showOriginalEnvBackup",
-        "title": ".ENV Switcher: Show original .env file backup"
-      },
-      {
-        "command": "envSwitcher.showSessionEnvBackup",
-        "title": ".ENV Switcher: Show session .env file backup"
-      },
-      {
-        "command": "envSwitcher.clearAllEnvBackups",
-        "title": ".ENV Switcher: Clear ALL .env file backups made by the extension"
-      },
-      {
-        "command": "envSwitcher.clearWorkspaceEnvBackups",
-        "title": ".ENV Switcher: Clear current workspace .env file backups"
+        "title": ".ENV Switcher: Select preset"
       }
     ],
     "configuration": [
@@ -47,19 +31,29 @@
         "title": ".ENV Switcher",
         "properties": {
           "envSwitcher.enabled": {
-            "markdownDescription": "Enable/Disable the extension globally, or per workspace.   \r\n _*Requires window reload to take effect.*_",
+            "markdownDescription": "Enable/Disable the extension.  \r\n _*Can be set per workspace.*_  \r\n _*Requires window reload to take effect.*_",
             "type": "boolean",
             "default": true
           },
-          "envSwitcher.backups.enabled": {
-            "markdownDescription": "Enable/Disable the backup of the original and current .env files.  \r\n _*It's advised to delete existing backups through the `.ENV Switcher: Clear...` commands.*_",
-            "default": true,
-            "type": "boolean"
-          },
-          "envSwitcher.presetsGlob": {
-            "markdownDescription": "Glob pattern to find preset `.env` files. Will always look for `.env` extension only.  \r\n _*Can be set per workspace.*_",
+          "envSwitcher.glob.presets": {
+            "markdownDescription": "Glob pattern to find preset files (i.e.: `dev.env`, `.env.local`).  \r\n\r\n _*Can be set per workspace.*_",
             "type": "string",
-            "default": "*"
+            "default": "**/*.env"
+          },
+          "envSwitcher.glob.presetsExclude": {
+            "markdownDescription": "Glob patterns to exclude files from preset search.  \r\n\r\n _*Multiple patterns can be provided, separated by a comma(can be slow). Can be set per workspace.*_",
+            "type": "string",
+            "default": "**/node_modules/**"
+          },
+          "envSwitcher.glob.target": {
+            "markdownDescription": "Glob pattern to find the target file. Default setting will recursively search a `.env` file in the workspace. `.env` files are usually found in the workspace root directory.  \r\n\r\n _*Will always look for `.env` extension only. Will ignore `**/node_modules/**`. Can be set per workspace.*_",
+            "type": "string",
+            "default": "**/.env"
+          },
+          "envSwitcher.glob.targetExclude": {
+            "markdownDescription": "Glob patterns to exclude files.  \r\n\r\n _*Multiple patterns can be provided, separated by a comma(can be slow). Can be set per workspace.*_",
+            "type": "string",
+            "default": "**/node_modules/**"
           },
           "envSwitcher.statusBarPosition": {
             "markdownDescription": "Status bar button position.  \r\n _*Requires window reload to take effect.*_",
@@ -81,7 +75,7 @@
           "envSwitcher.warning.regex": {
             "description": "Regex pattern(with case insensitive flag) to test for presets that should appear with a warning on the status bar button. By default warnings will appear for presets with 'prod'/'PROD' in them. Changing the setting to an empty string will disable warning appearance.",
             "type": "string",
-            "default": "prod"
+            "default": ".*prod.*"
           },
           "envSwitcher.warning.color": {
             "description": "Status bar button warnings will appear with this color.",
@@ -103,26 +97,20 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint \"src/**/*.ts\"",
+    "pretest": "npm run compile"
   },
   "devDependencies": {
-    "@types/glob": "^7.1.1",
-    "@types/node": "^14.0.5",
-    "@types/vscode": "1.37.0",
-    "@typescript-eslint/eslint-plugin": "^2.24.0",
-    "@typescript-eslint/parser": "^2.34.0",
-    "eslint": "^7.0.0",
-    "eslint-config-airbnb-typescript": "^7.2.1",
-    "eslint-config-airbnb-typescript-prettier": "^2.1.1",
-    "eslint-plugin-import": "^2.20.1",
-    "prettier": "^2.0.5",
-    "typescript": "^3.9.3"
-  },
-  "peerDependencies": {
-    "glob": "*"
+    "@types/node": "^16.13.0",
+    "@types/vscode": "1.71.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.44.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6"
   },
   "dependencies": {
-    "glob": "^7.1.6",
-    "glob-promise": "^3.4.0"
+    "glob": "^10.3.3"
   }
 }

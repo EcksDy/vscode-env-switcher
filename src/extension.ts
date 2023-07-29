@@ -1,36 +1,60 @@
-import { ExtensionContext, workspace } from 'vscode';
-import BackupViewerContentProvider from './content_providers/backupViewerContentProvider';
-import BackupHandler from './handlers/backupHandler';
-import CommandsHandler from './handlers/commandsHandler';
-import FileSystemHandler from './handlers/fsHandler';
-import EnvStatusBarItem from './status_bar_items/envStatusBarItem';
-import { selectedEnvPresetEventEmitter } from './utilities/events';
-import { EXTENSION_PREFIX } from './utilities/consts';
+import { ExtensionContext, WorkspaceFolder, commands, workspace } from 'vscode';
+import { StatusBarButton } from './ui-components/env-status-bar-item';
+import { config } from './utilities/config';
+import { MementoCurrPresetPersister } from './managers/memento-curr-preset-persister';
+import { SELECT_ENV_COMMAND_ID, fsHelper } from './utilities';
+import { FsPresetManager } from './managers/fs-preset-manager';
+import { FileWatcher } from './watchers/file-watcher';
+import { TargetManager } from './managers/target-manager';
+import { selectEnvPreset } from './command-implementations/select-env-preset';
 
-/**
- * Will get the extension `enabled` config from workspace settings, with global settings fallback.
- */
-const extensionEnabled = () =>
-  workspace.getConfiguration(`${EXTENSION_PREFIX}`).get('enabled') as boolean;
+export async function activate({ subscriptions, workspaceState }: ExtensionContext) {
+  // Allows disabling per workspace
+  if (!config.enabled()) return;
+  // Will not initialize if no target file is found
+  if (!(await fsHelper.findTarget(config))) return;
 
-export async function activate({
-  subscriptions,
-  globalStoragePath,
-  storagePath,
-}: ExtensionContext) {
-  if (!extensionEnabled()) return;
+  // I can make this assertion, because extension won't activate if there's no workspace folder open
+  const [rootFolder] = workspace.workspaceFolders as WorkspaceFolder[];
+  const rootDir = rootFolder.uri.fsPath;
 
-  // Making sure a workspace is opened so we can assert workspace related objects later
-  if (storagePath === undefined) throw new Error('No workspace opened.');
+  /* WATCHER */
+  const fileWatcher = new FileWatcher({ workspaceFolder: rootFolder });
 
-  const fsHandler = await FileSystemHandler.build();
-  const backupHandler = new BackupHandler(fsHandler, globalStoragePath, storagePath);
-  const cmdHandler = new CommandsHandler(fsHandler, backupHandler);
+  /* MANAGERS */
+  const persistanceManager = new MementoCurrPresetPersister({
+    state: workspaceState,
+  });
 
-  subscriptions.push(await EnvStatusBarItem.build(fsHandler));
-  subscriptions.push(...cmdHandler.getRegisteredCommands());
-  subscriptions.push(BackupViewerContentProvider.register(backupHandler));
-  subscriptions.push(selectedEnvPresetEventEmitter);
+  const targetManager = new TargetManager({ config });
+  const fsPresetManager = await FsPresetManager.build(
+    {
+      config,
+      targetManager,
+      persister: persistanceManager,
+      fileWatcher,
+    },
+    { rootDir },
+  );
+
+  /* UI COMPONENTS */
+  const statusBarButton = new StatusBarButton(
+    { config, fileWatcher },
+    {
+      preset: (await fsPresetManager.getCurrentPreset()) ?? undefined,
+    },
+  );
+
+  /* COMMANDS */
+  const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
+    selectEnvPreset({
+      presetManager: fsPresetManager,
+      button: statusBarButton,
+    }),
+  );
+
+  /* GARBAGE REGISTRATION */
+  subscriptions.push(selectEnvPresetCmd, statusBarButton, fsPresetManager);
 }
 
 export function deactivate() {}
