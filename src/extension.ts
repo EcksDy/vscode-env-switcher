@@ -27,7 +27,7 @@ export async function activate({ subscriptions, workspaceState }: ExtensionConte
   });
 
   const targetManager = new TargetManager({ config });
-  const fsPresetManager = new FsPresetManager(
+  const fsPresetManager = await FsPresetManager.build(
     {
       config,
       targetManager,

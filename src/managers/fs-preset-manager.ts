@@ -31,29 +31,34 @@ export class FsPresetManager implements IPresetManager {
 
   private garbage: Disposable[] = [];
 
-  constructor({ config, targetManager, persister, fileWatcher }: Deps, { rootDir }: Args) {
+  private constructor({ config, targetManager, persister, fileWatcher }: Deps, { rootDir }: Args) {
     this.rootDir = rootDir;
     this.persister = persister;
     this.targetManager = targetManager;
     this.fileWatcher = fileWatcher;
     this.config = config;
 
-    const currentPresetPath = persister.get()?.path;
-    if (currentPresetPath) this.setFileWatcher(currentPresetPath);
-
     this.garbage.push(this.fileWatcher);
+  }
+
+  static async build(deps: Deps, args: Args) {
+    const presetManager = new FsPresetManager(deps, args);
+
+    const currentPresetPath = deps.persister.get()?.path;
+    const isSynced = await presetManager.isCurrentPresetSynced();
+    if (currentPresetPath && isSynced) presetManager.setFileWatcher(currentPresetPath);
+
+    return presetManager;
   }
 
   async getCurrentPreset(): Promise<Preset | null> {
     const presetInfo = this.persister.get();
     if (!presetInfo) return null;
 
-    const isPresetExists = await fsHelper.exists(presetInfo.path);
-    if (!isPresetExists) return void this.persister.set(null) ?? null;
+    const isSynced = await this.isCurrentPresetSynced();
+    if (!isSynced) return null;
 
-    const content = await fsHelper.readFile(presetInfo.path);
-    const preset = { ...presetInfo, content };
-
+    const preset = await this.getCurrentPresetWithoutValidation();
     return preset;
   }
 
@@ -109,6 +114,35 @@ export class FsPresetManager implements IPresetManager {
     }
   }
 
+  private async isCurrentPresetSynced() {
+    const presetInfo = this.persister.get();
+    if (!presetInfo) return false;
+
+    const isPresetExists = await fsHelper.exists(presetInfo.path);
+    if (!isPresetExists) return void this.persister.set(null) ?? false;
+
+    const targetFile = await this.targetManager.getTargetFile();
+    if (!targetFile) return false;
+
+    const targetFileContent = await fsHelper.decodeFile(targetFile);
+    const isDifferent = await this.hasChanged(
+      presetInfo.path,
+      fsHelper.generateChecksum(targetFileContent),
+    );
+    if (isDifferent) return false;
+
+    return true;
+  }
+
+  private async getCurrentPresetWithoutValidation(): Promise<Preset | null> {
+    const presetInfo = this.persister.get();
+    if (!presetInfo) return null;
+
+    const content = await fsHelper.readFile(presetInfo.path);
+    const preset = { ...presetInfo, content };
+    return preset;
+  }
+
   private setFileWatcher(path: string) {
     this.fileWatcher.watchFile(path, {
       onDidChange: this.onCurrentPresetChange.bind(this),
@@ -117,7 +151,7 @@ export class FsPresetManager implements IPresetManager {
   }
 
   private async onCurrentPresetChange(changedFile: string) {
-    const currentPreset = await this.getCurrentPreset();
+    const currentPreset = await this.getCurrentPresetWithoutValidation();
     if (!currentPreset) return;
     if (currentPreset.path !== changedFile) return;
 
@@ -132,7 +166,7 @@ export class FsPresetManager implements IPresetManager {
   }
 
   private async onCurrentPresetDelete() {
-    const currentPreset = await this.getCurrentPreset();
+    const currentPreset = await this.getCurrentPresetWithoutValidation();
     if (!currentPreset) return;
 
     this.persister.set(null);
