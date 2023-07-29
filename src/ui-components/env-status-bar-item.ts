@@ -5,7 +5,6 @@ import {
   ExtensionConfig,
   SELECT_ENV_COMMAND_ID,
   StatusBarItemPosition,
-  config,
 } from '../utilities';
 
 const DEFAULT_BUTTON_TEXT = 'Select preset';

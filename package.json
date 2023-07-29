@@ -8,7 +8,7 @@
     "url": "https://github.com/EcksDy/vscode-env-switcher.git"
   },
   "publisher": "EcksDy",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "engines": {
     "vscode": "^1.71.0"
   },
@@ -99,7 +99,15 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "lint": "eslint \"src/**/*.ts\"",
-    "pretest": "npm run compile"
+    "pretest": "npm run compile",
+    "format": "prettier --write",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "npm run format",
+      "npm run lint"
+    ]
   },
   "devDependencies": {
     "@types/node": "^16.13.0",
@@ -107,6 +115,8 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.44.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
     "prettier": "^3.0.0",
     "typescript": "^5.1.6"
   },
