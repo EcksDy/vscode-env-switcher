@@ -2,6 +2,10 @@
 
 Changes to **.ENV Switcher** can be found in this file.
 
+## - 0.4.1
+
+- Added `husky` precommit hook to format and lint staged files.
+
 ## - 0.4.0
 
 - Changing a selected preset file, will now update the target file.
