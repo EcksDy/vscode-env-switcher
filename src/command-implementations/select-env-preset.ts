@@ -32,7 +32,7 @@ export async function selectEnvPreset({ config, presetManager, button }: Deps) {
   if (!selectedPreset) return;
 
   if (config.overwriteAlert.get()) {
-    const result = await window.showInformationMessage(
+    const result = await window.showWarningMessage(
       `You're about to overwrite your environment variables!\nPlease make sure you have a backup of your target file.`,
       ...OVERWRITE_ALERT_OPTIONS,
     );
