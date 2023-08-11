@@ -2,6 +2,10 @@
 
 Changes to **.ENV Switcher** can be found in this file.
 
+## - 0.4.2
+
+- Fixed file paths not parsing correctly on windows.
+
 ## - 0.4.1
 
 - Added `husky` precommit hook to format and lint staged files.
