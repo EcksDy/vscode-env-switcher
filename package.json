@@ -101,7 +101,8 @@
     "lint": "eslint \"src/**/*.ts\"",
     "pretest": "npm run compile",
     "format": "prettier --write",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "ui-test": "extest setup-and-run './out/ui-test/*.test.js' --code_version 1.71.0 --mocha_config './src/ui-test/setup/.mocharc.json' --extensions_dir '.vscode-test/extensions' --storage '.vscode-test/resources' --code_settings ./src/ui-test/setup/settings.json"
   },
   "lint-staged": {
     "*.ts": [
@@ -110,15 +111,20 @@
     ]
   },
   "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^16.13.0",
     "@types/vscode": "1.71.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "chai": "^4.3.7",
     "eslint": "^8.44.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.3",
+    "mocha": "^10.2.0",
     "prettier": "^3.0.0",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "vscode-extension-tester": "5.7.1"
   },
   "dependencies": {
     "glob": "^10.3.3"

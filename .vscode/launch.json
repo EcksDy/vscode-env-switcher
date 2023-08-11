@@ -25,6 +25,28 @@
       ],
       "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Debug UI Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/extest",
+      "args": [
+        "setup-and-run",
+        "${workspaceFolder}/out/ui-test/*.test.js",
+        "--code_version",
+        "1.71.0",
+        "--mocha_config",
+        "${workspaceFolder}/src/ui-test/utilities/debug.mocharc.json",
+        "--storage",
+        "${workspaceFolder}/.vscode-test/test-resources",
+        "--extensions_dir",
+        "${workspaceFolder}/.vscode-test/extensions",
+        "--log_level",
+        "debug"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }

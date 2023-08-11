@@ -63,10 +63,11 @@ const fileStructures = {
 } as const;
 
 type Structures = keyof typeof fileStructures;
+type DirectoryOrContent = string | { [key: string]: DirectoryOrContent };
 
 export const TEST_FILE_STRUCTURES = Object.keys(fileStructures) as Structures[];
 
-async function populateFileSystem(structure: Record<string, any>, currentPath = '') {
+async function populateFileSystem(structure: Record<string, DirectoryOrContent>, currentPath = '') {
   const namesAndContents = Object.entries(structure);
 
   for (const [name, content] of namesAndContents) {
@@ -80,9 +81,9 @@ async function populateFileSystem(structure: Record<string, any>, currentPath = 
   }
 }
 
-export async function generateStructure(structure: Structures): Promise<string> {
+export async function generateTestingGrounds(structure: Structures): Promise<string> {
   const startPath = path.join(__dirname, '..', '..', '..', 'testing-grounds');
-  await rm(startPath, { recursive: true, force: true });
+  // await rm(startPath, { recursive: true, force: true });
 
   await populateFileSystem(fileStructures[structure], startPath);
 

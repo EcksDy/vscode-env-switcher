@@ -7,3 +7,7 @@ src/**
 **/tslint.json
 **/*.map
 **/*.ts
+# node_modules
+test-resources/**
+.husky
+.github
