@@ -1,4 +1,4 @@
-import { ExtensionContext, WorkspaceFolder, commands, workspace } from 'vscode';
+import { ExtensionContext, WorkspaceFolder, commands, window, workspace } from 'vscode';
 import { StatusBarButton } from './ui-components/env-status-bar-item';
 import { config } from './utilities/config';
 import { MementoCurrPresetPersister } from './managers/memento-curr-preset-persister';
@@ -48,6 +48,7 @@ export async function activate({ subscriptions, workspaceState }: ExtensionConte
   /* COMMANDS */
   const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
     selectEnvPreset({
+      config,
       presetManager: fsPresetManager,
       button: statusBarButton,
     }),
