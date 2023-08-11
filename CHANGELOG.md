@@ -2,6 +2,11 @@
 
 Changes to **.ENV Switcher** can be found in this file.
 
+## - 0.4.3
+
+- Added an optional alert that will pop up when the user is about to overwrite a target file.
+- Added the absolute path of the preset in the quick pick list, to help distinguish between presets with the same name.
+
 ## - 0.4.2
 
 - Fixed file paths not parsing correctly on windows.

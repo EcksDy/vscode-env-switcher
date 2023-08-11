@@ -35,6 +35,11 @@
             "type": "boolean",
             "default": true
           },
+          "envSwitcher.overwriteAlert": {
+            "markdownDescription": "Enable/Disable the `You're about to overwrite your environment variables!` alert.  \r\n _*Clicking `Don't show again` overwrites this globally*_",
+            "type": "boolean",
+            "default": true
+          },
           "envSwitcher.glob.presets": {
             "markdownDescription": "Glob pattern to find preset files (i.e.: `dev.env`, `.env.local`).  \r\n\r\n _*Can be set per workspace.*_",
             "type": "string",

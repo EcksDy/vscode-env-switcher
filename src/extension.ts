@@ -48,6 +48,7 @@ export async function activate({ subscriptions, workspaceState }: ExtensionConte
   /* COMMANDS */
   const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
     selectEnvPreset({
+      config,
       presetManager: fsPresetManager,
       button: statusBarButton,
     }),
