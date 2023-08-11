@@ -1,4 +1,4 @@
-import { ExtensionContext, WorkspaceFolder, commands, window, workspace } from 'vscode';
+import { ExtensionContext, WorkspaceFolder, commands, workspace } from 'vscode';
 import { StatusBarButton } from './ui-components/env-status-bar-item';
 import { config } from './utilities/config';
 import { MementoCurrPresetPersister } from './managers/memento-curr-preset-persister';
