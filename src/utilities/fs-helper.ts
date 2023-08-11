@@ -11,7 +11,7 @@ import { ExtensionConfig } from './types';
  * @param path Filesystem path
  */
 async function readFile(path: string) {
-  return await workspace.fs.readFile(Uri.parse(path));
+  return await workspace.fs.readFile(Uri.file(path));
 }
 
 /**
@@ -19,7 +19,7 @@ async function readFile(path: string) {
  * @param path Filesystem path
  */
 async function decodeFile(path: string) {
-  const content = await workspace.fs.readFile(Uri.parse(path));
+  const content = await workspace.fs.readFile(Uri.file(path));
 
   return new TextDecoder().decode(content);
 }
@@ -39,11 +39,11 @@ function decodeArray(arr: Uint8Array) {
  */
 async function writeFile(path: string, content: string | Uint8Array) {
   const dirString = nodePath.dirname(path);
-  await workspace.fs.createDirectory(Uri.parse(dirString));
+  await workspace.fs.createDirectory(Uri.file(dirString));
 
   const writable = typeof content === 'string' ? new TextEncoder().encode(content) : content;
 
-  await workspace.fs.writeFile(Uri.parse(path), writable);
+  await workspace.fs.writeFile(Uri.file(path), writable);
 }
 
 /**
