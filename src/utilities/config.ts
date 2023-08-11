@@ -2,19 +2,6 @@ import { ConfigurationChangeEvent, StatusBarAlignment, ThemeColor, workspace } f
 import { GlobPattern, PositionConfigs, StatusBarItemPosition, WarningColorConfigs } from './types';
 import { DEFAULT_BUTTON_COLOR } from './consts';
 
-// interface Settings {
-//   warning: {
-//     color: () => WarningColorConfigs;
-//     regex: () => string;
-//     onChange: (onChange: () => Promise<void> | void) => Disposable;
-//   };
-//   position: () => PositionConfigs;
-//   target: {
-//     glob: () => GlobPattern;
-//     onChange: (onChange: (targetGlob: string) => Promise<void> | void) => Disposable;
-//   };
-// }
-
 const EXTENSION_PREFIX = 'envSwitcher';
 
 /**
@@ -22,6 +9,20 @@ const EXTENSION_PREFIX = 'envSwitcher';
  */
 function enabled() {
   return getConfig<boolean>('enabled');
+}
+
+/**
+ * Will get the `overwriteAlert` config from workspace settings, with global settings fallback.
+ */
+function getOverwriteAlert() {
+  return getConfig<boolean>('overwriteAlert')!;
+}
+
+/**
+ * Will set the `overwriteAlert` in global settings fallback.
+ */
+async function setOverwriteAlert(value?: boolean): Promise<void> {
+  return setConfig('overwriteAlert', value);
 }
 
 type PositionConfigsData = {
@@ -173,8 +174,16 @@ function getConfig<T = unknown>(config: string) {
   return workspace.getConfiguration(EXTENSION_PREFIX).get<T>(config);
 }
 
+function setConfig<T = unknown>(config: string, value: T) {
+  return workspace.getConfiguration(EXTENSION_PREFIX).update(config, value, true);
+}
+
 export const config = {
   enabled,
+  overwriteAlert: {
+    get: getOverwriteAlert,
+    set: setOverwriteAlert,
+  },
   warning: {
     color: warningColor,
     regex: warningRegex,

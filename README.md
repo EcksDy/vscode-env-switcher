@@ -49,6 +49,13 @@ _Don't forget to check that your `.gitignore` is still valid for these `.envs`_
 
 For people preferring `.env.preset-name` naming convention, change the `envSwitcher.glob.presets` to `**/.env.*`
 
+### I've added the target file, but the status bar button is not showing, why?
+
+Extension will not start if no target was found when the directory was first opened.
+
+- Ensure the target file would be found by the glob specified in `envSwitcher.glob.target` setting.
+- Reload the window via `Developer: Reload Window` command.
+
 ### Will you support monorepos?
 
 I'd like to, but there are so many ways to structure a monorepo and so many approaches to handle targets and presets that I'm not sure how to even approach it.  
