@@ -8,7 +8,7 @@
     "url": "https://github.com/EcksDy/vscode-env-switcher.git"
   },
   "publisher": "EcksDy",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "engines": {
     "vscode": "^1.71.0"
   },
@@ -32,6 +32,11 @@
         "properties": {
           "envSwitcher.enabled": {
             "markdownDescription": "Enable/Disable the extension.  \r\n _*Can be set per workspace.*_  \r\n _*Requires window reload to take effect.*_",
+            "type": "boolean",
+            "default": true
+          },
+          "envSwitcher.overwriteAlert": {
+            "markdownDescription": "Enable/Disable the `You're about to overwrite your environment variables!` alert.  \r\n _*Clicking `Don't show again` overwrites this globally*_",
             "type": "boolean",
             "default": true
           },
