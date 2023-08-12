@@ -15,6 +15,10 @@ Status bar extension that swaps(**overwrites**) the target file(`.env` by defaul
   <img src="images/preview.gif" alt="Switch a .env preset from the status bar" />
 </p>
 
+## Semi-shameless plug
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/N4N8O4KNX) [![button to ecksdy.com](https://img.shields.io/badge/ecksdy.com-F5A468?logo=aboutdotme&logoColor=white&style=for-the-badge)](https://ecksdy.com)
+
 ## Requirements
 
 - For the status bar button to show, a file matching the target glob must be found in the workspace.
