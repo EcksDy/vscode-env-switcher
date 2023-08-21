@@ -63,7 +63,9 @@ Extension will not start if no target was found when the directory was first ope
 ### Will you support monorepos?
 
 I'd like to, but there are so many ways to structure a monorepo and so many approaches to handle targets and presets that I'm not sure how to even approach it.  
-If you'd like to help with an idea or join the discussion - you can do that [here](https://github.com/EcksDy/vscode-env-switcher/issues/17).
+If you'd like to help with an idea or join the discussion you can do that in:
+- [Support multiroot workspaces](https://github.com/EcksDy/vscode-env-switcher/issues/17)
+- [Discussing a UI solution for multiroot/monorepo workspaces](https://github.com/EcksDy/vscode-env-switcher/issues/41).
 
 ### How can I turn off the warning in the status bar?
 
