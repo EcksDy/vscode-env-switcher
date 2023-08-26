@@ -2,8 +2,9 @@
 
 # .ENV Switcher
 
-Status bar extension that swaps(**overwrites**) the target file(`.env` by default) from provided presets. This means that the target file is a placeholder for presets.  
-**It's strongly advised to backup your `.env` file before using this extension.**
+Status bar extension that swaps(**overwrites**) the target file(`.env` by default) from provided presets. This means that the target file is a placeholder for presets.
+
+**It's strongly advised to backup your target file (`.env`) before using this extension.**
 
 ## Features
 
@@ -39,6 +40,25 @@ The default configuration will match any of the following presets in the workspa
 
 _Don't forget to check that your `.gitignore` is still valid for these `.envs`_
 
+## Planned
+
+In no particular order.
+
+### Multi-root Workspace / Mono-repo support
+
+- [ ] Detect, parse and watch config files
+- [ ] Merge strategy for settings, `.code-workspace` and `.envswitcher` files
+- [ ] Support multi target/presets
+- [ ] UI for selecting presets (TreeView? Webview?)
+
+### Tasks
+
+- [ ] Fix issue with dev/master branch out of sync
+- [ ] Trigger CI/CD on new tags
+- [ ] Add CI for pull requests
+- [ ] Add DI container
+- [ ] Add UI tests
+
 ## FAQ
 
 ### Why my target file is not detected?
@@ -64,6 +84,7 @@ Extension will not start if no target was found when the directory was first ope
 
 I'd like to, but there are so many ways to structure a monorepo and so many approaches to handle targets and presets that I'm not sure how to even approach it.  
 If you'd like to help with an idea or join the discussion you can do that in:
+
 - [Support multiroot workspaces](https://github.com/EcksDy/vscode-env-switcher/issues/17)
 - [Discussing a UI solution for multiroot/monorepo workspaces](https://github.com/EcksDy/vscode-env-switcher/issues/41).
 
