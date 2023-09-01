@@ -32,10 +32,6 @@ describe('regular repo setup', () => {
         }
       }
 
-      if (structure === 'basic') {
-        await new Promise((resolve) => setTimeout(resolve, 10000));
-      }
-
       await VSBrowser.instance.openResources(testingGroundsPath);
 
       statusBar = new StatusBar();
