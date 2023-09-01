@@ -1,0 +1,19 @@
+on:
+  pull_request:
+    branches:
+      - master
+
+name: Test Extension
+jobs:
+  test:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install
+        run: npm Install
+      - name: Test
+        run: npm run ui-test
