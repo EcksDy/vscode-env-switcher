@@ -18,7 +18,7 @@ Status bar extension that swaps(**overwrites**) the target file(`.env` by defaul
 
 ## Semi-shameless plug
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/N4N8O4KNX) [![button to ecksdy.com](https://img.shields.io/badge/ecksdy.com-F5A468?logo=aboutdotme&logoColor=white&style=for-the-badge)](https://ecksdy.com)
+<a href='https://ko-fi.com/N4N8O4KNX' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a> [![button to ecksdy.com](https://img.shields.io/badge/ecksdy.com-F5A468?logo=aboutdotme&logoColor=white&style=for-the-badge)](https://ecksdy.com)
 
 ## Requirements
 

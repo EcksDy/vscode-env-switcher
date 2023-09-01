@@ -119,6 +119,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
+    "@types/mocha-each": "^2.0.0",
     "@types/node": "^16.13.0",
     "@types/vscode": "1.71.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -128,9 +129,10 @@
     "husky": "^8.0.3",
     "lint-staged": "^13.2.3",
     "mocha": "^10.2.0",
+    "mocha-each": "^2.0.1",
     "prettier": "^3.0.0",
     "typescript": "^5.1.6",
-    "vscode-extension-tester": "5.7.1"
+    "vscode-extension-tester": "5.9.1"
   },
   "dependencies": {
     "glob": "^10.3.3"

@@ -1,7 +1,9 @@
 import { mkdir, rm, writeFile } from 'fs/promises';
 import path from 'path';
 
-const nodeModulesStructure = {
+const TESTING_GROUNDS_PATH = path.join(__dirname, '..', '..', '..', 'testing-grounds');
+
+const NODE_MODULES_STRUCTURE = {
   node_modules: {
     'basic-package': {
       '.env': 'NODE_ENV=production',
@@ -31,15 +33,15 @@ const nodeModulesStructure = {
   },
 } as const;
 
-const fileStructures = {
+const FILE_STRUCTURES = {
   basic: {
-    ...nodeModulesStructure,
+    ...NODE_MODULES_STRUCTURE,
     '.env': 'NODE_ENV=local',
     'local.env': 'NODE_ENV=local',
     'prod.env': 'NODE_ENV=production',
   },
   'with-subdir': {
-    ...nodeModulesStructure,
+    ...NODE_MODULES_STRUCTURE,
     '.env': 'NODE_ENV=local',
     presets: {
       'local.env': 'NODE_ENV=local',
@@ -47,7 +49,7 @@ const fileStructures = {
     },
   },
   'everything-in-subdir': {
-    ...nodeModulesStructure,
+    ...NODE_MODULES_STRUCTURE,
     presets: {
       '.env': 'NODE_ENV=local',
       'local.env': 'NODE_ENV=local',
@@ -55,17 +57,55 @@ const fileStructures = {
     },
   },
   'basic-reversed-naming': {
-    ...nodeModulesStructure,
+    ...NODE_MODULES_STRUCTURE,
     '.env': 'NODE_ENV=local',
     '.env.local': 'NODE_ENV=local',
     '.env.prod': 'NODE_ENV=production',
   },
 } as const;
 
-type Structures = keyof typeof fileStructures;
-type DirectoryOrContent = string | { [key: string]: DirectoryOrContent };
+const STRUCTURE_SETTINGS: Partial<Record<Structures, Record<string, string | boolean>>> = {
+  'basic-reversed-naming': {
+    'Env Switcher › Glob: Presets': '.env.*',
+  },
+} as const;
 
-export const TEST_FILE_STRUCTURES = Object.keys(fileStructures) as Structures[];
+export type Structures = keyof typeof FILE_STRUCTURES;
+type DirectoryOrContent =
+  | string
+  | {
+      [key: string]: DirectoryOrContent;
+    };
+
+export const TEST_FILE_STRUCTURES = Object.keys(FILE_STRUCTURES) as Structures[];
+export const IGNORED_DIRS_AND_FILES = ['node_modules', '.env'];
+
+export function getStructureSettings(structureName: Structures) {
+  return STRUCTURE_SETTINGS[structureName];
+}
+
+function findPresetNamesInStructure(acc: string[], structure: DirectoryOrContent) {
+  const namesAndContents = Object.entries(structure);
+
+  for (const [name, content] of namesAndContents) {
+    if (IGNORED_DIRS_AND_FILES.includes(name)) continue;
+    if (typeof content === 'string') {
+      acc.push(name);
+      continue;
+    }
+
+    findPresetNamesInStructure(acc, content);
+  }
+}
+
+export function getExpectedPresetNames(structureName: Structures) {
+  const structure = FILE_STRUCTURES[structureName];
+  const presetNames: string[] = [];
+
+  findPresetNamesInStructure(presetNames, structure);
+
+  return presetNames;
+}
 
 async function populateFileSystem(structure: Record<string, DirectoryOrContent>, currentPath = '') {
   const namesAndContents = Object.entries(structure);
@@ -82,10 +122,13 @@ async function populateFileSystem(structure: Record<string, DirectoryOrContent>,
 }
 
 export async function generateTestingGrounds(structure: Structures): Promise<string> {
-  const startPath = path.join(__dirname, '..', '..', '..', 'testing-grounds');
-  // await rm(startPath, { recursive: true, force: true });
+  await resetTestingGrounds();
+  await populateFileSystem(FILE_STRUCTURES[structure], TESTING_GROUNDS_PATH);
 
-  await populateFileSystem(fileStructures[structure], startPath);
+  return TESTING_GROUNDS_PATH;
+}
 
-  return startPath;
+export async function resetTestingGrounds() {
+  await rm(TESTING_GROUNDS_PATH, { recursive: true, force: true });
+  await mkdir(TESTING_GROUNDS_PATH);
 }
