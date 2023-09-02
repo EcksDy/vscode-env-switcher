@@ -55,9 +55,9 @@ In no particular order.
 
 - [ ] Fix issue with dev/master branch out of sync
 - [ ] Trigger CI/CD on new tags
-- [ ] Add CI for pull requests
+- [x] Add CI for pull requests
 - [ ] Add DI container
-- [ ] Add UI tests
+- [x] Add UI tests
 
 ## FAQ
 
