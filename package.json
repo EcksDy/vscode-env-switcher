@@ -20,6 +20,23 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "env-switcher-panel",
+          "title": "Preset management panel",
+          "icon": "images/env-switcher-for-dark-theme.png"
+        }
+      ]
+    },
+    "views": {
+      "env-switcher-panel": [
+        {
+          "id": "preset-panel",
+          "name": ".ENV Switcher"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "envSwitcher.selectEnvPreset",

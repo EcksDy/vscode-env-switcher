@@ -1,4 +1,16 @@
-import { ExtensionContext, WorkspaceFolder, commands, workspace } from 'vscode';
+import {
+  ExtensionContext,
+  TreeDataProvider,
+  TreeItem,
+  TreeItemCollapsibleState,
+  WorkspaceFolder,
+  commands,
+  window,
+  workspace,
+  Command,
+  EventEmitter,
+  Event,
+} from 'vscode';
 import { StatusBarButton } from './ui-components/env-status-bar-item';
 import { config } from './utilities/config';
 import { MementoCurrPresetPersister } from './managers/memento-curr-preset-persister';
@@ -7,6 +19,7 @@ import { FsPresetManager } from './managers/fs-preset-manager';
 import { FileWatcher } from './watchers/file-watcher';
 import { TargetManager } from './managers/target-manager';
 import { selectEnvPreset } from './command-implementations/select-env-preset';
+import path from 'path';
 
 export async function activate({ subscriptions, workspaceState }: ExtensionContext) {
   // Allows disabling per workspace
@@ -45,6 +58,8 @@ export async function activate({ subscriptions, workspaceState }: ExtensionConte
     },
   );
 
+  window.registerTreeDataProvider('preset-panel', new PresetPanelProvider());
+
   /* COMMANDS */
   const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
     selectEnvPreset({
@@ -59,3 +74,87 @@ export async function activate({ subscriptions, workspaceState }: ExtensionConte
 }
 
 export function deactivate() {}
+
+class Preset extends TreeItem {
+  constructor(
+    public readonly label: string,
+    private readonly version: string,
+    public readonly collapsibleState: TreeItemCollapsibleState,
+    public readonly command?: Command,
+  ) {
+    super(label, collapsibleState);
+
+    this.tooltip = `${this.label}-${this.version}`;
+    this.description = this.version;
+  }
+
+  iconPath = {
+    light: path.join(__filename, '..', 'images', 'env-switcher-for-light-theme.png'),
+    dark: path.join(__filename, '..', 'images', 'env-switcher-for-dark-theme.png'),
+  };
+
+  contextValue = 'smthing';
+}
+
+class Project extends TreeItem {
+  constructor(
+    public readonly label: string,
+    private readonly version: string,
+    public readonly collapsibleState: TreeItemCollapsibleState,
+    public readonly command?: Command,
+    public readonly children?: Preset[],
+  ) {
+    super(label, collapsibleState);
+
+    this.tooltip = `${this.label}-${this.version}`;
+    this.description = this.version;
+  }
+
+  iconPath = {
+    light: path.join(__filename, '..', 'images', 'env-switcher-for-light-theme.png'),
+    dark: path.join(__filename, '..', 'images', 'env-switcher-for-dark-theme.png'),
+  };
+
+  contextValue = 'smthing';
+}
+
+class PresetPanelProvider implements TreeDataProvider<Project> {
+  private _onDidChangeTreeData: EventEmitter<Project | undefined | void> = new EventEmitter<
+    Project | undefined | void
+  >();
+  readonly onDidChangeTreeData: Event<Project | undefined | void> = this._onDidChangeTreeData.event;
+
+  constructor() {}
+
+  refresh(): void {
+    this._onDidChangeTreeData.fire();
+  }
+
+  getTreeItem(element: Project): TreeItem {
+    return element;
+  }
+
+  getChildren(element?: Project): Thenable<Project[]> {
+    if (element) {
+      return new Promise<Project[]>((resolve) => {
+        resolve([
+          new Project('Project 1', '1.0.0', TreeItemCollapsibleState.Expanded, undefined, [
+            new Preset('test', '1.0.0', TreeItemCollapsibleState.None),
+            new Preset('test', '2.0.0', TreeItemCollapsibleState.None),
+            new Preset('test', '3.0.0', TreeItemCollapsibleState.None),
+            new Preset('test', '4.0.0', TreeItemCollapsibleState.None),
+          ]),
+          new Project('Project 2', '1.0.0', TreeItemCollapsibleState.Expanded, undefined, [
+            new Preset('test', '1.0.0', TreeItemCollapsibleState.None),
+            new Preset('test', '2.0.0', TreeItemCollapsibleState.None),
+            new Preset('test', '3.0.0', TreeItemCollapsibleState.None),
+            new Preset('test', '4.0.0', TreeItemCollapsibleState.None),
+          ]),
+        ]);
+      });
+    }
+    return new Promise<Project[]>((resolve) => {
+      resolve([]);
+    });
+  }
+}
