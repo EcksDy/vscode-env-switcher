@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 16.13
 
-      - name: Test unix
+      - name: Test OS ${{ matrix.os }} - VSCode ${{ matrix.version }}
         run: |
           npm install
           export DISPLAY=:99
