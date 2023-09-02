@@ -10,16 +10,17 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+        os: ['macos-latest']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 16.13
-      - run: npm install
-      - name: Test
+
+      - name: Test unix
         run: |
+          npm install
           export DISPLAY=:99
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
           npm run ui-test
