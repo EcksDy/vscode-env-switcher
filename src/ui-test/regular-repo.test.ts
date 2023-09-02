@@ -1,5 +1,12 @@
 import { expect } from 'chai';
-import { InputBox, StatusBar, VSBrowser, Workbench, before } from 'vscode-extension-tester';
+import {
+  InputBox,
+  StatusBar,
+  VSBrowser,
+  WebElement,
+  Workbench,
+  before,
+} from 'vscode-extension-tester';
 import {
   Structures,
   TEST_FILE_STRUCTURES,
@@ -16,7 +23,7 @@ describe('regular repo setup', () => {
   });
 
   forEach(TEST_FILE_STRUCTURES).describe('%s structure', (structure: Structures) => {
-    let statusBar: StatusBar;
+    let envSwitcherButton: WebElement;
     let expectedPresetNames: string[];
 
     before(async () => {
@@ -34,7 +41,10 @@ describe('regular repo setup', () => {
 
       await VSBrowser.instance.openResources(testingGroundsPath);
 
-      statusBar = new StatusBar();
+      const statusBar = new StatusBar();
+      envSwitcherButton = await VSBrowser.instance.driver.wait(async () => {
+        return (await statusBar.getItem('Select preset'))!;
+      }, 5_000);
     });
 
     after(async () => {
@@ -42,10 +52,7 @@ describe('regular repo setup', () => {
     });
 
     it('should suggest the expected presets', async () => {
-      const envSwitcherButton = await statusBar.getItem('Select preset');
-      expect(envSwitcherButton).to.exist;
-
-      await envSwitcherButton!.click();
+      await envSwitcherButton.click();
 
       const presetSelect = await InputBox.create();
       const availablePresets = await presetSelect.getQuickPicks();
