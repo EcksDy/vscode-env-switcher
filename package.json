@@ -24,7 +24,7 @@
       "activitybar": [
         {
           "id": "env-switcher-panel",
-          "title": "Preset management panel",
+          "title": "Presets",
           "icon": "images/env-switcher-for-dark-theme.png"
         }
       ]
@@ -37,10 +37,27 @@
         }
       ]
     },
+    "menus": {
+      "view/title": [
+        {
+          "when": "view == preset-panel",
+          "command": "envSwitcher.multiSwitch",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "envSwitcher.selectEnvPreset",
         "title": ".ENV Switcher: Select preset"
+      },
+      {
+        "command": "envSwitcher.multiSwitch",
+        "title": ".ENV Switcher: Toggle multi switch",
+        "icon": {
+          "light": "images/multi-target-for-light.svg",
+          "dark": "images/multi-target-for-dark.svg"
+        }
       }
     ],
     "configuration": [
