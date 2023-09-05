@@ -1,12 +1,9 @@
 import { ExtensionContext, WorkspaceFolder, commands, workspace } from 'vscode';
-import { StatusBarButton } from './ui-components/env-status-bar-item';
-import { config } from './utilities/config';
-import { MementoCurrPresetPersister } from './managers/memento-curr-preset-persister';
-import { SELECT_ENV_COMMAND_ID, fsHelper } from './utilities';
-import { FsPresetManager } from './managers/fs-preset-manager';
-import { FileWatcher } from './watchers/file-watcher';
-import { TargetManager } from './managers/target-manager';
-import { selectEnvPreset } from './command-implementations/select-env-preset';
+import { selectEnvPreset } from './command-implementations';
+import { FsPresetManager, MementoCurrPresetPersister, TargetManager } from './managers';
+import { StatusBarButton } from './ui-components';
+import { SELECT_ENV_COMMAND_ID, config, fsHelper } from './utilities';
+import { FileWatcher } from './watchers';
 
 export async function activate({ subscriptions, workspaceState }: ExtensionContext) {
   // Allows disabling per workspace
