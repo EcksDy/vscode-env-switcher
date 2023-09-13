@@ -18,8 +18,30 @@
   "activationEvents": [
     "workspaceContains:*"
   ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "icon": "images/env-switcher.png",
+          "id": "presetsViewContainer",
+          "title": ".ENV Switcher"
+        }
+      ]
+    },
+    "views": {
+      "presetsViewContainer": [
+        {
+          "type": "webview",
+          "id": "envSwitcher.presetsView",
+          "name": "Presets"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "envSwitcher.selectEnvPreset",
@@ -124,6 +146,7 @@
     "@types/vscode": "1.71.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "@vscode/codicons": "^0.0.33",
     "chai": "^4.3.7",
     "eslint": "^8.44.0",
     "husky": "^8.0.3",

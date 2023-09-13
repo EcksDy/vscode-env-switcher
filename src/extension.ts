@@ -1,11 +1,11 @@
-import { ExtensionContext, WorkspaceFolder, commands, workspace } from 'vscode';
+import { ExtensionContext, WorkspaceFolder, commands, window, workspace } from 'vscode';
 import { selectEnvPreset } from './command-implementations';
 import { FsPresetManager, MementoCurrPresetPersister, TargetManager } from './managers';
-import { StatusBarButton } from './ui-components';
+import { PresetsViewProvider, StatusBarButton } from './ui-components';
 import { SELECT_ENV_COMMAND_ID, config, fsHelper } from './utilities';
 import { FileWatcher } from './watchers';
 
-export async function activate({ subscriptions, workspaceState }: ExtensionContext) {
+export async function activate({ subscriptions, workspaceState, extensionUri }: ExtensionContext) {
   // Allows disabling per workspace
   if (!config.enabled()) return;
   // Will not initialize if no target file is found
@@ -42,6 +42,9 @@ export async function activate({ subscriptions, workspaceState }: ExtensionConte
     },
   );
 
+  const provider = new PresetsViewProvider(extensionUri);
+  const presetView = window.registerWebviewViewProvider(PresetsViewProvider.viewType, provider);
+
   /* COMMANDS */
   const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
     selectEnvPreset({
@@ -52,7 +55,7 @@ export async function activate({ subscriptions, workspaceState }: ExtensionConte
   );
 
   /* GARBAGE REGISTRATION */
-  subscriptions.push(selectEnvPresetCmd, statusBarButton, fsPresetManager);
+  subscriptions.push(selectEnvPresetCmd, statusBarButton, fsPresetManager, presetView);
 }
 
 export function deactivate() {}
