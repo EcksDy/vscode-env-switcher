@@ -7,7 +7,9 @@
 
   let { projects, multiSwitch } = oldState;
 
-  console.log(projects, multiSwitch, oldState);
+  const selected = {};
+
+  console.log(projects, multiSwitch);
 
   render(projects);
 
@@ -28,7 +30,21 @@
 
   function render(projects) {
     const headLine = document.querySelector('.head-line');
-    headLine.appendChild(createInlineButton('target'));
+    headLine.appendChild(
+      createInlineButton(
+        'multi-target',
+        (e) => {
+          e.currentTarget.classList.toggle('active');
+          multiSwitch = !multiSwitch;
+          vscode.setState({ projects, multiSwitch });
+          vscode.postMessage({
+            action: 'toggleMultiSwitch',
+            value: multiSwitch,
+          });
+        },
+        'Multi switch mode',
+      ),
+    );
     const projectList = getProjectList();
 
     for (const project of projects) {
@@ -43,7 +59,7 @@
       const presetList = createPresetList();
 
       for (const preset of project.presets) {
-        preset.project = project.path;
+        preset.project = project.id;
         const presetEntry = createPresetEntry(preset);
         presetList.appendChild(presetEntry);
       }
@@ -73,8 +89,10 @@
   function createProjectEntry(project) {
     const projectEntry = document.createElement('div');
     projectEntry.className = 'project-entry clickable';
-    projectEntry.id = project.path;
-    projectEntry.addEventListener('click', onProjectClicked);
+    projectEntry.id = project.id;
+    projectEntry.addEventListener('click', (e) => {
+      onProjectClicked(project, e.currentTarget);
+    });
 
     const i = document.createElement('i');
     i.className = `codicon codicon-folder`;
@@ -89,9 +107,10 @@
 
   function createPresetEntry(preset) {
     const presetEntry = document.createElement('li');
+    presetEntry.id = preset.id;
     presetEntry.className = 'preset-entry clickable';
-    presetEntry.addEventListener('click', () => {
-      onProjectClicked(preset.value);
+    presetEntry.addEventListener('click', (e) => {
+      onPresetClicked(preset, e.currentTarget);
     });
 
     const indentation = document.createElement('span');
@@ -109,7 +128,14 @@
     return presetEntry;
   }
 
-  function onPresetClicked(preset) {
+  function onPresetClicked(preset, element) {
+    console.log(preset, selected);
+    const currentlySelected = selected[preset.project];
+    if (preset.id === currentlySelected?.id) return;
+
+    selected[preset.project] = { id: preset.id, element };
+    element.classList.toggle('selected');
+
     vscode.postMessage({
       action: 'selectPreset',
       project: preset.project,
@@ -117,21 +143,15 @@
     });
   }
 
-  function onProjectClicked(e) {
-    if (!e || !e.target || !e.target.parentElement || !e.target.parentElement.children) return;
-
-    const { target } = e;
-
-    const project = projects.find((p) => p.path === target.id);
-    if (!project) return;
-
-    target.parentElement.children[1].style.display = project.visible ? 'none' : 'block';
+  function onProjectClicked(project, element) {
+    element.parentElement.children[1].style.display = project.visible ? 'none' : 'block';
     project.visible = !project.visible;
   }
 
-  function createInlineButton(icon, onClick) {
+  function createInlineButton(icon, onClick, tooltip) {
     const span = document.createElement('span');
     span.className = 'inline-button clickable';
+    span.title = tooltip;
     if (onClick) span.addEventListener('click', onClick);
 
     const i = document.createElement('i');

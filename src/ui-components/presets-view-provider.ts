@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import {
   CancellationToken,
   Uri,
@@ -9,6 +10,7 @@ import {
 } from 'vscode';
 
 interface Project {
+  id: string;
   locked: boolean;
   path: string; // absolute path
   name: string;
@@ -16,6 +18,7 @@ interface Project {
 }
 
 interface Preset {
+  id: string;
   name: string;
   selected: boolean;
   path: string; // absolute path
@@ -76,16 +79,19 @@ export class PresetsViewProvider implements WebviewViewProvider {
           multiSwitch: false,
           projects: [
             {
+              id: getHash('path/to/project'),
               locked: false,
               path: 'path/to/project',
               name: 'Project 1',
               presets: [
                 {
+                  id: getHash('path/to/project/preset1'),
                   name: 'preset 1',
                   selected: true,
                   path: 'path/to/project/preset1',
                 },
                 {
+                  id: getHash('path/to/project/preset2'),
                   name: 'preset 2',
                   selected: false,
                   path: 'path/to/project/preset2',
@@ -93,16 +99,19 @@ export class PresetsViewProvider implements WebviewViewProvider {
               ],
             },
             {
+              id: getHash('path/to/project2'),
               locked: false,
               path: 'path/to/project2',
               name: 'Project 2',
               presets: [
                 {
+                  id: getHash('path/to/project2/preset1'),
                   name: 'preset 1',
                   selected: true,
                   path: 'path/to/project2/preset1',
                 },
                 {
+                  id: getHash('path/to/project2/preset2'),
                   name: 'preset 2',
                   selected: false,
                   path: 'path/to/project2/preset2',
@@ -173,15 +182,17 @@ export class PresetsViewProvider implements WebviewViewProvider {
           and only allow scripts that have a specific nonce.
           (See the 'webview-sample' extension sample for img-src content security policy examples)
         -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${
           webview.cspSource
-        }; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+        }; font-src ${webview.cspSource}; style-src ${
+          webview.cspSource
+        }; script-src 'nonce-${nonce}';">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <link href="${styleResetUri.toString()}" rel="stylesheet">
-        <link href="${styleVSCodeUri.toString()}" rel="stylesheet">
-        <link href="${styleMainUri.toString()}" rel="stylesheet">
+        <link href="${styleResetUri.toString()}" rel="stylesheet" />
+        <link href="${styleVSCodeUri.toString()}" rel="stylesheet" />
+        <link href="${styleMainUri.toString()}" rel="stylesheet" />
 				<link href="${codiconsUri.toString()}" rel="stylesheet" />
 
         <title>Presets</title>
@@ -206,4 +217,8 @@ function getNonce() {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
+}
+
+function getHash(str: string) {
+  return createHash('sha256').update(str, 'utf8').digest('hex');
 }

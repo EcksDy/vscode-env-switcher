@@ -85,6 +85,7 @@ body {
 .inline-button {
   margin-left: auto;
   margin-right: 0.4em;
+  padding: 0.4em;
 }
 
 .clickable:hover {
@@ -96,6 +97,25 @@ body {
   padding: 0 0.2em;
 }
 
+.inline-button > i {
+  background-origin: content-box;
+  background-size: 1em;
+  background-repeat: no-repeat;
+  background-position: 50% 40%;
+}
+
 .inline-button:hover {
   background-color: var(--vscode-list-hoverBackground);
+}
+
+.selected {
+  background-color: var(--vscode-list-activeSelectionBackground);
+}
+
+.codicon-multi-target {
+  background-image: url(../../images/multi-target-for-dark.svg);
+}
+
+.active {
+  background-color: var(--vscode-list-activeSelectionBackground);
 }
