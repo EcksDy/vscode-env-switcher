@@ -29,8 +29,6 @@ interface PresetsViewData {
 type Projects = Record<string, Project>;
 type Presets = Record<string, Preset>;
 
-// This script will be run within the webview itself
-// It cannot access the main VS Code APIs directly.
 (() => {
   interface State {
     multiSwitch: boolean;
@@ -68,6 +66,7 @@ type Presets = Record<string, Preset>;
     projects = Object.fromEntries(projectsArr.map((project) => [project.id, project]));
     presets = Object.fromEntries(presetsArr.map((preset) => [preset.id, preset]));
 
+    // TODO: Loader (optional)
     switch (action) {
       case 'init': {
         vscode.setState({ projects, presets, multiSwitch });
@@ -103,23 +102,6 @@ type Presets = Record<string, Preset>;
       const presetList = presetLists[preset.projectId];
       presetList.appendChild(presetEntry);
     }
-  }
-
-  function getProjectList() {
-    const projectList = document.querySelector('.project-list')!;
-    return projectList;
-  }
-
-  function createPresetList() {
-    const presetList = document.createElement('ul');
-    presetList.className = 'preset-list';
-    return presetList;
-  }
-
-  function createProjectContainer() {
-    const projectContainer = document.createElement('li');
-    projectContainer.className = 'project-container';
-    return projectContainer;
   }
 
   function createProjectEntry(project: Project) {
@@ -184,6 +166,7 @@ type Presets = Record<string, Preset>;
   function onPresetClicked(preset: Preset, element: EventTarget | null) {
     if (!isTheThing<HTMLLIElement>(element)) return;
 
+    // TODO: Behaves differently based on `multiSwitch`
     const currentlySelected = selected[preset.projectId];
     if (preset.id === currentlySelected?.id) return;
 
@@ -192,11 +175,15 @@ type Presets = Record<string, Preset>;
     selected[preset.projectId] = { id: preset.id, element };
     element.classList.toggle('selected-list-item');
 
+    // TODO: Add selectPresets action, pass `newPresets` as array of { projectId, presetId }
     vscode.postMessage({
       action: 'selectPreset',
       project: preset.projectId,
       newPreset: preset.path,
     });
+
+    // TODO: `multiSwitch` will require checking if project is locked or not
+    // TODO: Should lock prevent selecting a single preset or just multi switch?
   }
 
   function onProjectClicked(project: Project, element: EventTarget | null) {
@@ -214,6 +201,7 @@ type Presets = Record<string, Preset>;
       multiSwitch = !multiSwitch;
       vscode.setState({ projects, presets, multiSwitch });
 
+      // TODO: Decide if I want to keep multiSwitch logic in the webview or in the extension
       // vscode.postMessage({
       //   action: 'toggleMultiSwitch',
       //   value: multiSwitch,
@@ -299,4 +287,21 @@ function createIcon({ icon, classes }: CreateIconParams) {
   span.appendChild(i);
 
   return span;
+}
+
+function getProjectList() {
+  const projectList = document.querySelector('.project-list')!;
+  return projectList;
+}
+
+function createPresetList() {
+  const presetList = document.createElement('ul');
+  presetList.className = 'preset-list';
+  return presetList;
+}
+
+function createProjectContainer() {
+  const projectContainer = document.createElement('li');
+  projectContainer.className = 'project-container';
+  return projectContainer;
 }
