@@ -1,0 +1,130 @@
+body {
+  background-color: transparent;
+  user-select: none;
+  padding: 0;
+}
+
+.head-line {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.project-list {
+  list-style: none;
+  padding: 0;
+}
+
+.preset-list {
+  list-style: none;
+  padding: 0;
+}
+
+.project-container {
+}
+
+.project-entry {
+  width: 100%;
+  display: flex;
+  padding-left: 0.4em;
+}
+
+.project-entry:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.project-container:hover .indentation {
+  border-right: 1px solid var(--vscode-tree-indentGuidesStroke);
+}
+
+.preset-entry {
+  width: 100%;
+  display: flex;
+}
+
+.preset-entry:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.list-item-name {
+  padding: 0.4em 0;
+}
+
+.selected-list-item {
+  background-color: var(--vscode-list-activeSelectionBackground);
+}
+
+.inline-buttons-container {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 0;
+}
+
+.icon {
+  margin-right: 0.4em;
+  padding: 0 0.2em;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.inline-button:hover {
+  background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.toggled-inline-button {
+  background-color: var(--vscode-toolbar-activeBackground);
+}
+
+.icon-multi-target {
+  background-image: url(../../../../images/multi-target-for-dark.svg);
+}
+
+.custom-icon {
+  background-origin: content-box;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.clickable:hover {
+  cursor: pointer;
+}
+
+.codicon {
+  padding: 0.4em 0;
+  width: 16px;
+  height: 16px;
+}
+
+.codicon::before {
+  content: '\200b';
+  line-height: 1em;
+}
+
+.indentation:empty::before {
+  content: '\200b';
+  height: 100%;
+}
+
+.indentation {
+  border-right: 1px solid var(--vscode-tree-inactiveIndentGuidesStroke);
+  margin-right: 0.4em;
+  margin-left: 1.2em !important;
+}
+
+.show-buttons-on-hover .inline-buttons-container > * {
+  display: none;
+}
+
+.show-buttons-on-hover:hover .inline-buttons-container > * {
+  display: unset;
+}
+
+.button-always-visible {
+  display: unset !important;
+}

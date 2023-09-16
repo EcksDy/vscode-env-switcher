@@ -8,45 +8,7 @@ import {
   WebviewViewResolveContext,
   window,
 } from 'vscode';
-
-interface Project {
-  id: string;
-  locked: boolean;
-  path: string; // absolute path
-  name: string;
-  presets: Preset[];
-}
-
-interface Preset {
-  id: string;
-  name: string;
-  selected: boolean;
-  path: string; // absolute path
-}
-
-interface PresetsViewData {
-  multiSwitch: boolean;
-  projects: Project[];
-}
-
-interface ToggleLock {
-  action: 'toggleLock';
-  project: string; // project path
-  newState: boolean;
-}
-
-interface ToggleMultiSwitch {
-  action: 'toggleMultiSwitch';
-  newState: boolean;
-}
-
-interface SelectPreset {
-  action: 'selectPreset';
-  project: string; // project path
-  newPreset: string;
-}
-
-type ViewActions = ToggleLock | ToggleMultiSwitch | SelectPreset;
+import { PresetsViewData, Project, Preset, ViewActions } from './interfaces';
 
 export class PresetsViewProvider implements WebviewViewProvider {
   public static readonly viewType = 'envSwitcher.presetsView';
@@ -67,66 +29,20 @@ export class PresetsViewProvider implements WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.onDidChangeVisibility(async (e) => {
-      console.log('visibility changed', e);
-
-      if (!webviewView.visible) return;
-
-      // Pass dummy data to the webview
-      await webviewView.webview.postMessage({
-        action: 'init',
-        value: {
-          multiSwitch: false,
-          projects: [
-            {
-              id: getHash('path/to/project'),
-              locked: false,
-              path: 'path/to/project',
-              name: 'Project 1',
-              presets: [
-                {
-                  id: getHash('path/to/project/preset1'),
-                  name: 'preset 1',
-                  selected: true,
-                  path: 'path/to/project/preset1',
-                },
-                {
-                  id: getHash('path/to/project/preset2'),
-                  name: 'preset 2',
-                  selected: false,
-                  path: 'path/to/project/preset2',
-                },
-              ],
-            },
-            {
-              id: getHash('path/to/project2'),
-              locked: false,
-              path: 'path/to/project2',
-              name: 'Project 2',
-              presets: [
-                {
-                  id: getHash('path/to/project2/preset1'),
-                  name: 'preset 1',
-                  selected: true,
-                  path: 'path/to/project2/preset1',
-                },
-                {
-                  id: getHash('path/to/project2/preset2'),
-                  name: 'preset 2',
-                  selected: false,
-                  path: 'path/to/project2/preset2',
-                },
-              ],
-            },
-          ],
-        } as PresetsViewData,
-      });
-    });
-
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage((data: ViewActions) => {
+    webviewView.webview.onDidReceiveMessage(async (data: ViewActions) => {
       switch (data.action) {
+        case 'init':
+          // Pass dummy data to the webview
+          return await webviewView.webview.postMessage({
+            action: 'init',
+            value: {
+              multiSwitch: false,
+              projects: getProjects(),
+              presets: getPresets(),
+            } as PresetsViewData,
+          });
         case 'toggleLock':
           return window.showInformationMessage(`Project ${data.project} is locked`);
 
@@ -151,18 +67,18 @@ export class PresetsViewProvider implements WebviewViewProvider {
   private getHtmlForWebview(webview: Webview) {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptUri = webview.asWebviewUri(
-      Uri.joinPath(this._extensionUri, 'views', 'presets', 'main.js'),
+      Uri.joinPath(this._extensionUri, 'out', 'ui-components', 'webviews', 'presets', 'main.js'),
     );
 
     // Do the same for the stylesheet.
     const styleResetUri = webview.asWebviewUri(
-      Uri.joinPath(this._extensionUri, 'views', 'presets', 'reset.css'),
+      Uri.joinPath(this._extensionUri, 'src', 'ui-components', 'webviews', 'presets', 'reset.css'),
     );
     const styleVSCodeUri = webview.asWebviewUri(
-      Uri.joinPath(this._extensionUri, 'views', 'presets', 'vscode.css'),
+      Uri.joinPath(this._extensionUri, 'src', 'ui-components', 'webviews', 'presets', 'vscode.css'),
     );
     const styleMainUri = webview.asWebviewUri(
-      Uri.joinPath(this._extensionUri, 'views', 'presets', 'main.css'),
+      Uri.joinPath(this._extensionUri, 'src', 'ui-components', 'webviews', 'presets', 'main.css'),
     );
 
     const codiconsUri = webview.asWebviewUri(
@@ -198,7 +114,9 @@ export class PresetsViewProvider implements WebviewViewProvider {
         <title>Presets</title>
       </head>
       <body>
-        <div class="head-line"></div>
+        <div class="head-line">
+          <div class="inline-buttons-container"></div>
+        </div>
         <ul class="project-list">
         </ul>
 
@@ -221,4 +139,56 @@ function getNonce() {
 
 function getHash(str: string) {
   return createHash('sha256').update(str, 'utf8').digest('hex');
+}
+
+function getProjects(): Project[] {
+  return [
+    {
+      id: getHash('path/to/project'),
+      locked: false,
+      path: 'path/to/project',
+      name: 'Project 1',
+    },
+    {
+      id: getHash('path/to/project2'),
+      locked: false,
+      path: 'path/to/project2',
+      name: 'Project 2',
+    },
+  ];
+}
+
+function getPresets(): Preset[] {
+  const projectId = getHash('path/to/project');
+  const projectId2 = getHash('path/to/project2');
+  return [
+    {
+      id: getHash('path/to/project/preset1'),
+      name: 'preset 1',
+      selected: true,
+      path: 'path/to/project/preset1',
+      projectId,
+    },
+    {
+      id: getHash('path/to/project/preset2'),
+      name: 'preset 2',
+      selected: false,
+      path: 'path/to/project/preset2',
+      projectId,
+    },
+    {
+      id: getHash('path/to/project2/preset1'),
+      name: 'preset 1',
+      selected: true,
+      path: 'path/to/project2/preset1',
+      projectId: projectId2,
+    },
+    {
+      id: getHash('path/to/project2/preset2'),
+      name: 'preset 2',
+      selected: false,
+      path: 'path/to/project2/preset2',
+      projectId: projectId2,
+    },
+  ];
 }

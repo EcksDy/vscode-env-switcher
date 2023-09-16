@@ -6,7 +6,6 @@
     "lib": ["ES2020"],
     "outDir": "out",
     "rootDir": "src",
-    "moduleResolution": "node",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
@@ -14,5 +13,5 @@
     "noImplicitReturns": true,
     "useUnknownInCatchVariables": false
   },
-  "exclude": ["node_modules", ".vscode-test"]
+  "exclude": ["node_modules", ".vscode-test", "src/ui-components/webviews/**"]
 }

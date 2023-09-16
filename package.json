@@ -125,6 +125,7 @@
     "vscode:prepublish": "rm -rf out && npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "watch-webviews": "tsc -watch -p ./src/ui-components/webviews/tsconfig.json",
     "lint": "eslint \"src/**/*.ts\"",
     "lint-staged": "eslint --fix",
     "pretest": "npm run compile",
@@ -144,6 +145,7 @@
     "@types/mocha-each": "^2.0.0",
     "@types/node": "^16.13.0",
     "@types/vscode": "1.71.0",
+    "@types/vscode-webview": "^1.57.2",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vscode/codicons": "^0.0.33",
@@ -156,8 +158,5 @@
     "prettier": "^3.0.0",
     "typescript": "^5.1.6",
     "vscode-extension-tester": "5.9.1"
-  },
-  "dependencies": {
-    "glob": "^10.3.3"
   }
 }
