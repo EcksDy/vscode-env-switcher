@@ -1,8 +1,5 @@
-import { GlobOptions } from 'glob';
 import { StatusBarAlignment } from 'vscode';
 import { config } from './config';
-
-export type ClassicGlobOptions = GlobOptions & { withFileTypes?: false };
 
 export type WarningColorConfigs = 'default' | 'white' | 'black' | 'red' | 'magenta' | 'yellow';
 export type PositionConfigs = 'outerLeft' | 'innerLeft' | 'outerRight' | 'innerRight';
