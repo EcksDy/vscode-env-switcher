@@ -8,10 +8,9 @@ import {
   Preset,
   PresetInfo,
 } from '../interfaces';
-import { ExtensionConfig, capitalize, fsHelper } from '../utilities';
+import { capitalize, config, fsHelper } from '../utilities';
 
 interface Deps {
-  config: ExtensionConfig;
   targetManager: ITargetManager;
   persister: ICurrentPresetPersister;
   fileWatcher: IFileWatcher & Disposable;
@@ -22,7 +21,6 @@ interface Args {
 }
 
 export class FsPresetManager implements IPresetManager {
-  private config: ExtensionConfig;
   private rootDir: string;
   private persister: ICurrentPresetPersister;
   private targetManager: ITargetManager;
@@ -31,12 +29,11 @@ export class FsPresetManager implements IPresetManager {
 
   private garbage: Disposable[] = [];
 
-  private constructor({ config, targetManager, persister, fileWatcher }: Deps, { rootDir }: Args) {
+  private constructor({ targetManager, persister, fileWatcher }: Deps, { rootDir }: Args) {
     this.rootDir = rootDir;
     this.persister = persister;
     this.targetManager = targetManager;
     this.fileWatcher = fileWatcher;
-    this.config = config;
 
     this.garbage.push(this.fileWatcher);
   }
@@ -83,10 +80,7 @@ export class FsPresetManager implements IPresetManager {
   }
 
   async getPresets() {
-    const paths = await fsHelper.findFiles(
-      this.config.presets.glob(),
-      this.config.presets.excludeGlob(),
-    );
+    const paths = await fsHelper.findFiles(config.presets.glob(), config.presets.excludeGlob());
     const validatedPaths = await this.validatePaths(paths);
     return this.makePresets(this.rootDir, validatedPaths);
   }

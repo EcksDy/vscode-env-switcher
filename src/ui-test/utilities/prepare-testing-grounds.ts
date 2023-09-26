@@ -66,7 +66,7 @@ const FILE_STRUCTURES = {
 
 const STRUCTURE_SETTINGS: Partial<Record<Structures, Record<string, string | boolean>>> = {
   'basic-reversed-naming': {
-    'Env Switcher › Glob: Presets': '.env.*',
+    'Env Switcher > Glob: Presets': '.env.*',
   },
 } as const;
 

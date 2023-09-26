@@ -133,5 +133,11 @@
     "prettier": "^3.0.0",
     "typescript": "^5.1.6",
     "vscode-extension-tester": "5.9.1"
+  },
+  "overrides": {
+    "is-stream": "2.0.1"
+  },
+  "dependencies": {
+    "vscode-helpers": "^10.0.0"
   }
 }
