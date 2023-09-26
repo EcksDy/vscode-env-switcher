@@ -158,11 +158,11 @@ function onChangePresetsGlobConfig(
   onChange: (presetsGlob: string, presetsGlobExclude: string) => Promise<void> | void,
 ) {
   return workspace.onDidChangeConfiguration(async (event: ConfigurationChangeEvent) => {
-    const shouldUpdateTarget =
-      isConfigAffected(event, 'glob.target') || isConfigAffected(event, 'glob.targetExclude');
+    const shouldUpdatePresets =
+      isConfigAffected(event, 'glob.presets') || isConfigAffected(event, 'glob.presetsExclude');
 
-    if (!shouldUpdateTarget) return;
-    await onChange(targetGlob(), presetsExcludeGlob());
+    if (!shouldUpdatePresets) return;
+    await onChange(presetsGlob(), presetsExcludeGlob());
   });
 }
 
