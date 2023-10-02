@@ -1,8 +1,6 @@
 import { ConfigurationChangeEvent, StatusBarAlignment, ThemeColor, workspace } from 'vscode';
 import { GlobPattern, PositionConfigs, StatusBarItemPosition, WarningColorConfigs } from './types';
-import { DEFAULT_BUTTON_COLOR } from './consts';
-
-const EXTENSION_PREFIX = 'envSwitcher';
+import { DEFAULT_BUTTON_COLOR, EXTENSION_PREFIX } from './consts';
 
 /**
  * Will get the extension `enabled` config from workspace settings, with global settings fallback.

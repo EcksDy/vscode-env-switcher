@@ -1,19 +1,9 @@
 import { ITargetManager } from '../interfaces';
-import { ExtensionConfig, fsHelper } from '../utilities';
-
-interface Deps {
-  config: ExtensionConfig;
-}
+import { config, fsHelper } from '../utilities';
 
 export class TargetManager implements ITargetManager {
-  private config: ExtensionConfig;
-
-  constructor({ config }: Deps) {
-    this.config = config;
-  }
-
   async writeToTarget(content: string | Uint8Array): Promise<void> {
-    const targetFile = await fsHelper.findTarget(this.config);
+    const targetFile = await fsHelper.findTarget(config);
     if (!targetFile) {
       console.warn('No target file found');
       return;
@@ -23,6 +13,6 @@ export class TargetManager implements ITargetManager {
   }
 
   async getTargetFile(): Promise<string | null> {
-    return await fsHelper.findTarget(this.config);
+    return await fsHelper.findTarget(config);
   }
 }
