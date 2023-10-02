@@ -100,9 +100,10 @@
     ]
   },
   "scripts": {
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
     "vscode:prepublish": "rm -rf out && npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "compile": "npm run esbuild-base -- --minify",
+    "watch": "npm run esbuild-base -- --sourcemap --watch",
     "lint": "eslint \"src/**/*.ts\"",
     "lint-staged": "eslint --fix",
     "pretest": "npm run compile",
@@ -125,6 +126,7 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "chai": "^4.3.7",
+    "esbuild": "^0.19.4",
     "eslint": "^8.44.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.3",
