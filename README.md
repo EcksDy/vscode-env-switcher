@@ -46,17 +46,20 @@ In no particular order.
 
 ### Multi-root Workspace / Mono-repo support
 
-- [ ] Detect, parse and watch config files
-- [ ] Merge strategy for settings, `.code-workspace` and `.envswitcher` files
-- [ ] Support multi target/presets
-- [ ] UI for selecting presets (TreeView? Webview?)
+- [ ] Detect, parse and watch `.envswitcher` files - for monorepos
+- [ ] Handle multi-root workspaces
+- [ ] Handle overrides for multi-root workspaces
+- [ ] Webview UI for selecting presets
+  - [x] UI design
+  - [ ] Multi target switch
+  - [ ] Nested trees for m.workspaces that have monorepo folders
 
 ### Tasks
 
 - [ ] Fix issue with dev/master branch out of sync
 - [ ] Trigger CI/CD on new tags
-- [x] Add CI for pull requests
 - [ ] Add DI container
+- [x] Add CI for pull requests
 - [x] Add UI tests
 
 ## FAQ
