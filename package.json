@@ -100,12 +100,13 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "rm -rf out && npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+    "vscode:prepublish": "npm run compile",
+    "compile": "npm run esbuild-base -- --minify",
+    "watch": "npm run esbuild-base -- --sourcemap --watch",
     "lint": "eslint \"src/**/*.ts\"",
     "lint-staged": "eslint --fix",
-    "pretest": "npm run compile",
+    "preui-test": "rm -rf out && tsc -p ./tsconfig.test.json",
     "format": "prettier --write",
     "prepare": "husky install",
     "ui-test": "extest setup-and-run './out/ui-test/*.test.js' --mocha_config './src/ui-test/setup/.mocharc.json' --extensions_dir '.vscode-test/extensions' --storage '.vscode-test/resources' --code_settings ./src/ui-test/setup/settings.json"
@@ -125,6 +126,7 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "chai": "^4.3.7",
+    "esbuild": "^0.19.4",
     "eslint": "^8.44.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.3",
