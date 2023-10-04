@@ -13,6 +13,7 @@ export class Workspace extends WorkspaceBase implements IPresetManager {
   private _fsPresetManager: FsPresetManager;
   private _targetManager: TargetManager;
   private _persistanceManager: MementoCurrPresetPersister;
+  private _isMonorepo = false;
 
   constructor(
     workspaceFolder: WorkspaceFolder,

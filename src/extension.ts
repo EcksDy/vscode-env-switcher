@@ -3,6 +3,7 @@ import { WorkspaceWatcherEvent, registerWorkspaceWatcher } from 'vscode-helpers'
 import { selectEnvPreset } from './command-implementations';
 import { StatusBarButton } from './ui-components';
 import { SELECT_ENV_COMMAND_ID, Workspace, config, fsHelper } from './utilities';
+import EventEmitter from 'events';
 
 export async function activate(context: ExtensionContext) {
   const { subscriptions, workspaceState } = context;
@@ -11,7 +12,12 @@ export async function activate(context: ExtensionContext) {
   if (!config.enabled()) return;
   // Will not initialize if no target file is found
   if (!(await fsHelper.findTarget(config))) return; // TODO: Move into Workspace.build
+
+  const eventEmitter = new EventEmitter();
+
   const workspaceWatcher = registerWorkspaceWatcher<Workspace>(context, async (ev, folder) => {
+    eventEmitter.emit(`workspaces-changed`, { workspaceCount: workspaceWatcher.workspaces.length });
+
     if (ev !== WorkspaceWatcherEvent.Added) return;
 
     const newWorkspace = await Workspace.build(folder, workspaceState);
