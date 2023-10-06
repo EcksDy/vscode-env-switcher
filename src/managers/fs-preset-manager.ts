@@ -11,7 +11,7 @@ import {
 } from '../interfaces';
 import { capitalize, config, fsHelper } from '../utilities';
 import { TargetManager } from './target-manager';
-import { MementoPersister } from './memento-curr-preset-persister';
+import { MementoPersister } from './memento-persister';
 import { FileWatcher } from '../watchers';
 
 interface SetupArgs {
