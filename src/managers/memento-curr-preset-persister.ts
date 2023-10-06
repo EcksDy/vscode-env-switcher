@@ -1,31 +1,41 @@
-import { Memento } from 'vscode';
-import { PresetInfo, ICurrentPresetPersister } from '../interfaces';
+import { inject, injectable } from 'tsyringe';
+import { Memento, WorkspaceFolder } from 'vscode';
+import { IWorkspacePersister, PresetInfo } from '../interfaces';
+import { WORKSPACE_FOLDER, WORKSPACE_STATE } from '../utilities';
 
 const CURRENT_PRESET_KEY = 'CURRENT_PRESET';
 
-interface Deps {
-  state: Memento;
-}
-
 /**
- * Persistance manager for current preset using built in Memento API.
+ * Persistance manager using built in Memento API.
  */
-export class MementoCurrPresetPersister implements ICurrentPresetPersister {
-  private state: Memento;
+@injectable()
+export class MementoPersister implements IWorkspacePersister {
+  constructor(
+    @inject(WORKSPACE_STATE) private state: Memento,
+    @inject(WORKSPACE_FOLDER) private workspaceFolder: WorkspaceFolder,
+  ) {}
 
-  constructor({ state }: Deps) {
-    this.state = state;
+  public getPresetInfo(): PresetInfo | null {
+    return this.state.get<PresetInfo | null>(this.getKey(CURRENT_PRESET_KEY), null);
   }
 
-  public get(): PresetInfo | null {
-    return this.state.get<PresetInfo | null>(CURRENT_PRESET_KEY, null);
-  }
+  public setPresetInfo(presetInfo: PresetInfo | null) {
+    const key = this.getKey(CURRENT_PRESET_KEY);
 
-  public set(presetInfo: PresetInfo | null) {
-    if (!presetInfo) return void this.state.update(CURRENT_PRESET_KEY, null);
+    if (!presetInfo) return void this.state.update(key, null);
 
     const { name, title, description, checksum, path } = presetInfo;
 
-    void this.state.update(CURRENT_PRESET_KEY, { name, title, description, checksum, path });
+    void this.state.update(key, {
+      name,
+      title,
+      description,
+      checksum,
+      path,
+    });
+  }
+
+  private getKey(key: string) {
+    return `${this.workspaceFolder.name}.${key}`;
   }
 }

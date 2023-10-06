@@ -142,6 +142,8 @@
     }
   },
   "dependencies": {
+    "reflect-metadata": "^0.1.13",
+    "tsyringe": "^4.8.0",
     "vscode-helpers": "^10.0.0"
   }
 }

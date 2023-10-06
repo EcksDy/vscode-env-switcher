@@ -1,7 +1,8 @@
 import * as nodePath from 'path';
+import { inject, injectable } from 'tsyringe';
 import { Disposable } from 'vscode';
 import {
-  ICurrentPresetPersister,
+  IWorkspacePersister,
   IFileWatcher,
   IPresetManager,
   ITargetManager,
@@ -9,28 +10,26 @@ import {
   PresetInfo,
 } from '../interfaces';
 import { capitalize, config, fsHelper } from '../utilities';
+import { TargetManager } from './target-manager';
+import { MementoPersister } from './memento-curr-preset-persister';
+import { FileWatcher } from '../watchers';
 
-interface Deps {
-  targetManager: ITargetManager;
-  persister: ICurrentPresetPersister;
-  fileWatcher: IFileWatcher & Disposable;
-}
-
-interface Args {
+interface SetupArgs {
   rootDir: string;
 }
 
+@injectable()
 export class FsPresetManager implements IPresetManager {
-  private rootDir: string;
-  private persister: ICurrentPresetPersister;
-  private targetManager: ITargetManager;
-  private fileWatcher: IFileWatcher & Disposable;
+  private rootDir = '';
   // private presetCache: Record<string, Preset> = {};
 
   private garbage: Disposable[] = [];
 
-  private constructor({ targetManager, persister, fileWatcher }: Deps, { rootDir }: Args) {
-    this.rootDir = rootDir;
+  constructor(
+    @inject(TargetManager) private targetManager: ITargetManager,
+    @inject(MementoPersister) private persister: IWorkspacePersister,
+    @inject(FileWatcher) private fileWatcher: IFileWatcher & Disposable,
+  ) {
     this.persister = persister;
     this.targetManager = targetManager;
     this.fileWatcher = fileWatcher;
@@ -38,18 +37,16 @@ export class FsPresetManager implements IPresetManager {
     this.garbage.push(this.fileWatcher);
   }
 
-  static async build(deps: Deps, args: Args) {
-    const presetManager = new FsPresetManager(deps, args);
+  async setup({ rootDir }: SetupArgs) {
+    this.rootDir = rootDir;
 
-    const currentPresetPath = deps.persister.get()?.path;
-    const isSynced = await presetManager.isCurrentPresetSynced();
-    if (currentPresetPath && isSynced) presetManager.setFileWatcher(currentPresetPath);
-
-    return presetManager;
+    const currentPresetPath = this.persister.getPresetInfo()?.path;
+    const isSynced = await this.isCurrentPresetSynced();
+    if (currentPresetPath && isSynced) this.setFileWatcher(currentPresetPath);
   }
 
   async getCurrentPreset(): Promise<Preset | null> {
-    const presetInfo = this.persister.get();
+    const presetInfo = this.persister.getPresetInfo();
     if (!presetInfo) return null;
 
     const isSynced = await this.isCurrentPresetSynced();
@@ -61,13 +58,13 @@ export class FsPresetManager implements IPresetManager {
 
   async setCurrentPreset(preset: PresetInfo | Preset | string | null): Promise<void> {
     if (!preset) {
-      this.persister.set(null);
+      this.persister.setPresetInfo(null);
       this.dispose();
       return;
     }
 
     const newPreset = await this.getPresetFromOverloadedParameter(preset);
-    this.persister.set(newPreset);
+    this.persister.setPresetInfo(newPreset);
 
     if (!newPreset) {
       this.dispose();
@@ -109,11 +106,11 @@ export class FsPresetManager implements IPresetManager {
   }
 
   private async isCurrentPresetSynced() {
-    const presetInfo = this.persister.get();
+    const presetInfo = this.persister.getPresetInfo();
     if (!presetInfo) return false;
 
     const isPresetExists = await fsHelper.exists(presetInfo.path);
-    if (!isPresetExists) return void this.persister.set(null) ?? false;
+    if (!isPresetExists) return void this.persister.setPresetInfo(null) ?? false;
 
     const targetFile = await this.targetManager.getTargetFile();
     if (!targetFile) return false;
@@ -129,7 +126,7 @@ export class FsPresetManager implements IPresetManager {
   }
 
   private async getCurrentPresetWithoutValidation(): Promise<Preset | null> {
-    const presetInfo = this.persister.get();
+    const presetInfo = this.persister.getPresetInfo();
     if (!presetInfo) return null;
 
     const content = await fsHelper.readFile(presetInfo.path);
@@ -163,7 +160,7 @@ export class FsPresetManager implements IPresetManager {
     const currentPreset = await this.getCurrentPresetWithoutValidation();
     if (!currentPreset) return;
 
-    this.persister.set(null);
+    this.persister.setPresetInfo(null);
   }
 
   private async makePresets(rootDir: string, paths: string[]): Promise<Preset[]> {
