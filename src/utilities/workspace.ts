@@ -46,6 +46,7 @@ export class Workspace extends WorkspaceBase implements IPresetManager {
       const targetManager = container.resolve(TargetManager);
       const fsPresetManager = container.resolve(FsPresetManager);
 
+      console.log(`\n`);
       console.log(`${workspaceFolder.name}: fileWatcher`, fileWatcher);
       console.log(`${workspaceFolder.name}: persistanceManager`, persistanceManager);
       console.log(`${workspaceFolder.name}: targetManager`, targetManager);

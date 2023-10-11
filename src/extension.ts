@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import { container } from 'tsyringe';
-import { ExtensionContext, commands, window } from 'vscode';
+import { ExtensionContext, Memento, commands, window } from 'vscode';
 import { WorkspaceWatcherEvent, registerWorkspaceWatcher } from 'vscode-helpers';
 import { selectEnvPreset } from './command-implementations';
 import { StatusBarButton } from './ui-components';
@@ -24,7 +24,8 @@ export async function activate(context: ExtensionContext) {
   // Will not initialize if no target file is found
   // if (!(await fsHelper.findTarget(config))) return; // TODO: Move into Workspace.build
   const workspaceWatcher = registerWorkspaceWatcher<Workspace>(context, async (ev, folder) => {
-    container.resolve(WORKSPACE_STATE);
+    const persister = container.resolve<Memento>(WORKSPACE_STATE);
+    await persister.update(`__isSingleWorkspace`, workspaceWatcher.workspaces.length === 1);
     if (ev !== WorkspaceWatcherEvent.Added) return;
 
     const workspaceContainer = container.createChildContainer();
