@@ -66,8 +66,8 @@ export class Workspace extends WorkspaceBase implements IPresetManager {
       return workspace;
     } catch (err) {
       console.error(err);
+      throw err;
     }
-    throw new Error('HOLAAAAA4.2');
   }
 
   public async onDidChangeConfiguration(e: ConfigurationChangeEvent) {
