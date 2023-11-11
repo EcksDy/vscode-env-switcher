@@ -37,9 +37,9 @@ export interface IFileWatcher {
   onDidCreate(callback: EventCallback): void;
 }
 
-export interface ICurrentPresetPersister {
-  get: () => PresetInfo | null;
-  set: (presetInfo: PresetInfo | null) => void;
+export interface IWorkspacePersister {
+  getPresetInfo: () => PresetInfo | null;
+  setPresetInfo: (presetInfo: PresetInfo | null) => void;
 }
 
 export interface IButton {

@@ -1,78 +1,73 @@
 /* eslint-disable @typescript-eslint/require-await */
 import path from 'path';
-import { ConfigurationChangeEvent, Memento, Uri, WorkspaceFolder, workspace } from 'vscode';
+import { DependencyContainer } from 'tsyringe';
+import { ConfigurationChangeEvent, Uri, WorkspaceFolder, workspace } from 'vscode';
 import { WorkspaceBase, WorkspaceConfigSource } from 'vscode-helpers';
-import { FsPresetManager, MementoCurrPresetPersister, TargetManager } from '../managers';
+import { IPresetManager, Preset, PresetInfo } from '../interfaces';
+import { FsPresetManager, MementoPersister, TargetManager } from '../managers';
 import { FileWatcher } from '../watchers';
 import { EXTENSION_PREFIX } from './consts';
-import { IPresetManager, Preset, PresetInfo } from '../interfaces';
 
 export class Workspace extends WorkspaceBase implements IPresetManager {
-  private _configSrc: WorkspaceConfigSource;
-  private _fileWatcher: FileWatcher;
-  private _fsPresetManager: FsPresetManager;
-  private _targetManager: TargetManager;
-  private _persistanceManager: MementoCurrPresetPersister;
+  private _configSource: WorkspaceConfigSource;
 
   constructor(
     workspaceFolder: WorkspaceFolder,
-    fileWatcher: FileWatcher,
-    fsPresetManager: FsPresetManager,
-    targetManager: TargetManager,
-    persistanceManager: MementoCurrPresetPersister,
+    private fileWatcher: FileWatcher,
+    private fsPresetManager: FsPresetManager,
+    private targetManager: TargetManager,
+    private persistanceManager: MementoPersister,
+    private container: DependencyContainer,
   ) {
     super(workspaceFolder);
 
-    this._fileWatcher = fileWatcher;
-    this._fsPresetManager = fsPresetManager;
-    this._targetManager = targetManager;
-    this._persistanceManager = persistanceManager;
-    this._configSrc = {
+    this.fileWatcher = fileWatcher;
+    this._configSource = {
       section: EXTENSION_PREFIX,
       resource: Uri.file(path.join(this.rootPath, '.vscode/settings.json')),
     };
 
-    this._DISPOSABLES.push(this._fileWatcher, this._fsPresetManager);
+    this._DISPOSABLES.push(this.fileWatcher, this.fsPresetManager);
   }
 
   public get configSource() {
-    return this._configSrc;
-  }
-
-  public get fileWatcher() {
-    return this._fileWatcher;
+    return this._configSource;
   }
 
   public static async build(
     workspaceFolder: WorkspaceFolder,
-    workspaceState: Memento,
+    container: DependencyContainer,
   ): Promise<Workspace> {
-    const fileWatcher = new FileWatcher({ workspaceFolder });
+    try {
+      const fileWatcher = new FileWatcher({ workspaceFolder });
+      container.registerInstance(FileWatcher, fileWatcher);
 
-    const rootDir = workspaceFolder.uri.fsPath;
+      const persistanceManager = container.resolve(MementoPersister);
+      const targetManager = container.resolve(TargetManager);
+      const fsPresetManager = container.resolve(FsPresetManager);
 
-    const persistanceManager = new MementoCurrPresetPersister({
-      state: workspaceState,
-    });
+      console.log(`\n`);
+      console.log(`${workspaceFolder.name}: fileWatcher`, fileWatcher);
+      console.log(`${workspaceFolder.name}: persistanceManager`, persistanceManager);
+      console.log(`${workspaceFolder.name}: targetManager`, targetManager);
+      console.log(`${workspaceFolder.name}: fsPresetManager`, fsPresetManager);
 
-    const targetManager = new TargetManager();
-    const fsPresetManager = await FsPresetManager.build(
-      {
-        targetManager,
-        persister: persistanceManager,
+      const rootDir = workspaceFolder.uri.fsPath;
+      await fsPresetManager.setup({ rootDir });
+
+      const workspace = new Workspace(
+        workspaceFolder,
         fileWatcher,
-      },
-      { rootDir },
-    );
-
-    const workspace = new Workspace(
-      workspaceFolder,
-      fileWatcher,
-      fsPresetManager,
-      targetManager,
-      persistanceManager,
-    );
-    return workspace;
+        fsPresetManager,
+        targetManager,
+        persistanceManager,
+        container,
+      );
+      return workspace;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   }
 
   public async onDidChangeConfiguration(e: ConfigurationChangeEvent) {
@@ -83,15 +78,15 @@ export class Workspace extends WorkspaceBase implements IPresetManager {
   }
 
   public async getCurrentPreset() {
-    return this._fsPresetManager.getCurrentPreset();
+    return this.fsPresetManager.getCurrentPreset();
   }
 
   public async getPresets(): Promise<Preset[]> {
-    return this._fsPresetManager.getPresets();
+    return this.fsPresetManager.getPresets();
   }
 
   public async setCurrentPreset(preset: PresetInfo | Preset | string | null): Promise<void> {
-    await this._fsPresetManager.setCurrentPreset(preset);
+    await this.fsPresetManager.setCurrentPreset(preset);
   }
 
   public dispose(): void {

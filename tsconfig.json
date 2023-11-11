@@ -12,7 +12,9 @@
     "strict": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "exclude": ["node_modules", ".vscode-test"]
 }
