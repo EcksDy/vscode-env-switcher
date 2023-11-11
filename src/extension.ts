@@ -25,7 +25,11 @@ export async function activate(context: ExtensionContext) {
   // if (!(await fsHelper.findTarget(config))) return; // TODO: Move into Workspace.build
   const workspaceWatcher = registerWorkspaceWatcher<Workspace>(context, async (ev, folder) => {
     const persister = container.resolve<Memento>(WORKSPACE_STATE);
-    await persister.update(`__isSingleWorkspace`, workspaceWatcher.workspaces.length === 1);
+    const isSingleWorkspace = // TODO: Hacky, need to rethink
+      (workspaceWatcher.workspaces.length === 0 && ev === WorkspaceWatcherEvent.Added) ||
+      (workspaceWatcher.workspaces.length === 2 && ev === WorkspaceWatcherEvent.Removed);
+    await persister.update(`__isSingleWorkspace`, isSingleWorkspace);
+
     if (ev !== WorkspaceWatcherEvent.Added) return;
 
     const workspaceContainer = container.createChildContainer();

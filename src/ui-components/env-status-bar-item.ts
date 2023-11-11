@@ -34,7 +34,7 @@ export class StatusBarButton implements IButton {
       config.warning.regex(),
       config.warning.color(),
     );
-    this.button.command = this.getCommand();
+    this.button.command = this.getCommand(); // TODO: Command only updated on button create atm, need to listen to event
     this.button.text = styledText;
     this.button.color = color;
     this.button.show();

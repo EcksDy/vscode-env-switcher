@@ -134,7 +134,7 @@
     "mocha-each": "^2.0.1",
     "prettier": "^3.0.0",
     "typescript": "^5.1.6",
-    "vscode-extension-tester": "5.9.1"
+    "vscode-extension-tester": "5.10.0"
   },
   "overrides": {
     "vscode-helpers": {
