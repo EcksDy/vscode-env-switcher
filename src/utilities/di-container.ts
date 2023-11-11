@@ -14,7 +14,7 @@ container.register(FsPresetManager, { useClass: FsPresetManager });
 container.register(TargetManager, { useClass: TargetManager });
 container.register(FileWatcher, { useClass: FileWatcher });
 
-export function initContainer<T>(...providers: [InjectionToken<T>, Provider<T>][]) {
+export function registerInContainer<T>(...providers: [InjectionToken<T>, Provider<T>][]) {
   console.log(providers);
 
   for (const [token, provider] of providers) {
