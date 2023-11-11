@@ -1,7 +1,9 @@
-import { Disposable, StatusBarItem, ThemeColor, window } from 'vscode';
-import { IButton, IFileWatcher, PresetInfo } from '../interfaces';
+import { singleton } from 'tsyringe';
+import { Disposable, Memento, StatusBarItem, ThemeColor, window } from 'vscode';
+import { IButton, PresetInfo } from '../interfaces';
 import {
   DEFAULT_BUTTON_COLOR,
+  OPEN_VIEW_COMMAND_ID,
   SELECT_ENV_COMMAND_ID,
   StatusBarItemPosition,
   config,
@@ -9,20 +11,20 @@ import {
 
 const DEFAULT_BUTTON_TEXT = 'Select preset';
 
-interface Deps {
-  fileWatcher: IFileWatcher & Disposable;
-}
 interface Args {
   preset?: PresetInfo;
 }
 
+@singleton()
 export class StatusBarButton implements IButton {
   private button: StatusBarItem;
-  private fileWatcher: IFileWatcher & Disposable;
 
   private garbage: Disposable[];
 
-  constructor({ fileWatcher }: Deps, { preset }: Args) {
+  constructor(
+    private workspaceState: Memento,
+    { preset }: Args,
+  ) {
     const { alignment, priority }: StatusBarItemPosition = config.position();
     this.button = window.createStatusBarItem(alignment, priority);
 
@@ -32,15 +34,14 @@ export class StatusBarButton implements IButton {
       config.warning.regex(),
       config.warning.color(),
     );
-    this.button.command = SELECT_ENV_COMMAND_ID;
+    this.button.command = this.getCommand(); // TODO: Command only updated on button create atm, need to listen to event
     this.button.text = styledText;
     this.button.color = color;
     this.button.show();
 
     const onWarningConfigChange = config.warning.onChange(() => this.setText(this.getText()));
 
-    this.fileWatcher = fileWatcher;
-    this.garbage = [this.button, this.fileWatcher, onWarningConfigChange];
+    this.garbage = [this.button, onWarningConfigChange];
   }
 
   /**
@@ -72,5 +73,14 @@ export class StatusBarButton implements IButton {
       text: styledText,
       color: shouldWarn ? warningColor : DEFAULT_BUTTON_COLOR,
     };
+  }
+
+  private getCommand() {
+    const isSingleWorkspace = this.workspaceState.get(`__isSingleWorkspace`, true);
+    const hasMonorepo = this.workspaceState.get(`__hasMonorepo`, false);
+
+    if (isSingleWorkspace && !hasMonorepo) return SELECT_ENV_COMMAND_ID;
+
+    return OPEN_VIEW_COMMAND_ID;
   }
 }
