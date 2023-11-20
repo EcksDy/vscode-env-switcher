@@ -1,18 +1,19 @@
 import * as nodePath from 'path';
 import { inject, injectable } from 'tsyringe';
 import { Disposable } from 'vscode';
+import { SwitcherEvents, getEventEmitter } from '../event-emitter';
 import {
-  IWorkspacePersister,
   IFileWatcher,
   IPresetManager,
   ITargetManager,
+  IWorkspacePersister,
   Preset,
   PresetInfo,
 } from '../interfaces';
 import { capitalize, config, fsHelper } from '../utilities';
-import { TargetManager } from './target-manager';
-import { MementoPersister } from './memento-persister';
 import { FileWatcher } from '../watchers';
+import { MementoPersister } from './memento-persister';
+import { TargetManager } from './target-manager';
 
 interface SetupArgs {
   rootDir: string;
@@ -33,6 +34,16 @@ export class FsPresetManager implements IPresetManager {
     this.persister = persister;
     this.targetManager = targetManager;
     this.fileWatcher = fileWatcher;
+
+    const eventEmitter = getEventEmitter();
+    eventEmitter.on(SwitcherEvents.PresetSelected, async (selectedPreset: Preset) => {
+      try {
+        await this.setCurrentPreset(selectedPreset);
+      } catch (error) {
+        console.error(error);
+        eventEmitter.emit(SwitcherEvents.PresetSelectedError, error.message, selectedPreset);
+      }
+    });
 
     this.garbage.push(this.fileWatcher);
   }

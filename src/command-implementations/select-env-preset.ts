@@ -1,15 +1,13 @@
 import { QuickPickItem, window } from 'vscode';
-import { IButton, IPresetManager, Preset } from '../interfaces';
+import { SwitcherEvents, getEventEmitter } from '../event-emitter';
+import { IPresetManager, Preset } from '../interfaces';
 import { ExtensionConfig } from '../utilities';
-
-const NO_FILE = 'No file';
 
 const OVERWRITE_ALERT_OPTIONS = [`OK`, `Don't show again`, `Cancel`] as const;
 
 interface Deps {
   config: ExtensionConfig;
   presetManager: IPresetManager;
-  button: IButton;
 }
 
 function presetToQuickPickItem({ description, title, path }: Preset): QuickPickItem {
@@ -20,7 +18,8 @@ function presetToQuickPickItem({ description, title, path }: Preset): QuickPickI
   };
 }
 
-export async function selectEnvPreset({ config, presetManager, button }: Deps) {
+export async function selectEnvPreset({ config, presetManager }: Deps) {
+  const eventEmitter = getEventEmitter();
   const presets = await presetManager.getPresets();
 
   const presetQuickPickList: QuickPickItem[] = presets.map(presetToQuickPickItem);
@@ -41,12 +40,5 @@ export async function selectEnvPreset({ config, presetManager, button }: Deps) {
     if (result === `Don't show again`) await config.overwriteAlert.set(false);
   }
 
-  try {
-    await presetManager.setCurrentPreset(selectedPreset);
-    const text = selectedPreset.name || NO_FILE;
-    button.setText(text);
-  } catch (error) {
-    console.error(error);
-    button.setText(NO_FILE);
-  }
+  eventEmitter.emit(SwitcherEvents.PresetSelected, selectedPreset);
 }
