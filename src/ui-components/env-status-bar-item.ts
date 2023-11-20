@@ -1,6 +1,5 @@
 import { container, singleton } from 'tsyringe';
 import { Disposable, Memento, StatusBarItem, ThemeColor, window } from 'vscode';
-import { SwitcherEvents, getEventEmitter } from '../event-emitter';
 import { IButton, Preset, PresetInfo } from '../interfaces';
 import {
   DEFAULT_BUTTON_COLOR,
@@ -11,10 +10,12 @@ import {
   StatusBarItemPosition,
   WORKSPACE_STATE,
   config,
+  SwitcherEvents,
+  getEventEmitter,
 } from '../utilities';
 
-const DEFAULT_BUTTON_TEXT = '⚙ Select preset';
-const ERROR_BUTTON_TEXT = '🛠 No file';
+const DEFAULT_BUTTON_TEXT = 'Select preset';
+const ERROR_BUTTON_TEXT = 'No file';
 
 interface Args {
   preset?: PresetInfo;
@@ -25,6 +26,7 @@ export class StatusBarButton implements IButton {
   private button: StatusBarItem;
   private persister: Memento;
   private garbage: Disposable[];
+  private eventEmitter = getEventEmitter();
 
   constructor({ preset }: Args) {
     this.persister = container.resolve<Memento>(WORKSPACE_STATE);
@@ -44,14 +46,13 @@ export class StatusBarButton implements IButton {
 
     const onWarningConfigChange = config.warning.onChange(() => this.setText(this.getText()));
 
-    const eventEmitter = getEventEmitter();
-    eventEmitter.on(SwitcherEvents.WorkspaceChanged, () => {
+    this.eventEmitter.on(SwitcherEvents.WorkspaceChanged, () => {
       this.button.command = this.getCommand();
     });
-    eventEmitter.on(SwitcherEvents.PresetSelected, (selectedPreset: Preset) => {
+    this.eventEmitter.on(SwitcherEvents.PresetSelected, (selectedPreset: Preset) => {
       this.setText(selectedPreset.name);
     });
-    eventEmitter.on(SwitcherEvents.PresetSelectedError, () => {
+    this.eventEmitter.on(SwitcherEvents.PresetSelectedError, () => {
       this.setText(ERROR_BUTTON_TEXT);
     });
 

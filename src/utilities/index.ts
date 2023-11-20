@@ -1,6 +1,7 @@
 export * from './buffer-manipulations';
 export * from './config';
 export * from './consts';
+export * from './event-emitter';
 export * from './events';
 export * from './fs-helper';
 export * from './misc';

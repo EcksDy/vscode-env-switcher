@@ -1,9 +1,9 @@
 import { QuickPickItem, window } from 'vscode';
-import { SwitcherEvents, getEventEmitter } from '../event-emitter';
 import { IPresetManager, Preset } from '../interfaces';
-import { ExtensionConfig } from '../utilities';
+import { ExtensionConfig, SwitcherEvents, getEventEmitter } from '../utilities';
 
 const OVERWRITE_ALERT_OPTIONS = [`OK`, `Don't show again`, `Cancel`] as const;
+const eventEmitter = getEventEmitter();
 
 interface Deps {
   config: ExtensionConfig;
@@ -19,7 +19,6 @@ function presetToQuickPickItem({ description, title, path }: Preset): QuickPickI
 }
 
 export async function selectEnvPreset({ config, presetManager }: Deps) {
-  const eventEmitter = getEventEmitter();
   const presets = await presetManager.getPresets();
 
   const presetQuickPickList: QuickPickItem[] = presets.map(presetToQuickPickItem);

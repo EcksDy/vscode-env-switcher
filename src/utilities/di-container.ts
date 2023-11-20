@@ -15,8 +15,6 @@ container.register(TargetManager, { useClass: TargetManager });
 container.register(FileWatcher, { useClass: FileWatcher });
 
 export function registerInContainer<T>(...providers: [InjectionToken<T>, Provider<T>][]) {
-  console.log(providers);
-
   for (const [token, provider] of providers) {
     if (
       isClassProvider(provider) ||
@@ -24,8 +22,6 @@ export function registerInContainer<T>(...providers: [InjectionToken<T>, Provide
       isValueProvider(provider) ||
       isFactoryProvider(provider)
     ) {
-      console.log(`registered`, token);
-
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
       container.register(token, provider as unknown as any);
     }

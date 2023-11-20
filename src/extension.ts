@@ -5,7 +5,6 @@ import { container } from 'tsyringe';
 import { ExtensionContext, Memento, commands, window } from 'vscode';
 import { WorkspaceWatcherEvent, registerWorkspaceWatcher } from 'vscode-helpers';
 import { selectEnvPreset } from './command-implementations';
-import { SwitcherEvents, getEventEmitter } from './event-emitter';
 import { StatusBarButton } from './ui-components';
 import {
   IS_SINGLE_WORKSPACE,
@@ -16,13 +15,16 @@ import {
   WORKSPACE_WATCHER,
   Workspace,
   config,
+  SwitcherEvents,
+  getEventEmitter,
 } from './utilities';
 import { registerInContainer } from './utilities/di-container';
+
+const eventEmitter = getEventEmitter();
 
 export async function activate(context: ExtensionContext) {
   const { subscriptions, workspaceState } = context;
   registerInContainer([WORKSPACE_STATE, { useValue: workspaceState }]);
-  const eventEmitter = getEventEmitter();
 
   // Allows disabling per workspace
   // if (!config.enabled()) return;
