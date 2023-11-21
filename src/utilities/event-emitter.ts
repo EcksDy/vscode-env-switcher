@@ -8,8 +8,6 @@ const eventEmitter = new EventEmitter();
 registerInContainer([EVENT_EMITTER, { useValue: eventEmitter }]);
 
 export function getEventEmitter(localContainer?: DependencyContainer): EventEmitter {
-  console.trace(`getEventEmitter`);
-
   if (!localContainer) localContainer = container;
 
   return localContainer.resolve<EventEmitter>(EVENT_EMITTER);

@@ -1,5 +1,5 @@
 import { container, singleton } from 'tsyringe';
-import { Disposable, Memento, StatusBarItem, ThemeColor, window } from 'vscode';
+import { Disposable, Memento, StatusBarItem, window } from 'vscode';
 import { IButton, Preset, PresetInfo } from '../interfaces';
 import {
   DEFAULT_BUTTON_COLOR,
@@ -8,9 +8,9 @@ import {
   OPEN_VIEW_COMMAND_ID,
   SELECT_ENV_COMMAND_ID,
   StatusBarItemPosition,
+  SwitcherEvents,
   WORKSPACE_STATE,
   config,
-  SwitcherEvents,
   getEventEmitter,
 } from '../utilities';
 
@@ -24,48 +24,33 @@ interface Args {
 @singleton()
 export class StatusBarButton implements IButton {
   private button: StatusBarItem;
-  private persister: Memento;
   private garbage: Disposable[];
+  private persister: Memento = container.resolve<Memento>(WORKSPACE_STATE);
   private eventEmitter = getEventEmitter();
 
   constructor({ preset }: Args) {
-    this.persister = container.resolve<Memento>(WORKSPACE_STATE);
     const { alignment, priority }: StatusBarItemPosition = config.position();
     this.button = window.createStatusBarItem(alignment, priority);
 
-    const text = preset?.name ?? DEFAULT_BUTTON_TEXT;
-    const { text: styledText, color } = this.getButtonTextStyle(
-      text,
-      config.warning.regex(),
-      config.warning.color(),
-    );
-    this.button.command = this.getCommand();
-    this.button.text = styledText;
-    this.button.color = color;
+    this.refresh(preset?.name);
     this.button.show();
 
     const onWarningConfigChange = config.warning.onChange(() => this.setText(this.getText()));
 
     this.eventEmitter.on(SwitcherEvents.WorkspaceChanged, () => {
-      this.button.command = this.getCommand();
+      console.debug(`[StatusBarButton - SwitcherEvents.WorkspaceChanged]`);
+      this.refresh();
     });
     this.eventEmitter.on(SwitcherEvents.PresetSelected, (selectedPreset: Preset) => {
+      console.debug(`[StatusBarButton - SwitcherEvents.PresetSelected]`, { selectedPreset });
       this.setText(selectedPreset.name);
     });
     this.eventEmitter.on(SwitcherEvents.PresetSelectedError, () => {
+      console.debug(`[StatusBarButton - SwitcherEvents.PresetSelectedError]`);
       this.setText(ERROR_BUTTON_TEXT);
     });
 
     this.garbage = [this.button, onWarningConfigChange];
-  }
-
-  /**
-   * Set button text.
-   */
-  setText(text: string = DEFAULT_BUTTON_TEXT) {
-    const style = this.getButtonTextStyle(text, config.warning.regex(), config.warning.color());
-    this.button.text = style.text;
-    this.button.color = style.color;
   }
 
   /**
@@ -75,27 +60,36 @@ export class StatusBarButton implements IButton {
     return this.button.text;
   }
 
-  dispose() {
-    this.garbage.forEach((disposable) => void disposable.dispose());
-    this.garbage = [];
-  }
-
-  private getButtonTextStyle(text: string, regex: RegExp, warningColor: string | ThemeColor) {
+  /**
+   * Set button text.
+   */
+  setText(text: string = DEFAULT_BUTTON_TEXT) {
+    const regex = config.warning.regex();
+    const warningColor = config.warning.color();
     const shouldWarn = regex.test(text);
     const styledText = shouldWarn ? `$(issue-opened) ${text.toUpperCase()}` : text;
 
-    return {
-      text: styledText,
-      color: shouldWarn ? warningColor : DEFAULT_BUTTON_COLOR,
-    };
+    this.button.text = styledText;
+    this.button.color = shouldWarn ? warningColor : DEFAULT_BUTTON_COLOR;
   }
 
-  private getCommand() {
+  private refresh(text: string = DEFAULT_BUTTON_TEXT) {
+    const isSingleEnv = this.isSingleTargetMode();
+    this.button.command = isSingleEnv ? SELECT_ENV_COMMAND_ID : OPEN_VIEW_COMMAND_ID;
+    this.setText(isSingleEnv ? text ?? DEFAULT_BUTTON_TEXT : `.ENV view`);
+
+    // TODO: if (isSingleEnv) then check for the current preset name. Think of a way to access the presetmanager of a single workspace
+  }
+
+  private isSingleTargetMode() {
     const isSingleWorkspace = this.persister.get(IS_SINGLE_WORKSPACE, true);
     const hasMonorepo = this.persister.get(HAS_MONOREPO, false);
 
-    if (isSingleWorkspace && !hasMonorepo) return SELECT_ENV_COMMAND_ID;
+    return isSingleWorkspace && !hasMonorepo;
+  }
 
-    return OPEN_VIEW_COMMAND_ID;
+  dispose() {
+    this.garbage.forEach((disposable) => void disposable.dispose());
+    this.garbage = [];
   }
 }
