@@ -2,17 +2,17 @@ import * as nodePath from 'path';
 import { inject, injectable } from 'tsyringe';
 import { Disposable } from 'vscode';
 import {
-  IWorkspacePersister,
   IFileWatcher,
   IPresetManager,
   ITargetManager,
+  IWorkspacePersister,
   Preset,
   PresetInfo,
 } from '../interfaces';
-import { capitalize, config, fsHelper } from '../utilities';
-import { TargetManager } from './target-manager';
-import { MementoPersister } from './memento-persister';
+import { capitalize, config, fsHelper, SwitcherEvents, getEventEmitter } from '../utilities';
 import { FileWatcher } from '../watchers';
+import { MementoPersister } from './memento-persister';
+import { TargetManager } from './target-manager';
 
 interface SetupArgs {
   rootDir: string;
@@ -21,6 +21,7 @@ interface SetupArgs {
 @injectable()
 export class FsPresetManager implements IPresetManager {
   private rootDir = '';
+  private eventEmitter = getEventEmitter();
   // private presetCache: Record<string, Preset> = {};
 
   private garbage: Disposable[] = [];
@@ -33,6 +34,16 @@ export class FsPresetManager implements IPresetManager {
     this.persister = persister;
     this.targetManager = targetManager;
     this.fileWatcher = fileWatcher;
+
+    this.eventEmitter.on(SwitcherEvents.PresetSelected, async (selectedPreset: Preset) => {
+      console.debug(`[FsPresetManager - ${SwitcherEvents.PresetSelected}]`, { selectedPreset });
+      try {
+        await this.setCurrentPreset(selectedPreset);
+      } catch (error) {
+        console.error(error);
+        this.eventEmitter.emit(SwitcherEvents.PresetSelectedError, error.message, selectedPreset);
+      }
+    });
 
     this.garbage.push(this.fileWatcher);
   }
@@ -59,12 +70,14 @@ export class FsPresetManager implements IPresetManager {
   async setCurrentPreset(preset: PresetInfo | Preset | string | null): Promise<void> {
     if (!preset) {
       this.persister.setPresetInfo(null);
+      this.eventEmitter.emit(SwitcherEvents.PresetChanged, null);
       this.dispose();
       return;
     }
 
     const newPreset = await this.getPresetFromOverloadedParameter(preset);
     this.persister.setPresetInfo(newPreset);
+    this.eventEmitter.emit(SwitcherEvents.PresetChanged, newPreset);
 
     if (!newPreset) {
       this.dispose();
@@ -72,8 +85,7 @@ export class FsPresetManager implements IPresetManager {
     }
 
     this.setFileWatcher(newPreset.path);
-
-    await this.targetManager.writeToTarget(newPreset.content);
+    this.eventEmitter.emit(SwitcherEvents.PresetChanged, newPreset);
   }
 
   async getPresets() {

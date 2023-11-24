@@ -17,6 +17,8 @@ import {
 } from './utilities/prepare-testing-grounds';
 import forEach from 'mocha-each';
 
+const DEFAULT_BUTTON_TEXT = 'Select preset';
+
 describe('regular repo setup', () => {
   before(async () => {
     await VSBrowser.instance.waitForWorkbench();
@@ -43,7 +45,7 @@ describe('regular repo setup', () => {
 
       const statusBar = new StatusBar();
       envSwitcherButton = await VSBrowser.instance.driver.wait(async () => {
-        return (await statusBar.getItem('Select preset'))!;
+        return (await statusBar.getItem(DEFAULT_BUTTON_TEXT))!;
       }, 5_000);
     });
 

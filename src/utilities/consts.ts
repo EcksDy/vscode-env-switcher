@@ -7,5 +7,8 @@ export const OPEN_VIEW_COMMAND_ID = `${EXTENSION_PREFIX}.openView`;
 
 export const DEFAULT_BUTTON_COLOR = new ThemeColor('statusBar.foreground');
 
+export const EVENT_EMITTER = 'eventEmitter';
 export const WORKSPACE_STATE = 'workspaceState';
 export const WORKSPACE_FOLDER = 'workspaceFolder';
+export const WORKSPACE_CONTAINER = 'workspaceContainer';
+export const MAIN_WORKSPACE = 'mainWorkspace';
