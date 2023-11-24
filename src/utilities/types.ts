@@ -1,5 +1,7 @@
 import { StatusBarAlignment } from 'vscode';
 import { config } from './config';
+import { Workspace } from './workspace';
+import { WorkspaceWatcher, WorkspaceWatcherContext } from 'vscode-helpers';
 
 export type WarningColorConfigs = 'default' | 'white' | 'black' | 'red' | 'magenta' | 'yellow';
 export type PositionConfigs = 'outerLeft' | 'innerLeft' | 'outerRight' | 'innerRight';
@@ -17,3 +19,5 @@ export interface StatusBarItemPosition {
 }
 
 export type ExtensionConfig = typeof config;
+
+export type WorkspaceContainer = WorkspaceWatcherContext<Workspace>;

@@ -89,6 +89,13 @@ export class Workspace extends WorkspaceBase implements IPresetManager {
     await this.fsPresetManager.setCurrentPreset(preset);
   }
 
+  /**
+   * TODO: Implement, now returns false
+   */
+  public isMonoRepo() {
+    return false;
+  }
+
   public dispose(): void {
     super.dispose();
   }

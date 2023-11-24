@@ -36,7 +36,7 @@ export class FsPresetManager implements IPresetManager {
     this.fileWatcher = fileWatcher;
 
     this.eventEmitter.on(SwitcherEvents.PresetSelected, async (selectedPreset: Preset) => {
-      console.debug('[FsPresetManager - SwitcherEvents.PresetSelected]', { selectedPreset });
+      console.debug(`[FsPresetManager - ${SwitcherEvents.PresetSelected}]`, { selectedPreset });
       try {
         await this.setCurrentPreset(selectedPreset);
       } catch (error) {

@@ -1,20 +1,22 @@
 import { container, singleton } from 'tsyringe';
-import { Disposable, Memento, StatusBarItem, window } from 'vscode';
+import { Disposable, StatusBarItem, window } from 'vscode';
 import { IButton, Preset, PresetInfo } from '../interfaces';
 import {
   DEFAULT_BUTTON_COLOR,
-  HAS_MONOREPO,
-  IS_SINGLE_WORKSPACE,
+  MAIN_WORKSPACE,
   OPEN_VIEW_COMMAND_ID,
   SELECT_ENV_COMMAND_ID,
   StatusBarItemPosition,
   SwitcherEvents,
-  WORKSPACE_STATE,
+  WORKSPACE_CONTAINER,
+  Workspace,
+  WorkspaceContainer,
   config,
   getEventEmitter,
 } from '../utilities';
 
 const DEFAULT_BUTTON_TEXT = 'Select preset';
+const MRWORKSPACE_BUTTON_TEXT = '.ENV Switcher';
 const ERROR_BUTTON_TEXT = 'No file';
 
 interface Args {
@@ -23,9 +25,9 @@ interface Args {
 
 @singleton()
 export class StatusBarButton implements IButton {
+  private hasOneTarget = false;
   private button: StatusBarItem;
   private garbage: Disposable[];
-  private persister: Memento = container.resolve<Memento>(WORKSPACE_STATE);
   private eventEmitter = getEventEmitter();
 
   constructor({ preset }: Args) {
@@ -37,16 +39,21 @@ export class StatusBarButton implements IButton {
 
     const onWarningConfigChange = config.warning.onChange(() => this.setText(this.getText()));
 
-    this.eventEmitter.on(SwitcherEvents.WorkspaceChanged, () => {
-      console.debug(`[StatusBarButton - SwitcherEvents.WorkspaceChanged]`);
-      this.refresh();
+    this.eventEmitter.on(SwitcherEvents.WorkspacesChanged, async () => {
+      console.debug(`[StatusBarButton - ${SwitcherEvents.WorkspacesChanged}]`);
+      const { workspaces } = container.resolve<WorkspaceContainer>(WORKSPACE_CONTAINER);
+
+      if (!workspaces?.length || workspaces?.length > 1) return this.refresh();
+
+      const currentPreset = await workspaces[0].getCurrentPreset();
+      this.refresh(currentPreset?.name);
     });
     this.eventEmitter.on(SwitcherEvents.PresetSelected, (selectedPreset: Preset) => {
-      console.debug(`[StatusBarButton - SwitcherEvents.PresetSelected]`, { selectedPreset });
+      console.debug(`[StatusBarButton - ${SwitcherEvents.PresetSelected}]`, { selectedPreset });
       this.setText(selectedPreset.name);
     });
     this.eventEmitter.on(SwitcherEvents.PresetSelectedError, () => {
-      console.debug(`[StatusBarButton - SwitcherEvents.PresetSelectedError]`);
+      console.debug(`[StatusBarButton - ${SwitcherEvents.PresetSelectedError}]`);
       this.setText(ERROR_BUTTON_TEXT);
     });
 
@@ -69,23 +76,26 @@ export class StatusBarButton implements IButton {
     const shouldWarn = regex.test(text);
     const styledText = shouldWarn ? `$(issue-opened) ${text.toUpperCase()}` : text;
 
-    this.button.text = styledText;
+    this.button.text = this.hasOneTarget ? styledText : MRWORKSPACE_BUTTON_TEXT;
     this.button.color = shouldWarn ? warningColor : DEFAULT_BUTTON_COLOR;
   }
 
-  private refresh(text: string = DEFAULT_BUTTON_TEXT) {
-    const isSingleEnv = this.isSingleTargetMode();
-    this.button.command = isSingleEnv ? SELECT_ENV_COMMAND_ID : OPEN_VIEW_COMMAND_ID;
-    this.setText(isSingleEnv ? text ?? DEFAULT_BUTTON_TEXT : `.ENV view`);
-
-    // TODO: if (isSingleEnv) then check for the current preset name. Think of a way to access the presetmanager of a single workspace
+  private refreshCommand() {
+    this.button.command = this.hasOneTarget ? SELECT_ENV_COMMAND_ID : OPEN_VIEW_COMMAND_ID;
   }
 
-  private isSingleTargetMode() {
-    const isSingleWorkspace = this.persister.get(IS_SINGLE_WORKSPACE, true);
-    const hasMonorepo = this.persister.get(HAS_MONOREPO, false);
+  private refresh(text?: string) {
+    this.ensureHasOneTarget();
+    this.refreshCommand();
+    this.setText(text);
+  }
 
-    return isSingleWorkspace && !hasMonorepo;
+  private ensureHasOneTarget() {
+    const mainWorkspace = container.resolve<Workspace | null>(MAIN_WORKSPACE);
+    if (!mainWorkspace) return void (this.hasOneTarget = false);
+
+    const isMonoRepo = mainWorkspace.isMonoRepo();
+    this.hasOneTarget = !isMonoRepo;
   }
 
   dispose() {

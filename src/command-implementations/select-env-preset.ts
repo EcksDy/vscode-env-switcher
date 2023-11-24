@@ -1,13 +1,19 @@
+import { container } from 'tsyringe';
 import { QuickPickItem, window } from 'vscode';
-import { IPresetManager, Preset } from '../interfaces';
-import { ExtensionConfig, SwitcherEvents, getEventEmitter } from '../utilities';
+import { Preset } from '../interfaces';
+import {
+  ExtensionConfig,
+  MAIN_WORKSPACE,
+  SwitcherEvents,
+  Workspace,
+  getEventEmitter,
+} from '../utilities';
 
 const OVERWRITE_ALERT_OPTIONS = [`OK`, `Don't show again`, `Cancel`] as const;
 const eventEmitter = getEventEmitter();
 
 interface Deps {
   config: ExtensionConfig;
-  presetManager: IPresetManager;
 }
 
 function presetToQuickPickItem({ description, title, path }: Preset): QuickPickItem {
@@ -18,7 +24,9 @@ function presetToQuickPickItem({ description, title, path }: Preset): QuickPickI
   };
 }
 
-export async function selectEnvPreset({ config, presetManager }: Deps) {
+export async function selectEnvPreset({ config }: Deps) {
+  const presetManager = container.resolve<Workspace | null>(MAIN_WORKSPACE);
+  if (!presetManager) return;
   const presets = await presetManager.getPresets();
 
   const presetQuickPickList: QuickPickItem[] = presets.map(presetToQuickPickItem);

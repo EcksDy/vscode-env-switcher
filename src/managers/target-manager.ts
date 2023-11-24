@@ -5,7 +5,7 @@ export class TargetManager implements ITargetManager {
   private eventEmitter = getEventEmitter();
   constructor() {
     this.eventEmitter.on(SwitcherEvents.PresetChanged, async (newPreset: Preset) => {
-      console.debug('[TargetManager - SwitcherEvents.PresetChanged]', newPreset);
+      console.debug(`[TargetManager - ${SwitcherEvents.PresetChanged}]`, newPreset);
       if (!newPreset?.content) return;
 
       await this.writeToTarget(newPreset.content);

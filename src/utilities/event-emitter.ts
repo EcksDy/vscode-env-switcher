@@ -25,5 +25,5 @@ export enum SwitcherEvents {
   FileChanged = 'file-changed',
   FileDeleted = 'file-deleted',
   FileCreated = 'file-created',
-  WorkspaceChanged = 'workspace-changed',
+  WorkspacesChanged = 'workspaces-changed',
 }
