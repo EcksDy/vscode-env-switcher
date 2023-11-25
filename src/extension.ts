@@ -18,6 +18,7 @@ import {
   WorkspaceContainer,
   config,
   getEventEmitter,
+  getEventEmitterDisposable,
   registerInContainer,
 } from './utilities';
 
@@ -85,6 +86,7 @@ export async function activate(context: ExtensionContext) {
     statusBarButton,
     container,
     presetView,
+    getEventEmitterDisposable(),
   );
 }
 

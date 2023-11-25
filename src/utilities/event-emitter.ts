@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import { DependencyContainer, container } from 'tsyringe';
+import { Disposable } from 'vscode';
 import { EVENT_EMITTER } from './consts';
 import { registerInContainer } from './di-container';
 
@@ -7,10 +7,16 @@ const eventEmitter = new EventEmitter();
 
 registerInContainer([EVENT_EMITTER, { useValue: eventEmitter }]);
 
-export function getEventEmitter(localContainer?: DependencyContainer): EventEmitter {
-  if (!localContainer) localContainer = container;
+export function getEventEmitter(): EventEmitter {
+  return eventEmitter;
+}
 
-  return localContainer.resolve<EventEmitter>(EVENT_EMITTER);
+export function getEventEmitterDisposable(): Disposable {
+  return {
+    dispose() {
+      eventEmitter.removeAllListeners();
+    },
+  };
 }
 
 export enum SwitcherEvents {
