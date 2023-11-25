@@ -88,9 +88,13 @@ Extension will not start if no target was found when the directory was first ope
 - Ensure the target file would be found by the glob specified in `envSwitcher.glob.target` setting.
 - Reload the window via `Developer: Reload Window` command.
 
-### Will you support monorepos?
+### Will you support monorepos / multiroot workspaces?
 
-I'd like to, but there are so many ways to structure a monorepo and so many approaches to handle targets and presets that I'm not sure how to even approach it.  
+There is currently a solution in the works:
+Phase 1 - support multiroot workspaces.
+Phase 2 - support monorepos.
+Phase 3 - support monorepos inside multiroot workspaces. While questionable, should be relatively easy to implement on top of phase 2.
+
 If you'd like to help with an idea or join the discussion you can do that in:
 
 - [Support multiroot workspaces](https://github.com/EcksDy/vscode-env-switcher/issues/17)
