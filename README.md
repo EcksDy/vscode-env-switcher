@@ -46,11 +46,16 @@ In no particular order.
 
 ### Multi-root Workspace / Mono-repo support
 
-- [ ] Detect, parse and watch `.envswitcher` files - for monorepos
+- [ ] `.envswitcher` files - for monorepos
+  - [ ] Detect
+  - [ ] Parse
+  - [ ] Watch
 - [ ] Handle multi-root workspaces
+  - [ ] Integrate with UI
 - [ ] Handle overrides for multi-root workspaces
 - [ ] Webview UI for selecting presets
   - [x] UI design
+  - [ ] Setup svelte (otherwise too hard to maintain)
   - [ ] Multi target switch
   - [ ] Nested trees for m.workspaces that have monorepo folders
 
@@ -58,7 +63,7 @@ In no particular order.
 
 - [ ] Fix issue with dev/master branch out of sync
 - [ ] Trigger CI/CD on new tags
-- [ ] Add DI container
+- [x] Add DI container
 - [x] Add CI for pull requests
 - [x] Add UI tests
 
