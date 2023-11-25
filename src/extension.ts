@@ -18,6 +18,7 @@ import {
   WorkspaceContainer,
   config,
   getEventEmitter,
+  getEventEmitterDisposable,
   registerInContainer,
 } from './utilities';
 
@@ -81,6 +82,7 @@ export async function activate(context: ExtensionContext) {
     openViewCmd,
     statusBarButton,
     container,
+    getEventEmitterDisposable(),
   );
 }
 
