@@ -1,61 +1,91 @@
-import { ExtensionContext, WorkspaceFolder, commands, window, workspace } from 'vscode';
+import 'reflect-metadata';
+import './utilities/event-emitter';
+
+import { container } from 'tsyringe';
+import { ExtensionContext, commands, window } from 'vscode';
+import { WorkspaceWatcherEvent, registerWorkspaceWatcher } from 'vscode-helpers';
 import { selectEnvPreset } from './command-implementations';
-import { FsPresetManager, MementoCurrPresetPersister, TargetManager } from './managers';
 import { PresetsViewProvider, StatusBarButton } from './ui-components';
-import { SELECT_ENV_COMMAND_ID, config, fsHelper } from './utilities';
-import { FileWatcher } from './watchers';
+import {
+  MAIN_WORKSPACE,
+  OPEN_VIEW_COMMAND_ID,
+  SELECT_ENV_COMMAND_ID,
+  SwitcherEvents,
+  WORKSPACE_CONTAINER,
+  WORKSPACE_FOLDER,
+  WORKSPACE_STATE,
+  Workspace,
+  WorkspaceContainer,
+  config,
+  getEventEmitter,
+  registerInContainer,
+} from './utilities';
 
-export async function activate({ subscriptions, workspaceState, extensionUri }: ExtensionContext) {
+const eventEmitter = getEventEmitter();
+
+export async function activate(context: ExtensionContext) {
+  const { subscriptions, workspaceState, extensionUri } = context;
+  registerInContainer([WORKSPACE_STATE, { useValue: workspaceState }]);
+
   // Allows disabling per workspace
-  if (!config.enabled()) return;
+  // if (!config.enabled()) return;
   // Will not initialize if no target file is found
-  if (!(await fsHelper.findTarget(config))) return;
+  // if (!(await fsHelper.findTarget(config))) return; // TODO: Move into Workspace.build
 
-  // I can make this assertion, because extension won't activate if there's no workspace folder open
-  const [rootFolder] = workspace.workspaceFolders as WorkspaceFolder[];
-  const rootDir = rootFolder.uri.fsPath;
+  const workspaceContainer = registerWorkspaceWatcher<Workspace>(
+    context,
+    async (ev, folder) => {
+      if (ev !== WorkspaceWatcherEvent.Added) return;
 
-  /* WATCHER */
-  const fileWatcher = new FileWatcher({ workspaceFolder: rootFolder });
+      const workspaceContainer = container.createChildContainer();
+      workspaceContainer.register(WORKSPACE_FOLDER, { useValue: folder });
+      const newWorkspace = await Workspace.build(folder, workspaceContainer);
 
-  /* MANAGERS */
-  const persistanceManager = new MementoCurrPresetPersister({
-    state: workspaceState,
-  });
-
-  const targetManager = new TargetManager({ config });
-  const fsPresetManager = await FsPresetManager.build(
-    {
-      config,
-      targetManager,
-      persister: persistanceManager,
-      fileWatcher,
+      return newWorkspace;
     },
-    { rootDir },
+    () => void eventEmitter.emit(SwitcherEvents.WorkspacesChanged),
   );
+  await workspaceContainer.reload();
+  registerInContainer([WORKSPACE_CONTAINER, { useValue: workspaceContainer }]);
+  registerInContainer([
+    MAIN_WORKSPACE,
+    {
+      useFactory(container) {
+        const { workspaces } = container.resolve<WorkspaceContainer>(WORKSPACE_CONTAINER);
+        if (workspaces.length !== 1) return null;
+
+        return workspaces[0];
+      },
+    },
+  ]);
+
+  const mainWorkspace = container.resolve<Workspace | null>(MAIN_WORKSPACE); // TODO: Not really, dirty hack for now
 
   /* UI COMPONENTS */
-  const statusBarButton = new StatusBarButton(
-    { config, fileWatcher },
-    {
-      preset: (await fsPresetManager.getCurrentPreset()) ?? undefined,
-    },
-  );
+  const statusBarButton = new StatusBarButton({
+    preset: (await mainWorkspace?.getCurrentPreset()) ?? undefined,
+  });
 
   const provider = new PresetsViewProvider(extensionUri);
   const presetView = window.registerWebviewViewProvider(PresetsViewProvider.viewType, provider);
 
   /* COMMANDS */
   const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
-    selectEnvPreset({
-      config,
-      presetManager: fsPresetManager,
-      button: statusBarButton,
-    }),
+    selectEnvPreset({ config }),
+  );
+  const openViewCmd = commands.registerCommand(OPEN_VIEW_COMMAND_ID, () =>
+    window.showInformationMessage('=== placeholder for tree view ==='),
   );
 
   /* GARBAGE REGISTRATION */
-  subscriptions.push(selectEnvPresetCmd, statusBarButton, fsPresetManager, presetView);
+  subscriptions.push(
+    workspaceContainer,
+    selectEnvPresetCmd,
+    openViewCmd,
+    statusBarButton,
+    container,
+    presetView,
+  );
 }
 
 export function deactivate() {}

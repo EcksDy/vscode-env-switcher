@@ -1,8 +1,6 @@
 import { ConfigurationChangeEvent, StatusBarAlignment, ThemeColor, workspace } from 'vscode';
 import { GlobPattern, PositionConfigs, StatusBarItemPosition, WarningColorConfigs } from './types';
-import { DEFAULT_BUTTON_COLOR } from './consts';
-
-const EXTENSION_PREFIX = 'envSwitcher';
+import { DEFAULT_BUTTON_COLOR, EXTENSION_PREFIX } from './consts';
 
 /**
  * Will get the extension `enabled` config from workspace settings, with global settings fallback.
@@ -158,11 +156,11 @@ function onChangePresetsGlobConfig(
   onChange: (presetsGlob: string, presetsGlobExclude: string) => Promise<void> | void,
 ) {
   return workspace.onDidChangeConfiguration(async (event: ConfigurationChangeEvent) => {
-    const shouldUpdateTarget =
-      isConfigAffected(event, 'glob.target') || isConfigAffected(event, 'glob.targetExclude');
+    const shouldUpdatePresets =
+      isConfigAffected(event, 'glob.presets') || isConfigAffected(event, 'glob.presetsExclude');
 
-    if (!shouldUpdateTarget) return;
-    await onChange(targetGlob(), presetsExcludeGlob());
+    if (!shouldUpdatePresets) return;
+    await onChange(presetsGlob(), presetsExcludeGlob());
   });
 }
 
