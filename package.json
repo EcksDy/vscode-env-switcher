@@ -122,6 +122,9 @@
     ]
   },
   "scripts": {
+    "install:all": "npm install && cd webview-ui && npm install",
+    "start:webview": "cd webview-ui && npm run dev",
+    "build:webview": "cd webview-ui && npm run build",
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
     "vscode:prepublish": "rm -rf out && npm run compile",
     "compile": "npm run esbuild-base -- --minify",
@@ -135,7 +138,7 @@
     "ui-test": "extest setup-and-run './out/ui-test/*.test.js' --mocha_config './src/ui-test/setup/.mocharc.json' --extensions_dir '.vscode-test/extensions' --storage '.vscode-test/resources' --code_settings ./src/ui-test/setup/settings.json"
   },
   "lint-staged": {
-    "*.ts": [
+    "src/*.ts": [
       "npm run format",
       "npm run lint-staged"
     ]

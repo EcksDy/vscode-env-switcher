@@ -12,7 +12,7 @@
       "runtimeExecutable": "${execPath}",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}", "--profile=extension-showcase"],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "build"
+      "preLaunchTask": "${defaultBuildTask}"
     },
     {
       "name": "Extension Tests",

@@ -3,7 +3,7 @@
     "esModuleInterop": true,
     "module": "commonjs",
     "target": "ES2020",
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "dom"],
     "outDir": "out",
     "rootDir": "src",
     "skipLibCheck": true,
@@ -15,5 +15,5 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "exclude": ["node_modules", ".vscode-test", "src/ui-components/webviews/**"]
+  "exclude": ["node_modules", ".vscode-test", "webview-ui"]
 }

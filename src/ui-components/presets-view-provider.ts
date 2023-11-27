@@ -8,14 +8,15 @@ import {
   WebviewViewResolveContext,
   window,
 } from 'vscode';
-import { PresetsViewData, Project, Preset, ViewActions } from './interfaces';
+import { Preset, PresetsViewData, Project, ViewActions } from './interfaces';
+import { getNonce, getUri } from './utilities';
 
 export class PresetsViewProvider implements WebviewViewProvider {
   public static readonly viewType = 'envSwitcher.presetsView';
 
   private view?: WebviewView;
 
-  constructor(private readonly _extensionUri: Uri) {}
+  constructor(private readonly extensionUri: Uri) {}
 
   public resolveWebviewView(
     webviewView: WebviewView,
@@ -25,17 +26,69 @@ export class PresetsViewProvider implements WebviewViewProvider {
     this.view = webviewView;
 
     webviewView.webview.options = {
+      // Enable JavaScript in the webview
       enableScripts: true,
-      localResourceRoots: [this._extensionUri],
+      // Restrict the webview to only load resources from the `out` and `webview-ui/public/build` directories
+      localResourceRoots: [
+        Uri.joinPath(this.extensionUri, 'out'),
+        Uri.joinPath(this.extensionUri, 'webview-ui/public/build'),
+      ],
     };
-
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage(async (data: ViewActions) => {
+    this.setWebviewMessageListener();
+  }
+
+  private getHtmlForWebview(webview: Webview) {
+    // The CSS file from the Svelte build output
+    const stylesUri = getUri(webview, this.extensionUri, [
+      'webview-ui',
+      'public',
+      'build',
+      'bundle.css',
+    ]);
+    // The JS file from the Svelte build output
+    const scriptUri = getUri(webview, this.extensionUri, [
+      'webview-ui',
+      'public',
+      'build',
+      'bundle.js',
+    ]);
+
+    const nonce = getNonce();
+
+    // Tip: Install the es6-string-html VS Code extension to enable code highlighting below
+    return /*html*/ `
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <title>Hello World</title>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${
+            webview.cspSource
+          }; script-src 'nonce-${nonce}';">
+          <link rel="stylesheet" type="text/css" href="${stylesUri.toString()}">
+          <script defer nonce="${nonce}" src="${scriptUri.toString()}"></script>
+        </head>
+        <body>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Sets up an event listener to listen for messages passed from the webview context and
+   * executes code based on the message that is recieved.
+   *
+   * @param context A reference to the extension context
+   */
+  private setWebviewMessageListener() {
+    this.view?.webview.onDidReceiveMessage(async (data: ViewActions) => {
       switch (data.action) {
         case 'init':
           // Pass dummy data to the webview
-          return await webviewView.webview.postMessage({
+          return await this.view?.webview.postMessage({
             action: 'init',
             value: {
               multiSwitch: false,
@@ -56,85 +109,6 @@ export class PresetsViewProvider implements WebviewViewProvider {
       }
     });
   }
-
-  // public async addColor() {
-  //   if (this.view) {
-  //     this.view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
-  //     await this.view.webview.postMessage({ type: 'addColor' });
-  //   }
-  // }
-
-  private getHtmlForWebview(webview: Webview) {
-    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
-    const scriptUri = webview.asWebviewUri(
-      Uri.joinPath(this._extensionUri, 'out', 'ui-components', 'webviews', 'presets', 'main.js'),
-    );
-
-    // Do the same for the stylesheet.
-    const styleResetUri = webview.asWebviewUri(
-      Uri.joinPath(this._extensionUri, 'src', 'ui-components', 'webviews', 'presets', 'reset.css'),
-    );
-    const styleVSCodeUri = webview.asWebviewUri(
-      Uri.joinPath(this._extensionUri, 'src', 'ui-components', 'webviews', 'presets', 'vscode.css'),
-    );
-    const styleMainUri = webview.asWebviewUri(
-      Uri.joinPath(this._extensionUri, 'src', 'ui-components', 'webviews', 'presets', 'main.css'),
-    );
-
-    const codiconsUri = webview.asWebviewUri(
-      Uri.joinPath(this._extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'),
-    );
-
-    // Use a nonce to only allow a specific script to be run.
-    const nonce = getNonce();
-
-    return `<!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-
-        <!--
-          Use a content security policy to only allow loading styles from our extension directory,
-          and only allow scripts that have a specific nonce.
-          (See the 'webview-sample' extension sample for img-src content security policy examples)
-        -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${
-          webview.cspSource
-        }; font-src ${webview.cspSource}; style-src ${
-          webview.cspSource
-        }; script-src 'nonce-${nonce}';">
-
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <link href="${styleResetUri.toString()}" rel="stylesheet" />
-        <link href="${styleVSCodeUri.toString()}" rel="stylesheet" />
-        <link href="${styleMainUri.toString()}" rel="stylesheet" />
-				<link href="${codiconsUri.toString()}" rel="stylesheet" />
-
-        <title>Presets</title>
-      </head>
-      <body>
-        <div class="head-line">
-          <div class="inline-buttons-container"></div>
-        </div>
-        <ul class="project-list">
-        </ul>
-
-        <script nonce="${nonce}" src="${scriptUri.toString()}">
-          console.log('hello darkness');
-        </script>
-      </body>
-      </html>`;
-  }
-}
-
-function getNonce() {
-  let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
 }
 
 function getHash(str: string) {
