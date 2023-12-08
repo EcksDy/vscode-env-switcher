@@ -14,7 +14,7 @@
   "editor.tabSize": 2,
   "files.eol": "\n",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "svelte.plugin.svelte.compilerWarnings": {
@@ -39,6 +39,8 @@
     "a11y-distracting-elements": "ignore",
     "a11y-structure": "ignore",
     "a11y-mouse-events-have-key-events": "ignore",
-    "a11y-missing-content": "ignore"
+    "a11y-missing-content": "ignore",
+    "a11y-click-events-have-key-events": "ignore",
+    "a11y-no-static-element-interactions": "ignore"
   }
 }
