@@ -1,45 +1,136 @@
 <script lang="ts">
-	import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-toolkit";
-	import { vscode } from "./utilities/vscode";
-
-	// In order to use the Webview UI Toolkit web components they
-	// must be registered with the browser (i.e. webview) using the
-	// syntax below.
-	provideVSCodeDesignSystem().register(vsCodeButton());
-
-	// To register more toolkit components, simply import the component
-	// registration function and call it from within the register
-	// function, like so:
-	//
-	// provideVSCodeDesignSystem().register(
-	//   vsCodeButton(),
-	//   vsCodeCheckbox()
-	// );
-	//
-	// Finally, if you would like to register all of the toolkit
-	// components at once, there's a handy convenience function:
-	//
-	// provideVSCodeDesignSystem().register(allComponents);
-
-	function handleHowdyClick() {
-		vscode.postMessage({
-			command: "hello",
-			text: "Hey there partner! 🤠",
-		});
-	}
+  import Panel from './Panel.svelte';
 </script>
 
 <main>
-	<h1>Hello world!</h1>
-	<vscode-button on:click={handleHowdyClick}>Howdy!</vscode-button>
+  <Panel></Panel>
 </main>
 
-<style>
-	main {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: flex-start;
-		height: 100%;
-	}
+<style global>
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+
+  html {
+    box-sizing: border-box;
+    font-size: 13px;
+  }
+
+  *,
+  *:before,
+  *:after {
+    box-sizing: inherit;
+  }
+
+  body,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  ol,
+  ul {
+    margin: 0;
+    padding: 0;
+    font-weight: normal;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  :root {
+    --container-paddding: 20px;
+    --input-padding-vertical: 6px;
+    --input-padding-horizontal: 4px;
+    --input-margin-vertical: 4px;
+    --input-margin-horizontal: 0;
+  }
+
+  body {
+    padding: 0 var(--container-paddding);
+    color: var(--vscode-foreground);
+    font-size: var(--vscode-font-size);
+    font-weight: var(--vscode-font-weight);
+    font-family: var(--vscode-font-family);
+    background-color: var(--vscode-editor-background);
+  }
+
+  ol,
+  ul {
+    padding-left: var(--container-paddding);
+  }
+
+  body > *,
+  form > * {
+    margin-block-start: var(--input-margin-vertical);
+    margin-block-end: var(--input-margin-vertical);
+  }
+
+  *:focus {
+    outline-color: var(--vscode-focusBorder) !important;
+  }
+
+  a {
+    color: var(--vscode-textLink-foreground);
+  }
+
+  a:hover,
+  a:active {
+    color: var(--vscode-textLink-activeForeground);
+  }
+
+  code {
+    font-size: var(--vscode-editor-font-size);
+    font-family: var(--vscode-editor-font-family);
+  }
+
+  button {
+    border: none;
+    padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+    width: 100%;
+    text-align: center;
+    outline: 1px solid transparent;
+    outline-offset: 2px !important;
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+  }
+
+  button:hover {
+    cursor: pointer;
+    background: var(--vscode-button-hoverBackground);
+  }
+
+  button:focus {
+    outline-color: var(--vscode-focusBorder);
+  }
+
+  button.secondary {
+    color: var(--vscode-button-secondaryForeground);
+    background: var(--vscode-button-secondaryBackground);
+  }
+
+  button.secondary:hover {
+    background: var(--vscode-button-secondaryHoverBackground);
+  }
+
+  input:not([type='checkbox']),
+  textarea {
+    display: block;
+    width: 100%;
+    border: none;
+    font-family: var(--vscode-font-family);
+    padding: var(--input-padding-vertical) var(--input-padding-horizontal);
+    color: var(--vscode-input-foreground);
+    outline-color: var(--vscode-input-border);
+    background-color: var(--vscode-input-background);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--vscode-input-placeholderForeground);
+  }
 </style>

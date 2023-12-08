@@ -57,12 +57,11 @@ export class PresetsViewProvider implements WebviewViewProvider {
 
     const nonce = getNonce();
 
-    // Tip: Install the es6-string-html VS Code extension to enable code highlighting below
     return /*html*/ `
       <!DOCTYPE html>
       <html lang="en">
         <head>
-          <title>Hello World</title>
+          <title>Webview</title>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${
@@ -92,8 +91,8 @@ export class PresetsViewProvider implements WebviewViewProvider {
             action: 'init',
             value: {
               multiSwitch: false,
-              projects: getProjects(),
-              presets: getPresets(),
+              // projects: getProjects(),
+              // presets: getPresets(),
             } as PresetsViewData,
           });
         case 'toggleLock':
@@ -109,60 +108,4 @@ export class PresetsViewProvider implements WebviewViewProvider {
       }
     });
   }
-}
-
-function getHash(str: string) {
-  return createHash('sha256').update(str, 'utf8').digest('hex');
-}
-
-function getProjects(): Project[] {
-  return [
-    {
-      id: getHash('path/to/project'),
-      locked: false,
-      path: 'path/to/project',
-      name: 'Project 1',
-    },
-    {
-      id: getHash('path/to/project2'),
-      locked: false,
-      path: 'path/to/project2',
-      name: 'Project 2',
-    },
-  ];
-}
-
-function getPresets(): Preset[] {
-  const projectId = getHash('path/to/project');
-  const projectId2 = getHash('path/to/project2');
-  return [
-    {
-      id: getHash('path/to/project/preset1'),
-      name: 'preset 1',
-      selected: true,
-      path: 'path/to/project/preset1',
-      projectId,
-    },
-    {
-      id: getHash('path/to/project/preset2'),
-      name: 'preset 2',
-      selected: false,
-      path: 'path/to/project/preset2',
-      projectId,
-    },
-    {
-      id: getHash('path/to/project2/preset1'),
-      name: 'preset 1',
-      selected: true,
-      path: 'path/to/project2/preset1',
-      projectId: projectId2,
-    },
-    {
-      id: getHash('path/to/project2/preset2'),
-      name: 'preset 2',
-      selected: false,
-      path: 'path/to/project2/preset2',
-      projectId: projectId2,
-    },
-  ];
 }

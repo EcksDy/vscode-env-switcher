@@ -1,13 +1,15 @@
-import svelte from 'rollup-plugin-svelte';
-import commonjs from '@rollup/plugin-commonjs';
-import resolve from '@rollup/plugin-node-resolve';
-import livereload from 'rollup-plugin-livereload';
-import { terser } from 'rollup-plugin-terser';
-import sveltePreprocess from 'svelte-preprocess';
-import typescript from '@rollup/plugin-typescript';
-import css from 'rollup-plugin-css-only';
-import childProcess from 'child_process';
-
+const svelte = require('rollup-plugin-svelte');
+const commonjs = require('@rollup/plugin-commonjs');
+const resolve = require('@rollup/plugin-node-resolve');
+const livereload = require('rollup-plugin-livereload');
+const { terser } = require('@rollup/plugin-terser');
+const sveltePreprocess = require('svelte-preprocess');
+const typescript = require('@rollup/plugin-typescript');
+const css = require('rollup-plugin-css-only');
+const childProcess = require('child_process');
+const tailwindcss = require('tailwindcss');
+const autoprefixer = require('autoprefixer');
+const copy = require('rollup-plugin-copy');
 const production = !process.env.ROLLUP_WATCH;
 
 function serve() {
@@ -31,7 +33,7 @@ function serve() {
   };
 }
 
-export default {
+module.exports = {
   input: 'src/main.ts',
   output: {
     ...{
@@ -49,7 +51,19 @@ export default {
   },
   plugins: [
     svelte({
-      preprocess: sveltePreprocess({ sourceMap: !production }),
+      onwarn: (warning, handler) => {
+        if (warning.code.startsWith('a11y-')) {
+          return;
+        }
+        handler(warning);
+      },
+      preprocess: sveltePreprocess({
+        sourceMap: !production,
+        postcss: {
+          plugins: [autoprefixer(), tailwindcss()],
+        },
+        scss: true,
+      }),
       compilerOptions: {
         // enable run-time checks when not in production
         dev: !production,
@@ -58,7 +72,13 @@ export default {
     // we'll extract any component CSS out into
     // a separate file - better for performance
     css({ output: 'bundle.css' }),
-
+    !production &&
+      copy({
+        targets: [
+          // Copy codicons from root node_modules just for the browser
+          { src: '../node_modules/@vscode/codicons/dist/{*.css,*.ttf}', dest: 'public/build' },
+        ],
+      }),
     // If you have external dependencies installed from
     // npm, you'll most likely need these plugins. In
     // some cases you'll need additional configuration -

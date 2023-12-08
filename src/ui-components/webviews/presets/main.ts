@@ -214,7 +214,7 @@ type Presets = Record<string, Preset>;
     toggleIcon: 'expand-all',
     onClick: () => {
       const projectList = getProjectList();
-      for (const projectEntry of projectList.children) {
+      for (const projectEntry of projectList.children as any) {
         projectEntry.children[1].classList.toggle('hidden');
       }
     },

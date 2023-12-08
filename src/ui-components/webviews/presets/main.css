@@ -20,19 +20,6 @@ body {
   padding: 0;
 }
 
-.project-container {
-}
-
-.project-entry {
-  width: 100%;
-  display: flex;
-  padding-left: 0.4em;
-}
-
-.project-entry:hover {
-  background-color: var(--vscode-list-hoverBackground);
-}
-
 .project-container:hover .indentation {
   border-right: 1px solid var(--vscode-tree-indentGuidesStroke);
 }

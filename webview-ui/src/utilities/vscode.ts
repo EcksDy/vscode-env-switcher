@@ -1,4 +1,4 @@
-import type { WebviewApi } from "vscode-webview";
+import type { WebviewApi } from 'vscode-webview';
 
 /**
  * A utility wrapper around the acquireVsCodeApi() function, which enables
@@ -11,12 +11,16 @@ import type { WebviewApi } from "vscode-webview";
  */
 class VSCodeAPIWrapper {
   private readonly vsCodeApi: WebviewApi<unknown> | undefined;
+  public readonly isMocked: boolean;
 
   constructor() {
     // Check if the acquireVsCodeApi function exists in the current development
     // context (i.e. VS Code development window or web browser)
-    if (typeof acquireVsCodeApi === "function") {
+    this.isMocked = typeof acquireVsCodeApi !== 'function';
+    if (!this.isMocked) {
       this.vsCodeApi = acquireVsCodeApi();
+    } else {
+      console.log('Running in browser, vscode is mocked');
     }
   }
 
@@ -48,7 +52,8 @@ class VSCodeAPIWrapper {
     if (this.vsCodeApi) {
       return this.vsCodeApi.getState();
     } else {
-      const state = localStorage.getItem("vscodeState");
+      const state = localStorage.getItem('vscodeState');
+      console.log('getState', state);
       return state ? JSON.parse(state) : undefined;
     }
   }
@@ -68,7 +73,8 @@ class VSCodeAPIWrapper {
     if (this.vsCodeApi) {
       return this.vsCodeApi.setState(newState);
     } else {
-      localStorage.setItem("vscodeState", JSON.stringify(newState));
+      console.log('setState', newState);
+      localStorage.setItem('vscodeState', JSON.stringify(newState));
       return newState;
     }
   }
