@@ -1,27 +1,10 @@
 <script lang="ts">
   import IconButton from './components/IconButtonComp.svelte';
 
-  import { provideVSCodeDesignSystem, vsCodeButton } from '@vscode/webview-ui-toolkit';
-  import { vscode } from './utilities/vscode';
   import type { Preset, Project } from '../../src/ui-components/interfaces';
   import PresetEntryComp from './PresetEntryComp.svelte';
   import ButtonContainer from './components/ButtonContainer.svelte';
 
-  provideVSCodeDesignSystem().register(vsCodeButton());
-
-  // To register more toolkit components, simply import the component
-  // registration function and call it from within the register
-  // function, like so:
-  //
-  // provideVSCodeDesignSystem().register(
-  //   vsCodeButton(),
-  //   vsCodeCheckbox()
-  // );
-  //
-  // Finally, if you would like to register all of the toolkit
-  // components at once, there's a handy convenience function:
-  //
-  // provideVSCodeDesignSystem().register(allComponents);
   export let project: Project;
   export let presets: Preset[];
 </script>

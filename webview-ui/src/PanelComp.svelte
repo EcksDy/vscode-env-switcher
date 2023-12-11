@@ -1,6 +1,6 @@
 <script lang="ts">
   import { provideVSCodeDesignSystem, vsCodeProgressRing } from '@vscode/webview-ui-toolkit';
-  import ProjectComp from './ProjectComp.svelte';
+  import FolderComp from './FolderComp.svelte';
   import { vscode } from './utilities/vscode';
   import type { Preset, Project } from '../../src/ui-components/interfaces';
   import IconButtonComp from './components/IconButtonComp.svelte';
@@ -66,10 +66,7 @@
 {:else}
   <ul class="list-none p-0">
     {#each projects as project}
-      <ProjectComp
-        {project}
-        presets={presets.filter(({ projectId }) => projectId === project.id)}
-      />
+      <FolderComp {project} presets={presets.filter(({ projectId }) => projectId === project.id)} />
     {/each}
   </ul>
 {/if}
