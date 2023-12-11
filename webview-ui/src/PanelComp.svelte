@@ -9,38 +9,43 @@
   provideVSCodeDesignSystem().register(vsCodeProgressRing());
 
   let isLoading = true;
+  // vscode.setState(null);
+
+  let { action, projects, presets } = {
+    action: 'init', // TODO: use discriminated union type
+    projects: [] as Project[],
+    presets: [] as Preset[],
+  };
 
   window.addEventListener('message', (event) => {
+    console.log('event', event);
     if (!event.data?.value) return;
 
     const {
       action,
-      value: { projects, presets, multiSwitch },
+      value: { projects: newProjects, presets, multiSwitch },
     } = event.data; //as { action: string; value: PresetsViewData };
-
-    // projects = Object.fromEntries(projectsArr.map((project) => [project.id, project]));
-    // presets = Object.fromEntries(presetsArr.map((preset) => [preset.id, preset]));
 
     switch (action) {
       case 'init': {
-        vscode.setState({ action, projects });
+        console.log('init', action);
+        vscode.setState({ action, projects: newProjects, presets });
+        projects = newProjects;
         break;
       }
     }
   });
 
-  let {
-    action,
-    values: { projects, presets },
-  } = { action: 'init', values: { projects: [] as Project[], presets: [] as Preset[] } };
+  // vscode.postMessage({ action: 'init' });
 
   setTimeout(() => {
     const x = vscode.getState() as any;
+    console.log('x', x);
     action = x.action;
-    projects = x.values.projects;
-    presets = x.values.presets;
+    projects = x.projects;
+    presets = x.presets;
     isLoading = false;
-  }, 1);
+  }, 1000);
 </script>
 
 <ToolbarComp>
@@ -63,10 +68,14 @@
   <div class="flex h-full w-full items-center justify-center">
     <vscode-progress-ring></vscode-progress-ring>
   </div>
-{:else}
+{:else if projects?.length}
   <ul class="list-none p-0">
     {#each projects as project}
       <FolderComp {project} presets={presets.filter(({ projectId }) => projectId === project.id)} />
     {/each}
   </ul>
+{:else}
+  <div class="flex min-h-[100px] w-full items-center justify-center">
+    <span class="text-base opacity-80">No presets found</span>
+  </div>
 {/if}

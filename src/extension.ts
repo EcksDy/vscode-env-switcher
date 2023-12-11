@@ -74,8 +74,9 @@ export async function activate(context: ExtensionContext) {
   const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
     selectEnvPreset({ config }),
   );
-  const openViewCmd = commands.registerCommand(OPEN_VIEW_COMMAND_ID, () =>
-    window.showInformationMessage('=== placeholder for tree view ==='),
+  const openViewCmd = commands.registerCommand(
+    OPEN_VIEW_COMMAND_ID,
+    async () => await commands.executeCommand(`${PresetsViewProvider.viewType}.focus`),
   );
 
   /* GARBAGE REGISTRATION */

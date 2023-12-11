@@ -14,15 +14,12 @@ import { getNonce, getUri } from './utilities';
 export class PresetsViewProvider implements WebviewViewProvider {
   public static readonly viewType = 'envSwitcher.presetsView';
 
-  private view?: WebviewView;
+  constructor(
+    private readonly extensionUri: Uri,
+    private view?: WebviewView,
+  ) {}
 
-  constructor(private readonly extensionUri: Uri) {}
-
-  public resolveWebviewView(
-    webviewView: WebviewView,
-    context: WebviewViewResolveContext,
-    _token: CancellationToken,
-  ) {
+  public resolveWebviewView(webviewView: WebviewView, context: WebviewViewResolveContext) {
     this.view = webviewView;
 
     webviewView.webview.options = {
@@ -38,6 +35,14 @@ export class PresetsViewProvider implements WebviewViewProvider {
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
     this.setWebviewMessageListener();
+
+    webviewView.webview.postMessage({
+      action: 'init',
+      value: {
+        projects: [],
+        presets: [],
+      },
+    });
   }
 
   private getHtmlForWebview(webview: Webview) {
@@ -88,8 +93,6 @@ export class PresetsViewProvider implements WebviewViewProvider {
   /**
    * Sets up an event listener to listen for messages passed from the webview context and
    * executes code based on the message that is recieved.
-   *
-   * @param context A reference to the extension context
    */
   private setWebviewMessageListener() {
     this.view?.webview.onDidReceiveMessage(async (data: ViewActions) => {
@@ -117,4 +120,14 @@ export class PresetsViewProvider implements WebviewViewProvider {
       }
     });
   }
+  // public sendMessage() {
+  //   this.view?.webview.postMessage({
+  //     action: 'init',
+  //     value: {
+  //       multiSwitch: true,
+  //       projects: [],
+  //       presets: [],
+  //     } as PresetsViewData,
+  //   });
+  // }
 }
