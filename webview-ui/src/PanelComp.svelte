@@ -43,24 +43,27 @@
   }, 1);
 </script>
 
-{#if isLoading}
-  <vscode-progress-ring></vscode-progress-ring>
-{:else}
-  <ToolbarComp>
-    <svelte:fragment slot="buttons">
-      <IconButtonComp icons="checklist" tooltip="Multi switch mode" />
-      <IconButtonComp
-        icons={['collapse-all', 'expand-all']}
-        onClick={() => {
-          if (!projects?.length) return;
+<ToolbarComp>
+  <svelte:fragment slot="buttons">
+    <IconButtonComp icons="checklist" tooltip="Multi switch mode" />
+    <IconButtonComp
+      icons={['collapse-all', 'expand-all']}
+      onClick={() => {
+        if (!projects?.length) return;
 
-          const open = projects.some((project) => project.open);
-          projects = projects.map((project) => ({ ...project, open: !open }));
-        }}
-        tooltip="Collapse all projects"
-      />
-    </svelte:fragment>
-  </ToolbarComp>
+        const open = projects.some((project) => project.open);
+        projects = projects.map((project) => ({ ...project, open: !open }));
+      }}
+      tooltip="Collapse all projects"
+    />
+  </svelte:fragment>
+</ToolbarComp>
+
+{#if isLoading}
+  <div class="flex h-full w-full items-center justify-center">
+    <vscode-progress-ring></vscode-progress-ring>
+  </div>
+{:else}
   <ul class="list-none p-0">
     {#each projects as project}
       <ProjectComp
