@@ -31,7 +31,8 @@ export class PresetsViewProvider implements WebviewViewProvider {
       // Restrict the webview to only load resources from the `out` and `webview-ui/public/build` directories
       localResourceRoots: [
         Uri.joinPath(this.extensionUri, 'out'),
-        Uri.joinPath(this.extensionUri, 'webview-ui/public/build'),
+        Uri.joinPath(this.extensionUri, 'node_modules', '@vscode/codicons', 'dist'),
+        Uri.joinPath(this.extensionUri, 'webview-ui', 'public', 'build'),
       ],
     };
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
@@ -54,9 +55,14 @@ export class PresetsViewProvider implements WebviewViewProvider {
       'build',
       'bundle.js',
     ]);
+    const codiconsUri = getUri(webview, this.extensionUri, [
+      'node_modules',
+      '@vscode/codicons',
+      'dist',
+      'codicon.css',
+    ]);
 
     const nonce = getNonce();
-
     return /*html*/ `
       <!DOCTYPE html>
       <html lang="en">
@@ -66,8 +72,11 @@ export class PresetsViewProvider implements WebviewViewProvider {
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${
             webview.cspSource
+          }; img-src ${webview.cspSource}; font-src ${
+            webview.cspSource
           }; script-src 'nonce-${nonce}';">
           <link rel="stylesheet" type="text/css" href="${stylesUri.toString()}">
+          <link rel="stylesheet" href="${codiconsUri.toString()}" />
           <script defer nonce="${nonce}" src="${scriptUri.toString()}"></script>
         </head>
         <body>

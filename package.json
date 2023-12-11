@@ -129,7 +129,6 @@
     "vscode:prepublish": "rm -rf out && npm run compile",
     "compile": "npm run esbuild-base -- --minify",
     "watch": "npm run esbuild-base -- --sourcemap --watch",
-    "watch-webviews": "tsc -watch -p ./src/ui-components/webviews/tsconfig.json",
     "lint": "eslint \"src/**/*.ts\"",
     "lint-staged": "eslint --fix",
     "preui-test": "rm -rf out && tsc -p ./tsconfig.test.json",

@@ -1,7 +1,10 @@
 <script lang="ts">
   import { provideVSCodeDesignSystem, vsCodeProgressRing } from '@vscode/webview-ui-toolkit';
-  import Project from './Project.svelte';
+  import ProjectComp from './ProjectComp.svelte';
   import { vscode } from './utilities/vscode';
+  import type { Preset, Project } from '../../src/ui-components/interfaces';
+  import IconButtonComp from './components/IconButtonComp.svelte';
+  import ToolbarComp from './components/ToolbarComp.svelte';
 
   provideVSCodeDesignSystem().register(vsCodeProgressRing());
 
@@ -9,19 +12,15 @@
 
   window.addEventListener('message', (event) => {
     if (!event.data?.value) return;
-    console.log(event.data);
 
-    console.log(`its init`);
     const {
       action,
       value: { projects, presets, multiSwitch },
     } = event.data; //as { action: string; value: PresetsViewData };
 
-    console.log(`its init`, action);
     // projects = Object.fromEntries(projectsArr.map((project) => [project.id, project]));
     // presets = Object.fromEntries(presetsArr.map((preset) => [preset.id, preset]));
 
-    console.log(`its init`, action);
     switch (action) {
       case 'init': {
         vscode.setState({ action, projects });
@@ -33,25 +32,41 @@
   let {
     action,
     values: { projects, presets },
-  } = { values: { projects: [] } } as any;
+  } = { action: 'init', values: { projects: [] as Project[], presets: [] as Preset[] } };
 
   setTimeout(() => {
     const x = vscode.getState() as any;
     action = x.action;
     projects = x.values.projects;
+    presets = x.values.presets;
     isLoading = false;
-  }, 1000);
-  console.log('vscode.getState()', vscode.getState());
-  console.log('action', action);
-  console.log('projects', projects);
+  }, 1);
 </script>
 
 {#if isLoading}
   <vscode-progress-ring></vscode-progress-ring>
 {:else}
+  <ToolbarComp>
+    <svelte:fragment slot="buttons">
+      <IconButtonComp icons="checklist" tooltip="Multi switch mode" />
+      <IconButtonComp
+        icons={['collapse-all', 'expand-all']}
+        onClick={() => {
+          if (!projects?.length) return;
+
+          const open = projects.some((project) => project.open);
+          projects = projects.map((project) => ({ ...project, open: !open }));
+        }}
+        tooltip="Collapse all projects"
+      />
+    </svelte:fragment>
+  </ToolbarComp>
   <ul class="list-none p-0">
     {#each projects as project}
-      <Project {project}></Project>
+      <ProjectComp
+        {project}
+        presets={presets.filter(({ projectId }) => projectId === project.id)}
+      />
     {/each}
   </ul>
 {/if}

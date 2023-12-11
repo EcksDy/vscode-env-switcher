@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Panel from './Panel.svelte';
+  import PanelComp from './PanelComp.svelte';
 </script>
 
 <main>
-  <Panel></Panel>
+  <PanelComp></PanelComp>
 </main>
 
 <style global>
@@ -11,9 +11,46 @@
   @tailwind components;
   @tailwind utilities;
 
+  body {
+    background-color: transparent;
+    user-select: none;
+    padding: 0 !important;
+  }
+
+  .indentation:empty::before {
+    height: 100%;
+    display: inline-block;
+    content: '\200b';
+  }
+
+  .codicon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .codicon::before {
+    content: '\200b';
+    line-height: 1rem;
+  }
+
+  /*
+  Had issues with loading custom images through css
+  .icon-multi-target {
+    background-image: url(/images/multi-target-for-dark.svg);
+  }
+
+  .custom-icon {
+    background-origin: content-box;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  } */
+
+  /* RESETS */
+
   html {
     box-sizing: border-box;
-    font-size: 13px;
+    font-size: 16px;
   }
 
   *,

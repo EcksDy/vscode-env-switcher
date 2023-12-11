@@ -20,7 +20,7 @@ class VSCodeAPIWrapper {
     if (!this.isMocked) {
       this.vsCodeApi = acquireVsCodeApi();
     } else {
-      console.log('Running in browser, vscode is mocked');
+      console.debug('Running in browser, vscode is mocked');
     }
   }
 
@@ -36,7 +36,7 @@ class VSCodeAPIWrapper {
     if (this.vsCodeApi) {
       this.vsCodeApi.postMessage(message);
     } else {
-      console.log(message);
+      console.debug(message);
     }
   }
 
@@ -53,7 +53,7 @@ class VSCodeAPIWrapper {
       return this.vsCodeApi.getState();
     } else {
       const state = localStorage.getItem('vscodeState');
-      console.log('getState', state);
+      console.debug('getState', state);
       return state ? JSON.parse(state) : undefined;
     }
   }
@@ -73,7 +73,7 @@ class VSCodeAPIWrapper {
     if (this.vsCodeApi) {
       return this.vsCodeApi.setState(newState);
     } else {
-      console.log('setState', newState);
+      console.debug('setState', newState);
       localStorage.setItem('vscodeState', JSON.stringify(newState));
       return newState;
     }

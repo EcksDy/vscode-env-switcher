@@ -4,26 +4,29 @@ function getHash(str: string) {
   return self.crypto.randomUUID();
 }
 
+const projectId = getHash('path/to/project');
+const projectId2 = getHash('path/to/project2');
+
 export function getProjects(): Project[] {
   return [
     {
-      id: getHash('path/to/project'),
+      id: projectId,
       locked: false,
       path: 'path/to/project',
       name: 'Project 1',
+      open: true,
     },
     {
-      id: getHash('path/to/project2'),
+      id: projectId2,
       locked: false,
       path: 'path/to/project2',
       name: 'Project 2',
+      open: true,
     },
   ];
 }
 
 export function getPresets(): Preset[] {
-  const projectId = getHash('path/to/project');
-  const projectId2 = getHash('path/to/project2');
   return [
     {
       id: getHash('path/to/project/preset1'),

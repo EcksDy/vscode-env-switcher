@@ -3,6 +3,7 @@ export interface Project {
   locked: boolean;
   path: string; // absolute path
   name: string;
+  open: boolean;
 }
 
 export interface Preset {

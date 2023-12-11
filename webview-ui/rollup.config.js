@@ -62,7 +62,6 @@ module.exports = {
         postcss: {
           plugins: [autoprefixer(), tailwindcss()],
         },
-        scss: true,
       }),
       compilerOptions: {
         // enable run-time checks when not in production
