@@ -18,8 +18,30 @@
   "activationEvents": [
     "workspaceContains:*"
   ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "icon": "images/env-switcher-activity-bar-icon.png",
+          "id": "presetsViewContainer",
+          "title": ".ENV Switcher"
+        }
+      ]
+    },
+    "views": {
+      "presetsViewContainer": [
+        {
+          "type": "webview",
+          "id": "envSwitcher.presetsView",
+          "name": "Presets"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "envSwitcher.selectEnvPreset",
@@ -100,8 +122,11 @@
     ]
   },
   "scripts": {
+    "install:all": "npm install && cd webview-ui && npm install",
+    "start:webview": "cd webview-ui && npm run dev",
+    "build:webview": "cd webview-ui && npm run build",
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "rm -rf out && npm run compile",
     "compile": "npm run esbuild-base -- --minify",
     "watch": "npm run esbuild-base -- --sourcemap --watch",
     "lint": "eslint \"src/**/*.ts\"",
@@ -112,7 +137,7 @@
     "ui-test": "extest setup-and-run './out/ui-test/*.test.js' --mocha_config './src/ui-test/setup/.mocharc.json' --extensions_dir '.vscode-test/extensions' --storage '.vscode-test/resources' --code_settings ./src/ui-test/setup/settings.json"
   },
   "lint-staged": {
-    "*.ts": [
+    "src/*.ts": [
       "npm run format",
       "npm run lint-staged"
     ]
@@ -123,8 +148,10 @@
     "@types/mocha-each": "^2.0.0",
     "@types/node": "16.11.68",
     "@types/vscode": "1.71.0",
+    "@types/vscode-webview": "^1.57.2",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "@vscode/codicons": "^0.0.33",
     "chai": "^4.3.7",
     "esbuild": "^0.19.4",
     "eslint": "^8.44.0",

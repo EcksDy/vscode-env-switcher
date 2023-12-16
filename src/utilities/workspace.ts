@@ -4,7 +4,7 @@ import { DependencyContainer } from 'tsyringe';
 import { ConfigurationChangeEvent, Uri, WorkspaceFolder, workspace } from 'vscode';
 import { WorkspaceBase, WorkspaceConfigSource } from 'vscode-helpers';
 import { IPresetManager, Preset, PresetInfo } from '../interfaces';
-import { FsPresetManager, MementoPersister, TargetManager } from '../managers';
+import { FsPresetManager, MementoPersister } from '../managers';
 import { FileWatcher } from '../watchers';
 import { EXTENSION_PREFIX } from './consts';
 
@@ -15,7 +15,6 @@ export class Workspace extends WorkspaceBase implements IPresetManager {
     workspaceFolder: WorkspaceFolder,
     private fileWatcher: FileWatcher,
     private fsPresetManager: FsPresetManager,
-    private targetManager: TargetManager,
     private persistanceManager: MementoPersister,
     private container: DependencyContainer,
   ) {
@@ -43,13 +42,11 @@ export class Workspace extends WorkspaceBase implements IPresetManager {
       container.registerInstance(FileWatcher, fileWatcher);
 
       const persistanceManager = container.resolve(MementoPersister);
-      const targetManager = container.resolve(TargetManager);
       const fsPresetManager = container.resolve(FsPresetManager);
 
       console.log(`\n`);
       console.log(`${workspaceFolder.name}: fileWatcher`, fileWatcher);
       console.log(`${workspaceFolder.name}: persistanceManager`, persistanceManager);
-      console.log(`${workspaceFolder.name}: targetManager`, targetManager);
       console.log(`${workspaceFolder.name}: fsPresetManager`, fsPresetManager);
 
       const rootDir = workspaceFolder.uri.fsPath;
@@ -59,7 +56,6 @@ export class Workspace extends WorkspaceBase implements IPresetManager {
         workspaceFolder,
         fileWatcher,
         fsPresetManager,
-        targetManager,
         persistanceManager,
         container,
       );

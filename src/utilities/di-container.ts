@@ -7,11 +7,10 @@ import {
   isTokenProvider,
   isValueProvider,
 } from 'tsyringe';
-import { FsPresetManager, TargetManager } from '../managers';
+import { FsPresetManager } from '../managers';
 import { FileWatcher } from '../watchers';
 
 container.register(FsPresetManager, { useClass: FsPresetManager });
-container.register(TargetManager, { useClass: TargetManager });
 container.register(FileWatcher, { useClass: FileWatcher });
 
 export function registerInContainer<T>(...providers: [InjectionToken<T>, Provider<T>][]) {

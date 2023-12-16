@@ -5,7 +5,7 @@ import { container } from 'tsyringe';
 import { ExtensionContext, commands, window } from 'vscode';
 import { WorkspaceWatcherEvent, registerWorkspaceWatcher } from 'vscode-helpers';
 import { selectEnvPreset } from './command-implementations';
-import { StatusBarButton } from './ui-components';
+import { PresetsViewProvider, StatusBarButton } from './ui-components';
 import {
   MAIN_WORKSPACE,
   OPEN_VIEW_COMMAND_ID,
@@ -25,7 +25,7 @@ import {
 const eventEmitter = getEventEmitter();
 
 export async function activate(context: ExtensionContext) {
-  const { subscriptions, workspaceState } = context;
+  const { subscriptions, workspaceState, extensionUri } = context;
   registerInContainer([WORKSPACE_STATE, { useValue: workspaceState }]);
 
   // Allows disabling per workspace
@@ -67,12 +67,16 @@ export async function activate(context: ExtensionContext) {
     preset: (await mainWorkspace?.getCurrentPreset()) ?? undefined,
   });
 
+  const provider = new PresetsViewProvider({ extensionUri });
+  const presetView = window.registerWebviewViewProvider(PresetsViewProvider.viewType, provider);
+
   /* COMMANDS */
   const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
     selectEnvPreset({ config }),
   );
-  const openViewCmd = commands.registerCommand(OPEN_VIEW_COMMAND_ID, () =>
-    window.showInformationMessage('=== placeholder for tree view ==='),
+  const openViewCmd = commands.registerCommand(
+    OPEN_VIEW_COMMAND_ID,
+    async () => await commands.executeCommand(`${PresetsViewProvider.viewType}.focus`),
   );
 
   /* GARBAGE REGISTRATION */
@@ -82,6 +86,7 @@ export async function activate(context: ExtensionContext) {
     openViewCmd,
     statusBarButton,
     container,
+    presetView,
     getEventEmitterDisposable(),
   );
 }
