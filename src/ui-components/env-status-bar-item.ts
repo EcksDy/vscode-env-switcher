@@ -1,6 +1,6 @@
 import { container, singleton } from 'tsyringe';
 import { Disposable, StatusBarItem, window } from 'vscode';
-import { IButton, Preset, PresetInfo } from '../interfaces';
+import { IButton, PresetInfo } from '../interfaces';
 import {
   DEFAULT_BUTTON_COLOR,
   MAIN_WORKSPACE,
@@ -48,12 +48,12 @@ export class StatusBarButton implements IButton {
       const currentPreset = await workspaces[0].getCurrentPreset();
       this.refresh(currentPreset?.name);
     });
-    this.eventEmitter.on(SwitcherEvents.PresetSelected, (selectedPreset: Preset) => {
-      console.debug(`[StatusBarButton - ${SwitcherEvents.PresetSelected}]`, { selectedPreset });
-      this.setText(selectedPreset.name);
+    this.eventEmitter.on(SwitcherEvents.TargetChanged, (newPreset: PresetInfo) => {
+      console.debug(`[StatusBarButton - ${SwitcherEvents.TargetChanged}]`, { newPreset });
+      this.setText(newPreset.name);
     });
-    this.eventEmitter.on(SwitcherEvents.PresetSelectedError, () => {
-      console.debug(`[StatusBarButton - ${SwitcherEvents.PresetSelectedError}]`);
+    this.eventEmitter.on(SwitcherEvents.TargetChangedError, () => {
+      console.debug(`[StatusBarButton - ${SwitcherEvents.TargetChangedError}]`);
       this.setText(ERROR_BUTTON_TEXT);
     });
 

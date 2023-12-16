@@ -47,5 +47,8 @@ export async function selectEnvPreset({ config }: Deps) {
     if (result === `Don't show again`) await config.overwriteAlert.set(false);
   }
 
-  eventEmitter.emit(SwitcherEvents.PresetSelected, selectedPreset);
+  eventEmitter.emit(SwitcherEvents.PresetSelected, {
+    projectPath: presetManager.folder.uri.fsPath,
+    presetPath: selectedPreset.path,
+  });
 }

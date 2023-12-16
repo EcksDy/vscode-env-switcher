@@ -1,4 +1,5 @@
 import type { WebviewApi } from 'vscode-webview';
+import type { PresetsViewData, ViewEvents } from '../../../src/ui-components/interfaces';
 
 /**
  * A utility wrapper around the acquireVsCodeApi() function, which enables
@@ -10,7 +11,7 @@ import type { WebviewApi } from 'vscode-webview';
  * enabled by acquireVsCodeApi.
  */
 class VSCodeAPIWrapper {
-  private readonly vsCodeApi: WebviewApi<unknown> | undefined;
+  private readonly vsCodeApi: WebviewApi<PresetsViewData> | undefined;
   public readonly isMocked: boolean;
 
   constructor() {
@@ -32,7 +33,7 @@ class VSCodeAPIWrapper {
    *
    * @param message Abitrary data (must be JSON serializable) to send to the extension context.
    */
-  public postMessage(message: unknown) {
+  public postMessage(message: ViewEvents) {
     if (this.vsCodeApi) {
       this.vsCodeApi.postMessage(message);
     } else {
@@ -48,7 +49,7 @@ class VSCodeAPIWrapper {
    *
    * @return The current state or `undefined` if no state has been set.
    */
-  public getState(): unknown | undefined {
+  public getState(): PresetsViewData | undefined {
     if (this.vsCodeApi) {
       return this.vsCodeApi.getState();
     } else {
@@ -69,7 +70,7 @@ class VSCodeAPIWrapper {
    *
    * @return The new state.
    */
-  public setState<T extends unknown | undefined>(newState: T): T {
+  public setState(newState?: PresetsViewData): PresetsViewData | undefined {
     if (this.vsCodeApi) {
       return this.vsCodeApi.setState(newState);
     } else {

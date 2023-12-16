@@ -1,63 +1,71 @@
 <script lang="ts">
   import { provideVSCodeDesignSystem, vsCodeProgressRing } from '@vscode/webview-ui-toolkit';
+  import { WebviewEventType } from '../../src/ui-components/interfaces';
   import FolderComp from './FolderComp.svelte';
-  import { vscode } from './utilities/vscode';
-  import type { Preset, Project } from '../../src/ui-components/interfaces';
   import IconButtonComp from './components/IconButtonComp.svelte';
   import ToolbarComp from './components/ToolbarComp.svelte';
+  import { vscode } from './utilities/vscode';
 
   provideVSCodeDesignSystem().register(vsCodeProgressRing());
 
-  let isLoading = true;
-  // vscode.setState(null);
-
-  let { action, projects, presets } = {
-    action: 'init', // TODO: use discriminated union type
-    projects: [] as Project[],
-    presets: [] as Preset[],
+  const DEFAULT_STATE = {
+    projects: [],
+    multiSwitch: false,
   };
 
+  let { projects, multiSwitch } = vscode.getState() ?? DEFAULT_STATE;
+  let isLoading = !projects.length;
+
   window.addEventListener('message', (event) => {
-    console.log('event', event);
-    if (!event.data?.value) return;
+    if (!event.data) return;
+    isLoading = true;
+    console.log(`[WebView - event - ${event.data.action}]`);
 
-    const {
-      action,
-      value: { projects: newProjects, presets, multiSwitch },
-    } = event.data; //as { action: string; value: PresetsViewData };
-
-    switch (action) {
-      case 'init': {
-        console.log('init', action);
-        vscode.setState({ action, projects: newProjects, presets });
+    switch (event.data.action) {
+      case WebviewEventType.Data: {
+        const { projects: newProjects } = event.data;
+        const oldState = vscode.getState() ?? DEFAULT_STATE;
+        vscode.setState({ ...oldState, projects: newProjects });
         projects = newProjects;
         break;
       }
+      case WebviewEventType.CommandSelected: {
+        const { presetPath } = event.data;
+        const oldState = vscode.getState() ?? DEFAULT_STATE;
+        for (const project of oldState.projects) {
+          const isParentProject = project.presets.some((preset) => preset.path === presetPath);
+          if (!isParentProject) continue;
+
+          project.presets = project.presets.map((preset) => ({
+            ...preset,
+            isSelected: preset.path === presetPath,
+          }));
+          break;
+        }
+        vscode.setState(oldState);
+        projects = oldState.projects;
+        break;
+      }
     }
+
+    isLoading = false;
   });
 
-  // vscode.postMessage({ action: 'init' });
-
-  setTimeout(() => {
-    const x = vscode.getState() as any;
-    console.log('x', x);
-    action = x.action;
-    projects = x.projects;
-    presets = x.presets;
-    isLoading = false;
-  }, 1000);
+  function updateState() {
+    vscode.setState({ multiSwitch, projects });
+  }
 </script>
 
 <ToolbarComp>
   <svelte:fragment slot="buttons">
-    <IconButtonComp icons="checklist" tooltip="Multi switch mode" />
+    <IconButtonComp icons="checklist" tooltip="Multi switch mode" isToggled={multiSwitch} />
     <IconButtonComp
       icons={['collapse-all', 'expand-all']}
       onClick={() => {
         if (!projects?.length) return;
 
-        const open = projects.some((project) => project.open);
-        projects = projects.map((project) => ({ ...project, open: !open }));
+        const isOpen = projects.some((project) => project.isOpen);
+        projects = projects.map((project) => ({ ...project, isOpen: !isOpen }));
       }}
       tooltip="Collapse all projects"
     />
@@ -71,7 +79,7 @@
 {:else if projects?.length}
   <ul class="list-none p-0">
     {#each projects as project}
-      <FolderComp {project} presets={presets.filter(({ projectId }) => projectId === project.id)} />
+      <FolderComp {project} {updateState} />
     {/each}
   </ul>
 {:else}

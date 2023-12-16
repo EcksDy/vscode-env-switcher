@@ -67,7 +67,7 @@ export async function activate(context: ExtensionContext) {
     preset: (await mainWorkspace?.getCurrentPreset()) ?? undefined,
   });
 
-  const provider = new PresetsViewProvider(extensionUri);
+  const provider = new PresetsViewProvider({ extensionUri });
   const presetView = window.registerWebviewViewProvider(PresetsViewProvider.viewType, provider);
 
   /* COMMANDS */

@@ -14,11 +14,6 @@ export interface Preset extends PresetInfo {
   content: FileContent;
 }
 
-export interface ITargetManager {
-  writeToTarget: (content: FileContent) => Promise<void> | void;
-  getTargetFile: () => Promise<string | null>;
-}
-
 export interface IPresetManager {
   getPresets: () => Promise<Preset[]> | Preset[];
   getCurrentPreset: () => Promise<Preset | null> | Preset | null;

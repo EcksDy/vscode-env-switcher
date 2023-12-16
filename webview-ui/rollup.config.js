@@ -2,7 +2,7 @@ const svelte = require('rollup-plugin-svelte');
 const commonjs = require('@rollup/plugin-commonjs');
 const resolve = require('@rollup/plugin-node-resolve');
 const livereload = require('rollup-plugin-livereload');
-const { terser } = require('@rollup/plugin-terser');
+const terser = require('@rollup/plugin-terser');
 const sveltePreprocess = require('svelte-preprocess');
 const typescript = require('@rollup/plugin-typescript');
 const css = require('rollup-plugin-css-only');
@@ -10,6 +10,8 @@ const childProcess = require('child_process');
 const tailwindcss = require('tailwindcss');
 const autoprefixer = require('autoprefixer');
 const copy = require('rollup-plugin-copy');
+const path = require('path');
+
 const production = !process.env.ROLLUP_WATCH;
 
 function serve() {
@@ -36,14 +38,12 @@ function serve() {
 module.exports = {
   input: 'src/main.ts',
   output: {
-    ...{
-      esModule: true,
-      generatedCode: {
-        reservedNamesAsProps: false,
-      },
-      interop: 'compat',
-      systemNullSetters: false,
+    esModule: true,
+    generatedCode: {
+      reservedNamesAsProps: false,
     },
+    interop: 'compat',
+    systemNullSetters: false,
     sourcemap: true,
     format: 'iife',
     name: 'app',
@@ -52,9 +52,8 @@ module.exports = {
   plugins: [
     svelte({
       onwarn: (warning, handler) => {
-        if (warning.code.startsWith('a11y-')) {
-          return;
-        }
+        if (warning.code.startsWith('a11y-')) return;
+
         handler(warning);
       },
       preprocess: sveltePreprocess({
@@ -89,8 +88,9 @@ module.exports = {
     }),
     commonjs(),
     typescript({
-      sourceMap: !production,
+      sourceMap: true,
       inlineSources: !production,
+      include: ['src/**/*.ts', `${path.resolve(__dirname, '../src/ui-components/interfaces')}*.ts`],
     }),
 
     // In dev mode, call `npm run start` once

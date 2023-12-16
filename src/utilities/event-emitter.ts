@@ -20,16 +20,16 @@ export function getEventEmitterDisposable(): Disposable {
 }
 
 export enum SwitcherEvents {
-  PresetSelected = 'preset-selected',
-  PresetSelectedError = 'preset-selected-error',
-  PresetsSelected = 'presets-selected',
-  PresetsSelectedError = 'presets-selected-error',
-  PresetChanged = 'preset-changed',
-  PresetChangedError = 'preset-changed-error',
-  TargetChanged = 'target-changed',
-  TargetChangedError = 'target-changed-error',
-  FileChanged = 'file-changed',
-  FileDeleted = 'file-deleted',
-  FileCreated = 'file-created',
-  WorkspacesChanged = 'workspaces-changed',
+  PresetSelected = 'PRESET_SELECTED',
+  PresetSelectedError = 'PRESET_SELECTED_ERROR',
+  PresetsSelected = 'PRESETS_SELECTED',
+  PresetsSelectedError = 'PRESETS_SELECTED_ERROR',
+  PresetChanged = 'PRESET_CHANGED',
+  PresetChangedError = 'PRESET_CHANGED_ERROR',
+  TargetChanged = 'TARGET_CHANGED',
+  TargetChangedError = 'TARGET_CHANGED_ERROR',
+  FileChanged = 'FILE_CHANGED',
+  FileDeleted = 'FILE_DELETED',
+  FileCreated = 'FILE_CREATED',
+  WorkspacesChanged = 'WORKSPACES_CHANGED',
 }

@@ -27,7 +27,7 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "icon": "images/env-switcher.png",
+          "icon": "images/env-switcher-activity-bar-icon.png",
           "id": "presetsViewContainer",
           "title": ".ENV Switcher"
         }

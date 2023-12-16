@@ -1,4 +1,4 @@
-import { inject, injectable } from 'tsyringe';
+import { Lifecycle, inject, injectable, scoped } from 'tsyringe';
 import { Memento, WorkspaceFolder } from 'vscode';
 import { IWorkspacePersister, PresetInfo } from '../interfaces';
 import { WORKSPACE_FOLDER, WORKSPACE_STATE } from '../utilities';
@@ -9,10 +9,11 @@ const CURRENT_PRESET_KEY = 'CURRENT_PRESET';
  * Persistance manager using built in Memento API.
  */
 @injectable()
+@scoped(Lifecycle.ContainerScoped)
 export class MementoPersister implements IWorkspacePersister {
   constructor(
     @inject(WORKSPACE_STATE) private state: Memento,
-    @inject(WORKSPACE_FOLDER) private workspaceFolder: WorkspaceFolder,
+    @inject(WORKSPACE_FOLDER) private workspaceFolder: WorkspaceFolder, // TODO: This resolves to the correct workspace folder because it's set in the the workspace container?
   ) {}
 
   public getPresetInfo(): PresetInfo | null {

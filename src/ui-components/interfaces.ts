@@ -1,44 +1,52 @@
-export interface Project {
-  id: string;
-  locked: boolean;
-  path: string; // absolute path
+export interface UiProject {
   name: string;
-  open: boolean;
+  path: string;
+  isLocked: boolean;
+  isOpen: boolean;
+  presets: UiPreset[];
 }
 
-export interface Preset {
-  id: string;
-  projectId: string;
+export interface UiPreset {
+  projectPath: string;
   name: string;
-  selected: boolean;
-  path: string; // absolute path
+  isSelected: boolean;
+  path: string;
 }
 
 export interface PresetsViewData {
   multiSwitch: boolean;
-  projects: Project[];
-  presets: Preset[];
+  projects: UiProject[];
 }
 
-export interface Init {
-  action: 'init';
+export interface ReadyWebviewEvent {
+  action: WebviewEventType.Ready;
 }
 
-export interface ToggleLock {
-  action: 'toggleLock';
-  project: string; // project path
-  newState: boolean;
+export interface DataWebviewEvent {
+  action: WebviewEventType.Data;
+  projects: UiProject[];
 }
 
-export interface ToggleMultiSwitch {
-  action: 'toggleMultiSwitch';
-  newState: boolean;
+export interface SelectedWebviewEvent {
+  action: WebviewEventType.Selected;
+  selected: SelectedPreset[];
 }
 
-export interface SelectPreset {
-  action: 'selectPreset';
-  project: string; // project path
-  newPreset: string;
+export interface CommandSelectedWebviewEvent {
+  action: WebviewEventType.CommandSelected;
+  presetPath: string;
 }
 
-export type ViewActions = Init | ToggleLock | ToggleMultiSwitch | SelectPreset;
+export interface SelectedPreset {
+  projectPath: string;
+  presetPath: string;
+}
+
+export enum WebviewEventType {
+  Ready = 'READY',
+  Data = 'DATA',
+  Selected = 'SELECTED',
+  CommandSelected = 'COMMAND_SELECTED',
+}
+
+export type ViewEvents = ReadyWebviewEvent | DataWebviewEvent | SelectedWebviewEvent;

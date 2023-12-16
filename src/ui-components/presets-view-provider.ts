@@ -1,25 +1,32 @@
-import { createHash } from 'crypto';
+import { container } from 'tsyringe';
+import { Uri, Webview, WebviewView, WebviewViewProvider, WebviewViewResolveContext } from 'vscode';
 import {
-  CancellationToken,
-  Uri,
-  Webview,
-  WebviewView,
-  WebviewViewProvider,
-  WebviewViewResolveContext,
-  window,
-} from 'vscode';
-import { Preset, PresetsViewData, Project, ViewActions } from './interfaces';
+  SwitcherEvents,
+  WORKSPACE_CONTAINER,
+  Workspace,
+  WorkspaceContainer,
+  getEventEmitter,
+  isDefined,
+} from '../utilities';
+import { UiPreset, UiProject, ViewEvents, WebviewEventType } from './interfaces';
 import { getNonce, getUri } from './utilities';
+import { Preset } from '../interfaces';
+
+interface PresetsViewProviderArgs {
+  extensionUri: Uri;
+}
 
 export class PresetsViewProvider implements WebviewViewProvider {
   public static readonly viewType = 'envSwitcher.presetsView';
+  private view?: WebviewView;
+  private eventEmitter = getEventEmitter();
+  private extensionUri: Uri;
 
-  constructor(
-    private readonly extensionUri: Uri,
-    private view?: WebviewView,
-  ) {}
+  constructor({ extensionUri }: PresetsViewProviderArgs) {
+    this.extensionUri = extensionUri;
+  }
 
-  public resolveWebviewView(webviewView: WebviewView, context: WebviewViewResolveContext) {
+  public async resolveWebviewView(webviewView: WebviewView, context: WebviewViewResolveContext) {
     this.view = webviewView;
 
     webviewView.webview.options = {
@@ -36,13 +43,45 @@ export class PresetsViewProvider implements WebviewViewProvider {
 
     this.setWebviewMessageListener();
 
+    const workspaces = container.resolve<WorkspaceContainer>(WORKSPACE_CONTAINER).workspaces;
+    const projects = await this.getProjectsFromWorkspaces(workspaces);
+
     webviewView.webview.postMessage({
-      action: 'init',
-      value: {
-        projects: [],
-        presets: [],
-      },
+      action: WebviewEventType.Data,
+      projects,
     });
+
+    this.eventEmitter.on(SwitcherEvents.TargetChanged, (newPreset: Preset) => {
+      webviewView.webview.postMessage({
+        action: WebviewEventType.CommandSelected,
+        presetPath: newPreset.path,
+      });
+    });
+  }
+
+  private async getProjectsFromWorkspaces(workspaces: Workspace[]) {
+    const projects: UiProject[] = [];
+    for (const workspace of workspaces) {
+      const projectPath = workspace.folder.uri.fsPath;
+      const name = workspace.folder.name;
+      const selectedPreset = await workspace.getCurrentPreset();
+      const rawPresets = await workspace.getPresets();
+
+      const presets = rawPresets.map(this.getPresetMapper(projectPath, false));
+      if (isDefined(selectedPreset))
+        presets.push(this.getPresetMapper(projectPath, true)(selectedPreset));
+
+      presets.sort((a, b) => a.name.localeCompare(b.name));
+
+      projects.push({
+        name,
+        path: projectPath,
+        presets,
+        isLocked: false,
+        isOpen: true,
+      });
+    }
+    return projects;
   }
 
   private getHtmlForWebview(webview: Webview) {
@@ -90,44 +129,36 @@ export class PresetsViewProvider implements WebviewViewProvider {
     `;
   }
 
+  private getPresetMapper(projectPath: string, isSelected: boolean) {
+    return (preset: Preset): UiPreset => {
+      const { name, path } = preset;
+      return {
+        name,
+        path,
+        projectPath,
+        isSelected,
+      };
+    };
+  }
+
   /**
    * Sets up an event listener to listen for messages passed from the webview context and
    * executes code based on the message that is recieved.
    */
   private setWebviewMessageListener() {
-    this.view?.webview.onDidReceiveMessage(async (data: ViewActions) => {
+    this.view?.webview.onDidReceiveMessage(async (data: ViewEvents) => {
+      console.debug(`[WebViewProvider - event - ${data.action}]`);
+
       switch (data.action) {
-        case 'init':
-          // Pass dummy data to the webview
-          return await this.view?.webview.postMessage({
-            action: 'init',
-            value: {
-              multiSwitch: false,
-              // projects: getProjects(),
-              // presets: getPresets(),
-            } as PresetsViewData,
+        case WebviewEventType.Selected:
+          const event =
+            data.selected.length === 1
+              ? SwitcherEvents.PresetSelected
+              : SwitcherEvents.PresetsSelected;
+          return void this.eventEmitter.emit(event, {
+            ...data.selected[0],
           });
-        case 'toggleLock':
-          return window.showInformationMessage(`Project ${data.project} is locked`);
-
-        case 'toggleMultiSwitch':
-          return window.showInformationMessage(`Mutli switch is toggled`);
-
-        case 'selectPreset':
-          return window.showInformationMessage(
-            `Preset ${data.newPreset} is selected for project ${data.project}`,
-          ); // if multiwswitch is on, look for other projects with the same name and select them too
       }
     });
   }
-  // public sendMessage() {
-  //   this.view?.webview.postMessage({
-  //     action: 'init',
-  //     value: {
-  //       multiSwitch: true,
-  //       projects: [],
-  //       presets: [],
-  //     } as PresetsViewData,
-  //   });
-  // }
 }

@@ -3,7 +3,7 @@
 </script>
 
 <main>
-  <PanelComp></PanelComp>
+  <PanelComp />
 </main>
 
 <style global>

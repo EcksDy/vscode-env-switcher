@@ -2,7 +2,7 @@
   import ButtonContainer from './ButtonContainer.svelte';
 </script>
 
-<div class="m-0 mb-0.5 flex items-center">
+<div class="relative m-0 flex h-[1.25rem] items-center">
   <slot name="main" />
   <ButtonContainer>
     <slot name="buttons" />

@@ -1,60 +1,49 @@
-import type { Preset, Project } from '../../../src/ui-components/interfaces';
+import type { UiProject } from '../../../src/ui-components/interfaces';
 
-function getHash(str: string) {
-  return self.crypto.randomUUID();
-}
+const projectPath = 'path/to/project';
+const projectPath2 = 'path/to/project2';
 
-const projectId = getHash('path/to/project');
-const projectId2 = getHash('path/to/project2');
-
-export function getProjects(): Project[] {
+export function getProjects(): UiProject[] {
   return [
     {
-      id: projectId,
-      locked: false,
-      path: 'path/to/project',
+      isLocked: false,
+      path: projectPath,
       name: 'Project 1',
-      open: true,
+      isOpen: true,
+      presets: [
+        {
+          name: 'preset 1',
+          isSelected: true,
+          path: 'path/to/project/preset1',
+          projectPath,
+        },
+        {
+          name: 'preset 2',
+          isSelected: false,
+          path: 'path/to/project/preset2',
+          projectPath,
+        },
+      ],
     },
     {
-      id: projectId2,
-      locked: false,
+      isLocked: false,
       path: 'path/to/project2',
       name: 'Project 2',
-      open: true,
-    },
-  ];
-}
-
-export function getPresets(): Preset[] {
-  return [
-    {
-      id: getHash('path/to/project/preset1'),
-      name: 'preset 1',
-      selected: true,
-      path: 'path/to/project/preset1',
-      projectId,
-    },
-    {
-      id: getHash('path/to/project/preset2'),
-      name: 'preset 2',
-      selected: false,
-      path: 'path/to/project/preset2',
-      projectId,
-    },
-    {
-      id: getHash('path/to/project2/preset1'),
-      name: 'preset 1',
-      selected: true,
-      path: 'path/to/project2/preset1',
-      projectId: projectId2,
-    },
-    {
-      id: getHash('path/to/project2/preset2'),
-      name: 'preset 2',
-      selected: false,
-      path: 'path/to/project2/preset2',
-      projectId: projectId2,
+      isOpen: true,
+      presets: [
+        {
+          name: 'preset 1',
+          isSelected: true,
+          path: 'path/to/project2/preset1',
+          projectPath: projectPath2,
+        },
+        {
+          name: 'preset 2',
+          isSelected: false,
+          path: 'path/to/project2/preset2',
+          projectPath: projectPath2,
+        },
+      ],
     },
   ];
 }

@@ -4,7 +4,6 @@ import { Disposable } from 'vscode';
 import {
   IFileWatcher,
   IPresetManager,
-  ITargetManager,
   IWorkspacePersister,
   Preset,
   PresetInfo,
@@ -12,7 +11,7 @@ import {
 import { capitalize, config, fsHelper, SwitcherEvents, getEventEmitter } from '../utilities';
 import { FileWatcher } from '../watchers';
 import { MementoPersister } from './memento-persister';
-import { TargetManager } from './target-manager';
+import { SelectedPreset } from '../ui-components';
 
 interface SetupArgs {
   rootDir: string;
@@ -27,18 +26,24 @@ export class FsPresetManager implements IPresetManager {
   private garbage: Disposable[] = [];
 
   constructor(
-    @inject(TargetManager) private targetManager: ITargetManager,
     @inject(MementoPersister) private persister: IWorkspacePersister,
     @inject(FileWatcher) private fileWatcher: IFileWatcher & Disposable,
   ) {
     this.persister = persister;
-    this.targetManager = targetManager;
     this.fileWatcher = fileWatcher;
 
-    this.eventEmitter.on(SwitcherEvents.PresetSelected, async (selectedPreset: Preset) => {
-      console.debug(`[FsPresetManager - ${SwitcherEvents.PresetSelected}]`, { selectedPreset });
+    this.eventEmitter.on(SwitcherEvents.PresetSelected, async (selectedPreset: SelectedPreset) => {
+      console.debug(`[FsPresetManager - ${SwitcherEvents.PresetSelected}]`, { ...selectedPreset });
+      const { presetPath, projectPath } = selectedPreset;
+      if (this.rootDir !== projectPath)
+        return console.debug(
+          `[FsPresetManager - ${SwitcherEvents.PresetSelected}] - project mismatch, skipping`,
+          projectPath,
+          this.rootDir,
+        );
+
       try {
-        await this.setCurrentPreset(selectedPreset);
+        await this.setCurrentPreset(presetPath);
       } catch (error) {
         console.error(error);
         this.eventEmitter.emit(SwitcherEvents.PresetSelectedError, error.message, selectedPreset);
@@ -70,22 +75,20 @@ export class FsPresetManager implements IPresetManager {
   async setCurrentPreset(preset: PresetInfo | Preset | string | null): Promise<void> {
     if (!preset) {
       this.persister.setPresetInfo(null);
-      this.eventEmitter.emit(SwitcherEvents.PresetChanged, null);
+      this.eventEmitter.emit(SwitcherEvents.TargetChanged, null);
       this.dispose();
       return;
     }
 
     const newPreset = await this.getPresetFromOverloadedParameter(preset);
     this.persister.setPresetInfo(newPreset);
-    this.eventEmitter.emit(SwitcherEvents.PresetChanged, newPreset);
+    this.eventEmitter.emit(SwitcherEvents.TargetChanged, newPreset); // TODO: check if this is needed
 
-    if (!newPreset) {
-      this.dispose();
-      return;
-    }
+    if (!newPreset) return this.dispose();
 
     this.setFileWatcher(newPreset.path);
-    this.eventEmitter.emit(SwitcherEvents.PresetChanged, newPreset);
+    await this.writeToTarget(newPreset.content);
+    this.eventEmitter.emit(SwitcherEvents.TargetChanged, newPreset);
   }
 
   async getPresets() {
@@ -95,7 +98,7 @@ export class FsPresetManager implements IPresetManager {
   }
 
   dispose() {
-    this.garbage.forEach((disposable) => void disposable.dispose());
+    this.garbage.forEach((disposable) => disposable.dispose());
     this.garbage = [];
   }
 
@@ -124,7 +127,7 @@ export class FsPresetManager implements IPresetManager {
     const isPresetExists = await fsHelper.exists(presetInfo.path);
     if (!isPresetExists) return void this.persister.setPresetInfo(null) ?? false;
 
-    const targetFile = await this.targetManager.getTargetFile();
+    const targetFile = await this.getTargetFile();
     if (!targetFile) return false;
 
     const targetFileContent = await fsHelper.decodeFile(targetFile);
@@ -202,7 +205,7 @@ export class FsPresetManager implements IPresetManager {
   }
 
   private async validatePaths(paths: string[]) {
-    const targetFile = await this.targetManager.getTargetFile();
+    const targetFile = await this.getTargetFile();
     const excludedPaths = [targetFile];
     const currentPreset = await this.getCurrentPreset();
     if (currentPreset) excludedPaths.push(currentPreset.path);
@@ -215,6 +218,17 @@ export class FsPresetManager implements IPresetManager {
     const content = await fsHelper.decodeFile(path);
     const checksum = fsHelper.generateChecksum(content);
     return checksum !== previousChecksum;
+  }
+
+  private async writeToTarget(content: string | Uint8Array): Promise<void> {
+    const targetFile = await fsHelper.findTarget(config);
+    if (!targetFile) return console.warn('No target file found');
+
+    await fsHelper.writeFile(targetFile, content);
+  }
+
+  private async getTargetFile(): Promise<string | null> {
+    return await fsHelper.findTarget(config);
   }
 }
 
