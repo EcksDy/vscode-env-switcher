@@ -14,11 +14,6 @@ export interface Preset extends PresetInfo {
   content: FileContent;
 }
 
-export interface ITargetManager {
-  writeToTarget: (content: FileContent) => Promise<void> | void;
-  getTargetFile: () => Promise<string | null>;
-}
-
 export interface IPresetManager {
   getPresets: () => Promise<Preset[]> | Preset[];
   getCurrentPreset: () => Promise<Preset | null> | Preset | null;
@@ -37,9 +32,9 @@ export interface IFileWatcher {
   onDidCreate(callback: EventCallback): void;
 }
 
-export interface ICurrentPresetPersister {
-  get: () => PresetInfo | null;
-  set: (presetInfo: PresetInfo | null) => void;
+export interface IWorkspacePersister {
+  getPresetInfo: () => PresetInfo | null;
+  setPresetInfo: (presetInfo: PresetInfo | null) => void;
 }
 
 export interface IButton {

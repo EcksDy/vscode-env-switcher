@@ -2,8 +2,9 @@
 
 # .ENV Switcher
 
-Status bar extension that swaps(**overwrites**) the target file(`.env` by default) from provided presets. This means that the target file is a placeholder for presets.  
-**It's strongly advised to backup your `.env` file before using this extension.**
+Status bar extension that swaps(**overwrites**) the target file(`.env` by default) from provided presets. This means that the target file is a placeholder for presets.
+
+**It's strongly advised to backup your target file (`.env`) before using this extension.**
 
 ## Features
 
@@ -14,6 +15,10 @@ Status bar extension that swaps(**overwrites**) the target file(`.env` by defaul
 <p align="center">
   <img src="images/preview.gif" alt="Switch a .env preset from the status bar" />
 </p>
+
+## Semi-shameless plug
+
+<a href='https://ko-fi.com/N4N8O4KNX' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a> [![button to ecksdy.com](https://img.shields.io/badge/ecksdy.com-F5A468?logo=aboutdotme&logoColor=white&style=for-the-badge)](https://ecksdy.com)
 
 ## Requirements
 
@@ -34,6 +39,37 @@ The default configuration will match any of the following presets in the workspa
 ```
 
 _Don't forget to check that your `.gitignore` is still valid for these `.envs`_
+
+## Planned
+
+In no particular order.
+
+### Multi-root Workspace / Mono-repo support
+
+- [ ] `.envswitcher` files - for monorepos
+  - [ ] Detect
+  - [ ] Parse
+  - [ ] Watch
+- [ ] Handle multi-root workspaces
+  - [x] Integrate with UI
+  - [ ] Handle more than one workspace folder
+- [ ] Handle overrides for multi-root workspaces
+- [ ] Webview UI for selecting presets
+  - [x] UI design
+  - [x] Setup svelte (otherwise too hard to maintain)
+  - [ ] Multi target switch
+    - [ ] Ability to lock projects
+  - [ ] Nested trees for m.workspaces that have monorepo folders
+  - [ ] Preview file contents
+- [ ] Add tests
+
+### Tasks
+
+- [ ] Fix issue with dev/master branch out of sync
+- [ ] Trigger CI/CD on new tags
+- [x] Add DI container
+- [x] Add CI for pull requests
+- [x] Add UI tests
 
 ## FAQ
 
@@ -56,10 +92,17 @@ Extension will not start if no target was found when the directory was first ope
 - Ensure the target file would be found by the glob specified in `envSwitcher.glob.target` setting.
 - Reload the window via `Developer: Reload Window` command.
 
-### Will you support monorepos?
+### Will you support monorepos / multiroot workspaces?
 
-I'd like to, but there are so many ways to structure a monorepo and so many approaches to handle targets and presets that I'm not sure how to even approach it.  
-If you'd like to help with an idea or join the discussion - you can do that [here](https://github.com/EcksDy/vscode-env-switcher/issues/17).
+There is currently a solution in the works:
+Phase 1 - support multiroot workspaces.
+Phase 2 - support monorepos.
+Phase 3 - support monorepos inside multiroot workspaces. While questionable, should be relatively easy to implement on top of phase 2.
+
+If you'd like to help with an idea or join the discussion you can do that in:
+
+- [Support multiroot workspaces](https://github.com/EcksDy/vscode-env-switcher/issues/17)
+- [Discussing a UI solution for multiroot/monorepo workspaces](https://github.com/EcksDy/vscode-env-switcher/issues/41).
 
 ### How can I turn off the warning in the status bar?
 

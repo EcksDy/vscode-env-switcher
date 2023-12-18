@@ -4,3 +4,7 @@ node_modules
 out
 # don't lint nyc coverage output
 coverage
+
+test
+
+*.js

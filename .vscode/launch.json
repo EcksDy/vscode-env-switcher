@@ -12,7 +12,61 @@
       "runtimeExecutable": "${execPath}",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}", "--profile=extension-showcase"],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: watch"
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Extension Tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/out/test/suite/index",
+        "--profile=extension-showcase"
+      ],
+      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Debug UI Tests on oldest VSCode",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/extest",
+      "args": [
+        "setup-and-run",
+        "${workspaceFolder}/out/ui-test/*.test.js",
+        "--code_version",
+        "1.71.0",
+        "--mocha_config",
+        "${workspaceFolder}/src/ui-test/setup/debug.mocharc.json",
+        "--storage",
+        "${workspaceFolder}/.vscode-test/test-resources",
+        "--extensions_dir",
+        "${workspaceFolder}/.vscode-test/extensions",
+        "--log_level",
+        "debug"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Debug UI Tests on latest VSCode",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/extest",
+      "args": [
+        "setup-and-run",
+        "${workspaceFolder}/out/ui-test/*.test.js",
+        "--mocha_config",
+        "${workspaceFolder}/src/ui-test/setup/debug.mocharc.json",
+        "--storage",
+        "${workspaceFolder}/.vscode-test/test-resources",
+        "--extensions_dir",
+        "${workspaceFolder}/.vscode-test/extensions",
+        "--log_level",
+        "debug"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }
