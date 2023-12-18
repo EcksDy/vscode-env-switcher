@@ -51,13 +51,17 @@ In no particular order.
   - [ ] Parse
   - [ ] Watch
 - [ ] Handle multi-root workspaces
-  - [ ] Integrate with UI
+  - [x] Integrate with UI
+  - [ ] Handle more than one workspace folder
 - [ ] Handle overrides for multi-root workspaces
 - [ ] Webview UI for selecting presets
   - [x] UI design
-  - [ ] Setup svelte (otherwise too hard to maintain)
+  - [x] Setup svelte (otherwise too hard to maintain)
   - [ ] Multi target switch
+    - [ ] Ability to lock projects
   - [ ] Nested trees for m.workspaces that have monorepo folders
+  - [ ] Preview file contents
+- [ ] Add tests
 
 ### Tasks
 
