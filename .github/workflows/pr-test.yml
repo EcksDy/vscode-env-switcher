@@ -2,7 +2,6 @@ on:
   pull_request:
     branches:
       - master
-      - dev
 
 name: Test Extension
 jobs:
@@ -21,7 +20,7 @@ jobs:
 
       - name: Test OS ${{ matrix.os }} - VSCode ${{ matrix.version }}
         run: |
-          npm install
+          npm run install:all
           export DISPLAY=:99
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
           npm run ui-test -- --code_version ${{ matrix.version }}
