@@ -37,5 +37,5 @@ jobs:
         uses: ncipollo/release-action@v1.13.0
         with:
           artifacts: ${{  steps.publish-to-vsm.outputs.vsixPath  }}
-          body: $release_body
+          body: ${{ env.release_body }}
           skipIfReleaseExists: true

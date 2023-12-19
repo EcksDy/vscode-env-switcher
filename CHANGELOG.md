@@ -2,6 +2,10 @@
 
 Changes to **.ENV Switcher** can be found in this file.
 
+## - 0.5.1
+
+- Fixed webview not being built.
+
 ## - 0.5.0
 
 - Added UI tree for selecting presets. Currently supports a single workspace.
