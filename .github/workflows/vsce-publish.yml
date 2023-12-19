@@ -24,7 +24,7 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Install
-        run: npm install
+        run: npm run install:all
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@v1
