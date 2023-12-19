@@ -2,6 +2,11 @@
 
 Changes to **.ENV Switcher** can be found in this file.
 
+## - 0.5.0
+
+- Added UI tree for selecting presets. Currently supports a single workspace.
+- Groundwork for multi-root workspace support.
+
 ## - 0.4.3
 
 - Added an optional alert that will pop up when the user is about to overwrite a target file.

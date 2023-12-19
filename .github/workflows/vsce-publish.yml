@@ -1,7 +1,7 @@
-# on:
-#   push:
-#     branches:
-#       - master
+on:
+  push:
+    tags:
+      - 'v*.*.*'
 
 name: Publish Extension
 jobs:
@@ -9,11 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install
-        run: npm install
-      - name: Publish
-        uses: lannonbr/vsce-action@master
-        with:
-          args: publish -p $VSCE_TOKEN
-        env:
-          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+
+      - name: Print Tag Name
+        run: |
+          echo "Triggered by tag ${${{ github.ref }}##*/}"; \
+          echo "Triggered by tag ${${{ github.ref }}##*/v}";
+
+      # Temporary disable publishing
+      # - name: Install
+      #   run: npm install
+      # - name: Publish
+      #   uses: lannonbr/vsce-action@master
+      #   with:
+      #     args: publish -p $VSCE_TOKEN
+      #   env:
+      #     VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
