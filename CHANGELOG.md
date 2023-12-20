@@ -2,6 +2,13 @@
 
 Changes to **.ENV Switcher** can be found in this file.
 
+## - 0.5.2
+
+- Issue with tests falsly reporting success on CI/CD.
+- Issue with esbuild bundler.
+- VSC Marketplace cannot unpublish versions, so this is a workaround to remove the 0.5.0 and 0.5.1 versions.  
+  Rolled back to 0.4.3.
+
 ## - 0.5.1
 
 - Fixed webview not being built.

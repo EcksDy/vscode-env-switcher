@@ -115,4 +115,3 @@ There isn't a way to set an exact position on the status bar, the options on `en
 ### Does it work with WSL?
 
 Personally, I've tried it on WSL 2 and I haven't had any issues.
-.
