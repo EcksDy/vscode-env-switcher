@@ -125,16 +125,17 @@
     "install:all": "npm install && cd webview-ui && npm install",
     "start:webview": "cd webview-ui && npm run dev",
     "build:webview": "cd webview-ui && npm run build",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
     "vscode:prepublish": "npm run compile && npm run build:webview",
-    "compile": "npm run esbuild-base -- --minify",
-    "watch": "npm run esbuild-base -- --sourcemap --watch",
+    "compile": "npm run esbuild -- --minify",
+    "prewatch": "rm -rf out",
+    "watch": "npm run esbuild -- --sourcemap --watch",
     "lint": "eslint \"src/**/*.ts\"",
     "lint-staged": "eslint --fix",
     "preui-test": "tsc -p ./tsconfig.test.json",
     "format": "prettier --write",
     "prepare": "husky install",
-    "ui-test": "extest setup-and-run './out/ui-test/*.test.js' --mocha_config './src/ui-test/setup/.mocharc.json' --extensions_dir '.vscode-test/extensions' --storage '.vscode-test/resources' --code_settings ./src/ui-test/setup/settings.json"
+    "ui-test": "extest setup-and-run './out/ui-test/*.test.js' --mocha_config './src/ui-test/setup/.mocharc.json' --extensions_dir '.vscode-test/extensions' --storage '.vscode-test/resources' --code_settings './src/ui-test/setup/settings.json'"
   },
   "lint-staged": {
     "src/*.ts": [
