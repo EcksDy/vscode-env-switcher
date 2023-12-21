@@ -1,4 +1,3 @@
 {
-  "timeout": 99999999,
-  "fail-zero": true
+  "timeout": 99999999
 }
