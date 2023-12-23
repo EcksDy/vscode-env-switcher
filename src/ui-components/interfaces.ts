@@ -13,13 +13,17 @@ export interface UiPreset {
   path: string;
 }
 
-export interface PresetsViewData {
-  multiSwitch: boolean;
-  projects: UiProject[];
+export interface ProjectsCollapsedState {
+  [projectPath: string]: boolean;
 }
 
-export interface ReadyWebviewEvent {
-  action: WebviewEventType.Ready;
+export interface PresetsViewState {
+  multiSwitch: boolean;
+  collapsedState: ProjectsCollapsedState;
+}
+
+export interface RefreshWebviewEvent {
+  action: WebviewEventType.Refresh;
 }
 
 export interface DataWebviewEvent {
@@ -32,21 +36,25 @@ export interface SelectedWebviewEvent {
   selected: SelectedPreset[];
 }
 
-export interface CommandSelectedWebviewEvent {
-  action: WebviewEventType.CommandSelected;
-  presetPath: string;
-}
-
 export interface SelectedPreset {
   projectPath: string;
   presetPath: string;
 }
 
+export interface CommandSelectedWebviewEvent {
+  action: WebviewEventType.CommandSelected;
+  presetPath: string;
+}
+
 export enum WebviewEventType {
-  Ready = 'READY',
+  Refresh = 'REFRESH',
   Data = 'DATA',
   Selected = 'SELECTED',
   CommandSelected = 'COMMAND_SELECTED',
 }
 
-export type ViewEvents = ReadyWebviewEvent | DataWebviewEvent | SelectedWebviewEvent;
+export type WebviewEvents =
+  | RefreshWebviewEvent
+  | DataWebviewEvent
+  | SelectedWebviewEvent
+  | CommandSelectedWebviewEvent;

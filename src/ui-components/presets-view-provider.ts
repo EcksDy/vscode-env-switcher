@@ -1,16 +1,15 @@
 import { container } from 'tsyringe';
 import { Uri, Webview, WebviewView, WebviewViewProvider, WebviewViewResolveContext } from 'vscode';
+import { Preset } from '../interfaces';
 import {
   SwitcherEvents,
   WORKSPACE_CONTAINER,
-  Workspace,
   WorkspaceContainer,
   getEventEmitter,
   isDefined,
 } from '../utilities';
-import { UiPreset, UiProject, ViewEvents, WebviewEventType } from './interfaces';
+import { UiPreset, UiProject, WebviewEventType, WebviewEvents } from './interfaces';
 import { getNonce, getUri } from './utilities';
-import { Preset } from '../interfaces';
 
 interface PresetsViewProviderArgs {
   extensionUri: Uri;
@@ -43,14 +42,6 @@ export class PresetsViewProvider implements WebviewViewProvider {
 
     this.setWebviewMessageListener();
 
-    const workspaces = container.resolve<WorkspaceContainer>(WORKSPACE_CONTAINER).workspaces;
-    const projects = await this.getProjectsFromWorkspaces(workspaces);
-
-    webviewView.webview.postMessage({
-      action: WebviewEventType.Data,
-      projects,
-    });
-
     this.eventEmitter.on(SwitcherEvents.TargetChanged, (newPreset: Preset) => {
       webviewView.webview.postMessage({
         action: WebviewEventType.CommandSelected,
@@ -59,20 +50,22 @@ export class PresetsViewProvider implements WebviewViewProvider {
     });
   }
 
-  private async getProjectsFromWorkspaces(workspaces: Workspace[]) {
+  private async getProjectsFromWorkspaces() {
+    const { workspaces } = container.resolve<WorkspaceContainer>(WORKSPACE_CONTAINER);
     const projects: UiProject[] = [];
     for (const workspace of workspaces) {
       const projectPath = workspace.folder.uri.fsPath;
       const name = workspace.folder.name;
-      const selectedPreset = await workspace.getCurrentPreset();
+      const currentPreset = await workspace.getCurrentPreset();
       const rawPresets = await workspace.getPresets();
 
       const presets = rawPresets.map(this.getPresetMapper(projectPath, false));
-      if (isDefined(selectedPreset))
-        presets.push(this.getPresetMapper(projectPath, true)(selectedPreset));
+      if (isDefined(currentPreset))
+        presets.push(this.getPresetMapper(projectPath, true)(currentPreset));
+
+      if (!presets?.length) continue;
 
       presets.sort((a, b) => a.name.localeCompare(b.name));
-
       projects.push({
         name,
         path: projectPath,
@@ -100,9 +93,9 @@ export class PresetsViewProvider implements WebviewViewProvider {
       'bundle.js',
     ]);
     const codiconsUri = getUri(webview, this.extensionUri, [
-      'node_modules',
-      '@vscode/codicons',
-      'dist',
+      'webview-ui',
+      'public',
+      'build',
       'codicon.css',
     ]);
 
@@ -146,10 +139,16 @@ export class PresetsViewProvider implements WebviewViewProvider {
    * executes code based on the message that is recieved.
    */
   private setWebviewMessageListener() {
-    this.view?.webview.onDidReceiveMessage(async (data: ViewEvents) => {
+    this.view?.webview.onDidReceiveMessage(async (data: WebviewEvents) => {
       console.debug(`[WebViewProvider - event - ${data.action}]`);
 
       switch (data.action) {
+        case WebviewEventType.Refresh:
+          const projects = await this.getProjectsFromWorkspaces();
+          return void (await this.view?.webview.postMessage({
+            action: WebviewEventType.Data,
+            projects,
+          }));
         case WebviewEventType.Selected:
           const event =
             data.selected.length === 1
