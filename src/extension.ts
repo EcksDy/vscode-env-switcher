@@ -1,3 +1,4 @@
+// Must be first for reflect-metadata to work and event emitter to register correctly
 import 'reflect-metadata';
 import './utilities/event-emitter';
 
@@ -8,6 +9,7 @@ import { selectEnvPreset } from './command-implementations';
 import { openView } from './command-implementations/open-view';
 import { PresetsViewProvider, StatusBarButton } from './ui-components';
 import {
+  HAS_WORKSPACE_TARGET,
   MAIN_WORKSPACE,
   OPEN_VIEW_COMMAND_ID,
   SELECT_ENV_COMMAND_ID,
@@ -37,17 +39,33 @@ export async function activate(context: ExtensionContext) {
   const workspaceContainer = registerWorkspaceWatcher<Workspace>(
     context,
     async (ev, folder) => {
-      if (ev !== WorkspaceWatcherEvent.Added) return;
+      const hasWorkspaceTarget = workspaceState.get<boolean>(HAS_WORKSPACE_TARGET);
+      const { workspaces } = container.resolve<WorkspaceContainer>(WORKSPACE_CONTAINER);
+      if (ev === WorkspaceWatcherEvent.Removed) {
+        if (!workspaces.length || !hasWorkspaceTarget)
+          return await workspaceState.update(HAS_WORKSPACE_TARGET, false);
+
+        const workspaceTargets = await Promise.all(
+          workspaces.map((workspace) => workspace.getCurrentPreset()),
+        );
+        const hasTargets = workspaceTargets.some((target) => !!target);
+        return await workspaceState.update(HAS_WORKSPACE_TARGET, hasTargets);
+      }
 
       const workspaceContainer = container.createChildContainer();
       workspaceContainer.register(WORKSPACE_FOLDER, { useValue: folder });
       const newWorkspace = await Workspace.build(folder, workspaceContainer);
 
+      if (!hasWorkspaceTarget)
+        await workspaceState.update(
+          HAS_WORKSPACE_TARGET,
+          !!(await newWorkspace.getCurrentPreset()),
+        );
+
       return newWorkspace;
     },
     () => void eventEmitter.emit(SwitcherEvents.WorkspacesChanged),
   );
-  await workspaceContainer.reload();
   registerInContainer([WORKSPACE_CONTAINER, { useValue: workspaceContainer }]);
   registerInContainer([
     MAIN_WORKSPACE,
@@ -60,6 +78,7 @@ export async function activate(context: ExtensionContext) {
       },
     },
   ]);
+  await workspaceContainer.reload();
 
   const mainWorkspace = container.resolve<Workspace | null>(MAIN_WORKSPACE); // TODO: Not really, dirty hack for now
 
