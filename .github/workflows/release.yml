@@ -2,8 +2,7 @@ on:
   push:
     tags:
       - 'v*.*.*'
-    tags-ignore:
-      - 'v*.*.*-pre'
+      - '!v*.*.*-pre'
 
 name: Publish Extension
 jobs:
