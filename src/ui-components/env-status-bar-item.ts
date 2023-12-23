@@ -36,6 +36,7 @@ export class StatusBarButton implements IButton {
 
     this.refresh(preset?.name);
     this.button.show();
+    // TODO: Decide based on HAS_WORKSPACE_TARGET what to display(and if to display)
 
     const onWarningConfigChange = config.warning.onChange(() => this.setText(this.getText()));
 
