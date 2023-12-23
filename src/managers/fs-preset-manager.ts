@@ -32,6 +32,7 @@ export class FsPresetManager implements IPresetManager {
     this.persister = persister;
     this.fileWatcher = fileWatcher;
 
+    // TODO: Extract to WorkspaceContainer level, catch event once and find the correct workspace
     this.eventEmitter.on(SwitcherEvents.PresetSelected, async (selectedPreset: SelectedPreset) => {
       console.debug(`[FsPresetManager - ${SwitcherEvents.PresetSelected}]`, { ...selectedPreset });
       const { presetPath, projectPath } = selectedPreset;
