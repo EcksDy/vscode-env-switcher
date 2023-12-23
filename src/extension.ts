@@ -5,6 +5,7 @@ import { container } from 'tsyringe';
 import { ExtensionContext, commands, window } from 'vscode';
 import { WorkspaceWatcherEvent, registerWorkspaceWatcher } from 'vscode-helpers';
 import { selectEnvPreset } from './command-implementations';
+import { openView } from './command-implementations/open-view';
 import { PresetsViewProvider, StatusBarButton } from './ui-components';
 import {
   MAIN_WORKSPACE,
@@ -71,13 +72,11 @@ export async function activate(context: ExtensionContext) {
   const presetView = window.registerWebviewViewProvider(PresetsViewProvider.viewType, provider);
 
   /* COMMANDS */
-  const selectEnvPresetCmd = commands.registerCommand(SELECT_ENV_COMMAND_ID, () =>
+  const selectEnvPresetCmd = commands.registerCommand(
+    SELECT_ENV_COMMAND_ID,
     selectEnvPreset({ config }),
   );
-  const openViewCmd = commands.registerCommand(
-    OPEN_VIEW_COMMAND_ID,
-    async () => await commands.executeCommand(`${PresetsViewProvider.viewType}.focus`),
-  );
+  const openViewCmd = commands.registerCommand(OPEN_VIEW_COMMAND_ID, openView);
 
   /* GARBAGE REGISTRATION */
   subscriptions.push(
