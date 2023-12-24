@@ -1,0 +1,42 @@
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - '!v*.*.*-pre'
+
+name: Publish Extension - Release
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Extract versions
+        run: |
+          echo "v_name=${GITHUB_REF##*/}" >> $GITHUB_ENV
+          echo "v_num=${GITHUB_REF##*/v}" >> $GITHUB_ENV
+      - name: Extract release body
+        run: |
+          release_body=$(sed -n "/## - $v_num/,/##/p" CHANGELOG.md | tail -n +3 | head -n -2)
+          echo "release_body<<EOF" >> $GITHUB_ENV
+          echo "${release_body}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Install
+        run: npm run install:all
+
+      - name: Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@v1
+        id: publish-to-vsm
+        with:
+          pat: ${{ secrets.VSCE_TOKEN }}
+          registryUrl: https://marketplace.visualstudio.com
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1.13.0
+        with:
+          artifacts: ${{ steps.publish-to-vsm.outputs.vsixPath }}
+          body: ${{ env.release_body }}
+          skipIfReleaseExists: true

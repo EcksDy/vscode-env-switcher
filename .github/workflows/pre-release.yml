@@ -1,9 +1,9 @@
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*-pre'
 
-name: Publish Extension
+name: Publish Extension - Pre Release
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -32,6 +32,7 @@ jobs:
         with:
           pat: ${{ secrets.VSCE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
+          preRelease: true
 
       - name: Create Release
         uses: ncipollo/release-action@v1.13.0
