@@ -65,8 +65,8 @@ In no particular order.
 
 ### Tasks
 
-- [ ] Fix issue with dev/master branch out of sync
-- [ ] Trigger CI/CD on new tags
+- [x] Fix issue with dev/master branch out of sync
+- [x] Trigger CI/CD on new tags
 - [x] Add DI container
 - [x] Add CI for pull requests
 - [x] Add UI tests
