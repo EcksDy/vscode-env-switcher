@@ -4,7 +4,7 @@ on:
       - 'v*.*.*'
       - '!v*.*.*-pre'
 
-name: Publish Extension
+name: Publish Extension - Release
 jobs:
   publish:
     runs-on: ubuntu-latest
