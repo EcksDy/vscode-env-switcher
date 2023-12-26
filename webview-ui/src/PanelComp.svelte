@@ -34,7 +34,7 @@
     switch (event.data.action) {
       case WebviewEventType.Data: {
         const { projects: newProjects } = event.data;
-        projects = newProjects;
+        projects = newProjects.sort((a, b) => b.presets.length - a.presets.length);
         // TODO: Handle collapsed state perstistance
         // collapsedState = {};
         break;

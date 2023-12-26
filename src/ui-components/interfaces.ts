@@ -20,6 +20,7 @@ export interface ProjectsCollapsedState {
 export interface PresetsViewState {
   multiSwitch: boolean;
   collapsedState: ProjectsCollapsedState;
+  hideEmpty?: boolean; // TODO: Implement hide/show empty projects
 }
 
 export interface RefreshWebviewEvent {

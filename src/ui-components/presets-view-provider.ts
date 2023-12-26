@@ -62,16 +62,14 @@ export class PresetsViewProvider implements WebviewViewProvider {
       const presets = rawPresets.map(this.getPresetMapper(projectPath, false));
       if (isDefined(currentPreset))
         presets.push(this.getPresetMapper(projectPath, true)(currentPreset));
-
-      if (!presets?.length) continue;
-
       presets.sort((a, b) => a.name.localeCompare(b.name));
+
       projects.push({
         name,
         path: projectPath,
         presets,
         isLocked: false,
-        isOpen: true,
+        isOpen: !!presets.length,
       });
     }
     return projects;

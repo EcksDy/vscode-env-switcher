@@ -1,4 +1,4 @@
-import * as nodePath from 'path';
+import path, * as nodePath from 'path';
 import { inject, injectable } from 'tsyringe';
 import { Disposable } from 'vscode';
 import {
@@ -93,6 +93,7 @@ export class FsPresetManager implements IPresetManager {
   }
 
   async getPresets() {
+    // TODO: Super wasteful, this returns ALL paths from all the open workspaces
     const paths = await fsHelper.findFiles(config.presets.glob(), config.presets.excludeGlob());
     const validatedPaths = await this.validatePaths(paths);
     return this.makePresets(this.rootDir, validatedPaths);
@@ -211,7 +212,10 @@ export class FsPresetManager implements IPresetManager {
     const currentPreset = await this.getCurrentPreset();
     if (currentPreset) excludedPaths.push(currentPreset.path);
 
-    const validatedPaths = paths.filter((path) => !excludedPaths.includes(path));
+    // TODO: Super wasteful, try to filter at the source
+    const validatedPaths = paths.filter(
+      (path) => !excludedPaths.includes(path) && path.startsWith(this.rootDir),
+    );
     return validatedPaths;
   }
 
