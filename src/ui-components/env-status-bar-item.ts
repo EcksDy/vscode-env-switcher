@@ -35,8 +35,9 @@ export class StatusBarButton implements IButton {
     this.button = window.createStatusBarItem(alignment, priority);
 
     this.refresh(preset?.name);
-    this.button.show();
-    // TODO: Decide based on HAS_WORKSPACE_TARGET what to display(and if to display)
+
+    const workspace = container.resolve<Workspace | null>(MAIN_WORKSPACE);
+    if (workspace) this.button.show();
 
     const onWarningConfigChange = config.warning.onChange(() => this.setText(this.getText()));
 
@@ -56,6 +57,13 @@ export class StatusBarButton implements IButton {
     this.eventEmitter.on(SwitcherEvents.TargetChangedError, () => {
       console.debug(`[StatusBarButton - ${SwitcherEvents.TargetChangedError}]`);
       this.setText(ERROR_BUTTON_TEXT);
+    });
+    this.eventEmitter.on(SwitcherEvents.WorkspacesChanged, () => {
+      console.debug(`[StatusBarButton - ${SwitcherEvents.WorkspacesChanged}]`);
+
+      const workspace = container.resolve<Workspace | null>(MAIN_WORKSPACE);
+      if (workspace) this.button.show();
+      else this.button.hide();
     });
 
     this.garbage = [this.button, onWarningConfigChange];
