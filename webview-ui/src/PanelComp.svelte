@@ -1,6 +1,11 @@
 <script lang="ts">
   import { provideVSCodeDesignSystem, vsCodeProgressRing } from '@vscode/webview-ui-toolkit';
-  import { WebviewEventType } from '../../src/ui-components/interfaces';
+  import {
+    WebviewEventType,
+    type PresetsViewState,
+    type UiProject,
+    type WebviewEvents,
+  } from '../../src/ui-components/interfaces';
   import FolderComp from './FolderComp.svelte';
   import IconButtonComp from './components/IconButtonComp.svelte';
   import ToolbarComp from './components/ToolbarComp.svelte';
@@ -8,15 +13,20 @@
 
   provideVSCodeDesignSystem().register(vsCodeProgressRing());
 
-  const DEFAULT_STATE = {
-    projects: [],
+  // This is needed because if the webview is out of focus, no events are sent to it, and there's no way to update the state from which it resumes.
+  // Meaning that the data is stale and needs to be refreshed.
+  vscode.postMessage({ action: WebviewEventType.Refresh });
+
+  const DEFAULT_STATE: PresetsViewState = {
     multiSwitch: false,
+    collapsedState: {},
   };
 
-  let { projects, multiSwitch } = vscode.getState() ?? DEFAULT_STATE;
-  let isLoading = !projects.length;
+  let { multiSwitch, collapsedState } = vscode.getState() ?? DEFAULT_STATE;
+  let isLoading = true;
+  let projects: UiProject[] = [];
 
-  window.addEventListener('message', (event) => {
+  window.addEventListener('message', (event: MessageEvent<WebviewEvents>) => {
     if (!event.data) return;
     isLoading = true;
     console.log(`[WebView - event - ${event.data.action}]`);
@@ -24,15 +34,14 @@
     switch (event.data.action) {
       case WebviewEventType.Data: {
         const { projects: newProjects } = event.data;
-        const oldState = vscode.getState() ?? DEFAULT_STATE;
-        vscode.setState({ ...oldState, projects: newProjects });
-        projects = newProjects;
+        projects = newProjects.sort((a, b) => b.presets.length - a.presets.length);
+        // TODO: Handle collapsed state perstistance
+        // collapsedState = {};
         break;
       }
       case WebviewEventType.CommandSelected: {
         const { presetPath } = event.data;
-        const oldState = vscode.getState() ?? DEFAULT_STATE;
-        for (const project of oldState.projects) {
+        for (const project of projects) {
           const isParentProject = project.presets.some((preset) => preset.path === presetPath);
           if (!isParentProject) continue;
 
@@ -42,8 +51,6 @@
           }));
           break;
         }
-        vscode.setState(oldState);
-        projects = oldState.projects;
         break;
       }
     }
@@ -52,7 +59,7 @@
   });
 
   function updateState() {
-    vscode.setState({ multiSwitch, projects });
+    vscode.setState({ multiSwitch, collapsedState });
   }
 </script>
 
@@ -66,6 +73,9 @@
 
         const isOpen = projects.some((project) => project.isOpen);
         projects = projects.map((project) => ({ ...project, isOpen: !isOpen }));
+        // TODO: Handle collapsed state perstistance
+        // collapsedState = {};
+        // updateState();
       }}
       tooltip="Collapse all projects"
     />

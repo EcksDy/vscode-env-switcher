@@ -27,6 +27,7 @@ module.exports = {
         'vscode-tree-indentGuidesStroke': 'var(--vscode-tree-indentGuidesStroke)',
         'vscode-tree-inactiveIndentGuidesStroke': 'var(--vscode-tree-inactiveIndentGuidesStroke)',
         'vscode-editor-background': 'var(--vscode-editor-background)',
+        'vscode-tab-inactiveForeground': 'var(--vscode-tab-inactiveForeground)',
       },
     },
   },

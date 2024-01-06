@@ -19,7 +19,6 @@
     "workspaceContains:*"
   ],
   "extensionKind": [
-    "ui",
     "workspace"
   ],
   "main": "./out/extension.js",

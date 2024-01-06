@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "build": "rm -rf public/build && rollup -c",
+    "dev": "rm -rf public/build && rollup -c -w",
     "start": "sirv public --no-clear --host",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },

@@ -20,6 +20,7 @@ out/test/**
 src/**
 
 # Ignore all webview-ui files except the build directory
+!webview-ui/public/build/**
 webview-ui/src/**
 webview-ui/public/**
 webview-ui/scripts/**

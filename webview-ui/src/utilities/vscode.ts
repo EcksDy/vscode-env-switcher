@@ -1,5 +1,5 @@
 import type { WebviewApi } from 'vscode-webview';
-import type { PresetsViewData, ViewEvents } from '../../../src/ui-components/interfaces';
+import type { PresetsViewState, WebviewEvents } from '../../../src/ui-components/interfaces';
 
 /**
  * A utility wrapper around the acquireVsCodeApi() function, which enables
@@ -11,7 +11,7 @@ import type { PresetsViewData, ViewEvents } from '../../../src/ui-components/int
  * enabled by acquireVsCodeApi.
  */
 class VSCodeAPIWrapper {
-  private readonly vsCodeApi: WebviewApi<PresetsViewData> | undefined;
+  private readonly vsCodeApi: WebviewApi<PresetsViewState> | undefined;
   public readonly isMocked: boolean;
 
   constructor() {
@@ -19,7 +19,7 @@ class VSCodeAPIWrapper {
     // context (i.e. VS Code development window or web browser)
     this.isMocked = typeof acquireVsCodeApi !== 'function';
     if (!this.isMocked) {
-      this.vsCodeApi = acquireVsCodeApi(); // acquireVsCodeApi<TODO: type of persisted values>()
+      this.vsCodeApi = acquireVsCodeApi();
     } else {
       console.debug('Running in browser, vscode is mocked');
     }
@@ -33,7 +33,7 @@ class VSCodeAPIWrapper {
    *
    * @param message Abitrary data (must be JSON serializable) to send to the extension context.
    */
-  public postMessage(message: ViewEvents) {
+  public postMessage(message: WebviewEvents) {
     if (this.vsCodeApi) {
       this.vsCodeApi.postMessage(message);
     } else {
@@ -49,7 +49,7 @@ class VSCodeAPIWrapper {
    *
    * @return The current state or `undefined` if no state has been set.
    */
-  public getState(): PresetsViewData | undefined {
+  public getState(): PresetsViewState | undefined {
     if (this.vsCodeApi) {
       return this.vsCodeApi.getState();
     } else {
@@ -70,7 +70,7 @@ class VSCodeAPIWrapper {
    *
    * @return The new state.
    */
-  public setState(newState?: PresetsViewData): PresetsViewData | undefined {
+  public setState(newState?: PresetsViewState): PresetsViewState | undefined {
     if (this.vsCodeApi) {
       return this.vsCodeApi.setState(newState);
     } else {

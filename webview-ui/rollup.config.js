@@ -70,13 +70,12 @@ module.exports = {
     // we'll extract any component CSS out into
     // a separate file - better for performance
     css({ output: 'bundle.css' }),
-    !production &&
-      copy({
-        targets: [
-          // Copy codicons from root node_modules just for the browser
-          { src: '../node_modules/@vscode/codicons/dist/{*.css,*.ttf}', dest: 'public/build' },
-        ],
-      }),
+    copy({
+      targets: [
+        // Copy codicons from root node_modules just for the browser
+        { src: '../node_modules/@vscode/codicons/dist/{*.css,*.ttf}', dest: 'public/build' },
+      ],
+    }),
     // If you have external dependencies installed from
     // npm, you'll most likely need these plugins. In
     // some cases you'll need additional configuration -
