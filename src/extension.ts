@@ -80,12 +80,12 @@ export async function activate(context: ExtensionContext) {
   ]);
   await workspaceContainer.reload();
 
-  const mainWorkspace = container.resolve<Workspace | null>(MAIN_WORKSPACE); // TODO: Not really, dirty hack for now
+  const mainWorkspace = container.resolve<Workspace | null>(MAIN_WORKSPACE);
 
   /* UI COMPONENTS */
   const statusBarButton = new StatusBarButton({
     preset: (await mainWorkspace?.getCurrentPreset()) ?? undefined,
-  });
+  }); // TODO: Add StatusBarButton.build and get preset asynchronously there
 
   const provider = new PresetsViewProvider({ extensionUri });
   const presetView = window.registerWebviewViewProvider(PresetsViewProvider.viewType, provider);

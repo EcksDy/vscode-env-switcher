@@ -19,7 +19,7 @@ class VSCodeAPIWrapper {
     // context (i.e. VS Code development window or web browser)
     this.isMocked = typeof acquireVsCodeApi !== 'function';
     if (!this.isMocked) {
-      this.vsCodeApi = acquireVsCodeApi(); // acquireVsCodeApi<TODO: type of persisted values>()
+      this.vsCodeApi = acquireVsCodeApi();
     } else {
       console.debug('Running in browser, vscode is mocked');
     }
