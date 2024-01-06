@@ -2,6 +2,12 @@
 
 Changes to **.ENV Switcher** can be found in this file.
 
+## - 0.5.3-pre
+
+- Fixed esbuild issue
+- Fixed webview not responding
+- Status bar button now appears only when one workspace is open
+
 ## - 0.5.2
 
 - Issue with tests falsly reporting success on CI/CD.
