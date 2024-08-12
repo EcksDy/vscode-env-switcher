@@ -1,6 +1,7 @@
-<img src="images/env-switcher.png" alt="Switch a .env preset from the status bar" height="120" align="right" />
 
 # .ENV Switcher
+
+<img src="images/env-switcher.png" alt="Switch a .env preset from the status bar" height="120" align="right" />
 
 Status bar extension that swaps(**overwrites**) the target file(`.env` by default) from provided presets. This means that the target file is a placeholder for presets.
 
